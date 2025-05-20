@@ -8,7 +8,7 @@
 body {
     font-family: 'Montserrat', sans-serif; /* Primary font */
     line-height: 1.65;
-    color: #373F41; /* Dark grey/charcoal for body text, from greenit example */
+    color: #373F41; /* Dark grey/charcoal for body text */
     background-color: #f8f9fa; /* Very light grey background */
     font-weight: 400; /* Montserrat Regular */
     -webkit-font-smoothing: antialiased;
@@ -56,97 +56,51 @@ header {
     max-height: 48px;
     width: auto;
 }
-
-#main-nav ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+header nav { /* Container for dropdown and link */
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* Allow nav items to wrap on smaller screens */
+    gap: 1.5rem; /* Space between dropdown and new link(s) */
 }
-
-#main-nav li {
-    margin-left: 10px; /* Spacing between nav items */
+#section-selector {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #ced4da;
+    border-radius: 25px; /* Rounded */
+    font-size: 0.9rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    background-color: #fff;
+    color: #373F41;
+    cursor: pointer;
+    min-width: 200px; /* Adjusted min-width */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-#main-nav li:first-child {
-    margin-left: 0;
+#section-selector:focus {
+    outline: none;
+    border-color: #35ED54; /* Green accent from greenit */
+    box-shadow: 0 0 0 0.15rem rgba(53, 237, 84, 0.25);
 }
-
-#main-nav .nav-link {
+/* Styles for navigation links (Resume Gen on homepage, Home on resume page) */
+.nav-link {
     color: #373F41;
     text-decoration: none;
-    font-weight: 500;
-    padding: 0.6rem 0.9rem; /* Padding for clickable area */
-    border-radius: 20px; /* Rounded effect */
-    transition: background-color 0.2s ease, color 0.2s ease;
-    font-size: 0.85rem; /* Slightly smaller for more links */
-    white-space: nowrap; /* Prevent links from breaking mid-word */
-}
-
-#main-nav .nav-link:hover {
-    background-color: #e9f1f7; /* Light hover background */
-    color: #005a9c; /* Brand color on hover */
-}
-
-#main-nav .nav-link.active {
-    background-color: #005a9c; /* Primary brand color for active link */
-    color: #ffffff;
-    font-weight: 700;
-}
-
-/* Styles for simple nav links on resume page header (already present, ensure consistency) */
-header nav .nav-current-page { /* This was for the resume page, may not be needed for index.html */
-    font-weight: 700;
-    color: #005a9c; 
-    padding: 0.5rem 1rem;
-}
-
-
-/* Responsive adjustments for new nav */
-@media (max-width: 1024px) { /* Adjust breakpoint as needed */
-    #main-nav ul {
-        justify-content: center; /* Center links if they wrap */
-    }
-    #main-nav li {
-        margin: 5px; /* Add some vertical margin when wrapped */
-    }
-}
-
-@media (max-width: 768px) {
-    /* .nav-container rule for flex-direction: column is already there */
-    #main-nav ul {
-        flex-direction: column; /* Stack links vertically */
-        width: 100%;
-    }
-    #main-nav li {
-        margin: 5px 0;
-        width: 100%;
-        text-align: center;
-    }
-    #main-nav .nav-link {
-        display: block; /* Make links take full width of li */
-        width: 100%;
-    }
-}
-/* Styles for simple nav links on resume page header */
-header nav .nav-link {
-    color: #373F41;
-    text-decoration: none;
-    font-weight: 500;
+    font-weight: 500; /* Montserrat Medium */
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    transition: background-color 0.2s ease;
-    margin-right: 0.5rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
 }
-header nav .nav-link:hover {
-    background-color: #e9ecef;
+.nav-link:hover {
+    background-color: #e9f1f7; /* Light hover background */
+    color: #005a9c; /* Cendien primary blue on hover */
 }
-header nav .nav-current-page {
+.resume-nav-link { /* Specific class for homepage Resume Gen link if needed */
+    /* Add any distinct styling here if it shouldn't just be .nav-link */
+}
+header nav .nav-current-page { /* For "AI Resume Generator" text on resume-generator.html */
     font-weight: 700;
-    color: #005a9c; /* Or your primary brand color */
+    color: #005a9c;
     padding: 0.5rem 1rem;
+    white-space: nowrap;
 }
 
 
@@ -172,12 +126,12 @@ header nav .nav-current-page {
 #hero-text-box h1 {
     font-size: 2.5rem; 
     margin-bottom: 0.8rem;
-    font-weight: 700; /* Montserrat Bold */
-    color: #184e51; /* Dark Teal from greenit */
+    font-weight: 700; 
+    color: #184e51; 
 }
 #hero-text-box p {
     font-size: 1.15rem; 
-    font-weight: 400; /* Montserrat Regular */
+    font-weight: 400; 
     max-width: 720px; 
     margin-left: auto; 
     margin-right: auto; 
@@ -185,7 +139,7 @@ header nav .nav-current-page {
     line-height: 1.6;
 }
 #hero-location-city {
-    font-weight: 700; /* Montserrat Bold */
+    font-weight: 700; 
     color: #005a9c; 
 }
 
@@ -201,18 +155,17 @@ header nav .nav-current-page {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
 }
 
-
-/* Main Content Headings (for sections like Dynamic Content, Contact Info, etc.) */
+/* Main Content Headings */
 main h2 { 
     font-size: 2rem; 
-    font-weight: 700; /* Montserrat Bold, like .title in greenit */
-    color: #184e51; /* Dark Teal */
+    font-weight: 700; 
+    color: #184e51; 
     margin-bottom: 1.5rem;
     text-align: center;
 } 
 main h3 { 
     font-size: 1.5rem; 
-    font-weight: 500; /* Montserrat Medium */
+    font-weight: 500; 
     color: #2c3e50; 
     margin-bottom: 1.2rem;
     text-align: center; 
@@ -234,7 +187,6 @@ main h3 {
     gap: 2.5rem; 
     margin-bottom: 2.5rem; 
 }
-/* Child .content-card elements within .two-column-layout become the columns */
 .two-column-layout > .content-card.column {
     min-width: 300px;
     flex-grow: 1;
@@ -243,12 +195,11 @@ main h3 {
 #ai-module-suggester.column {
     flex-basis: calc(45% - 1.25rem); 
 }
-#services-overview-static.column,
-#contact-details.column { 
+#services-overview-static.column { 
     flex-basis: calc(55% - 1.25rem); 
 }
 #services-overview-static.column h3,
-#contact-details.column h3 { 
+#contact-details.column h3 { /* Assuming contact-details could also be a column */
     text-align: left; 
     font-size: 1.4rem; 
     font-weight: 500;
@@ -316,7 +267,8 @@ main h3 {
     border-color: #184e51; 
 }
 #suggest-modules-button:disabled,
-#generate-resume-button:disabled { 
+#generate-resume-button:disabled, /* Ensured this is styled for disabled state */
+#generate-resume-pdf-button:disabled { /* Added for new button ID */
     background-color: #d1e7dd; 
     border-color: #d1e7dd;
     color: #799988;
@@ -400,14 +352,13 @@ footer p { margin: 0; font-size: 0.9rem; }
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
-#resume-generator-tool #generate-resume-pdf-button.btn-primary, /* Use .btn-primary for consistency */
-#resume-generator-tool #generate-resume-button.btn-primary { /* If old ID still exists */
+#resume-generator-tool #generate-resume-pdf-button.btn-primary {
     width: auto; 
     display: inline-block; 
     margin-top: 1rem;
-    /* It will inherit the .btn-primary styles (green bg, dark text) */
+    /* Inherits .btn and .btn-primary styles */
 }
-#generated-resume-area {
+#generated-resume-area, #resume-generation-status { /* Apply to both for consistency */
     background-color: #f0f4f8; 
     padding: 1.5rem;
     border-radius: 6px;
@@ -418,6 +369,7 @@ footer p { margin: 0; font-size: 0.9rem; }
     text-align: left;
     font-size: 1.4rem;
     color: #184e51;
+    margin-bottom: 1rem;
 }
 #resume-result p, 
 #resume-result li {
@@ -433,6 +385,7 @@ footer p { margin: 0; font-size: 0.9rem; }
 #resume-result ul li {
     margin-bottom: 0.5rem;
 }
+
 
 /* Responsive Adjustments */
 @media (max-width: 992px) { 
@@ -450,9 +403,24 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 @media (max-width: 768px) {
     body { font-size: 15px; }
-    .nav-container { flex-direction: column; gap: 1rem; }
+    header nav { /* For homepage nav */
+        width: 100%; 
+        flex-direction: column; 
+        align-items: stretch; 
+        gap: 0.75rem; 
+    }
+    /* For resume-generator.html header nav (if different structure) */
+    header .nav-container nav:not(:has(#section-selector)) {
+        flex-direction: row; /* Keep as row if it's just Home + Current Page */
+    }
+
     #company-logo { max-height: 40px; }
     #section-selector { width: 100%; font-size: 0.9rem; }
+    .nav-link.resume-nav-link {
+        text-align: center; 
+        display: block; 
+        background-color: #f0f0f0; 
+    }
     #hero { min-height: 280px; }
     #hero-text-box { margin-top: -50px; padding: 1.5rem; }
     #hero-text-box h1 { font-size: 1.8rem; }
