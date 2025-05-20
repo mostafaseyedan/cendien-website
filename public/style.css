@@ -56,23 +56,79 @@ header {
     max-height: 48px;
     width: auto;
 }
-#section-selector {
-    padding: 0.6rem 1.2rem;
-    border: 1px solid #ced4da;
-    border-radius: 25px; /* Rounded */
-    font-size: 0.9rem;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
-    background-color: #fff;
-    color: #373F41;
-    cursor: pointer;
-    min-width: 230px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+#main-nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allow nav items to wrap on smaller screens */
 }
-#section-selector:focus {
-    outline: none;
-    border-color: #35ED54; /* Green accent from greenit */
-    box-shadow: 0 0 0 0.15rem rgba(53, 237, 84, 0.25);
+
+#main-nav li {
+    margin-left: 10px; /* Spacing between nav items */
+}
+
+#main-nav li:first-child {
+    margin-left: 0;
+}
+
+#main-nav .nav-link {
+    color: #373F41;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.6rem 0.9rem; /* Padding for clickable area */
+    border-radius: 20px; /* Rounded effect */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 0.85rem; /* Slightly smaller for more links */
+    white-space: nowrap; /* Prevent links from breaking mid-word */
+}
+
+#main-nav .nav-link:hover {
+    background-color: #e9f1f7; /* Light hover background */
+    color: #005a9c; /* Brand color on hover */
+}
+
+#main-nav .nav-link.active {
+    background-color: #005a9c; /* Primary brand color for active link */
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Styles for simple nav links on resume page header (already present, ensure consistency) */
+header nav .nav-current-page { /* This was for the resume page, may not be needed for index.html */
+    font-weight: 700;
+    color: #005a9c; 
+    padding: 0.5rem 1rem;
+}
+
+
+/* Responsive adjustments for new nav */
+@media (max-width: 1024px) { /* Adjust breakpoint as needed */
+    #main-nav ul {
+        justify-content: center; /* Center links if they wrap */
+    }
+    #main-nav li {
+        margin: 5px; /* Add some vertical margin when wrapped */
+    }
+}
+
+@media (max-width: 768px) {
+    /* .nav-container rule for flex-direction: column is already there */
+    #main-nav ul {
+        flex-direction: column; /* Stack links vertically */
+        width: 100%;
+    }
+    #main-nav li {
+        margin: 5px 0;
+        width: 100%;
+        text-align: center;
+    }
+    #main-nav .nav-link {
+        display: block; /* Make links take full width of li */
+        width: 100%;
+    }
 }
 /* Styles for simple nav links on resume page header */
 header nav .nav-link {
