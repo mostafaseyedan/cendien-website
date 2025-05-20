@@ -1,0 +1,417 @@
+/* Global Styles & Resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif; /* Primary font */
+    line-height: 1.65;
+    color: #373F41; /* Dark grey/charcoal for body text, from greenit example */
+    background-color: #f8f9fa; /* Very light grey background */
+    font-weight: 400; /* Montserrat Regular */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    width: 90%;
+    max-width: 1180px;
+    margin: auto;
+    padding: 0 15px;
+}
+.container-fluid {
+    width: 100%;
+    padding: 0;
+    margin: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Header & Navigation */
+header {
+    background: #ffffff;
+    padding: 0.85rem 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo-container img#company-logo {
+    max-height: 48px;
+    width: auto;
+}
+#section-selector {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #ced4da;
+    border-radius: 25px; /* Rounded */
+    font-size: 0.9rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    background-color: #fff;
+    color: #373F41;
+    cursor: pointer;
+    min-width: 230px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#section-selector:focus {
+    outline: none;
+    border-color: #35ED54; /* Green accent from greenit */
+    box-shadow: 0 0 0 0.15rem rgba(53, 237, 84, 0.25);
+}
+/* Styles for simple nav links on resume page header */
+header nav .nav-link {
+    color: #373F41;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: background-color 0.2s ease;
+    margin-right: 0.5rem;
+}
+header nav .nav-link:hover {
+    background-color: #e9ecef;
+}
+header nav .nav-current-page {
+    font-weight: 700;
+    color: #005a9c; /* Or your primary brand color */
+    padding: 0.5rem 1rem;
+}
+
+
+/* Hero Section - Cover Photo */
+#hero {
+    background-image: url('/images/cendien_cover.jpg');
+    background-size: cover;
+    background-position: center 50%;
+    position: relative; 
+    min-height: 380px; 
+}
+
+/* Hero Text Box */
+#hero-text-box {
+    text-align: center;
+    margin-top: -70px; 
+    position: relative; 
+    z-index: 10;
+    margin-bottom: 3rem; 
+}
+#hero-text-box.text-center-override { text-align: center; } 
+
+#hero-text-box h1 {
+    font-size: 2.5rem; 
+    margin-bottom: 0.8rem;
+    font-weight: 700; /* Montserrat Bold */
+    color: #184e51; /* Dark Teal from greenit */
+}
+#hero-text-box p {
+    font-size: 1.15rem; 
+    font-weight: 400; /* Montserrat Regular */
+    max-width: 720px; 
+    margin-left: auto; 
+    margin-right: auto; 
+    color: #373F41; 
+    line-height: 1.6;
+}
+#hero-location-city {
+    font-weight: 700; /* Montserrat Bold */
+    color: #005a9c; 
+}
+
+/* Content Card Styling */
+.content-card {
+    background-color: #ffffff;
+    padding: 2.5rem; 
+    margin-bottom: 2.5rem; 
+    border-radius: 8px; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); 
+}
+.content-card:hover { 
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+}
+
+
+/* Main Content Headings (for sections like Dynamic Content, Contact Info, etc.) */
+main h2 { 
+    font-size: 2rem; 
+    font-weight: 700; /* Montserrat Bold, like .title in greenit */
+    color: #184e51; /* Dark Teal */
+    margin-bottom: 1.5rem;
+    text-align: center;
+} 
+main h3 { 
+    font-size: 1.5rem; 
+    font-weight: 500; /* Montserrat Medium */
+    color: #2c3e50; 
+    margin-bottom: 1.2rem;
+    text-align: center; 
+} 
+
+/* Dynamic Content Area (AI Populated Service Details) */
+#dynamic-content-area #content-title {
+     text-align: center;
+     font-weight: 700;
+}
+#ai-generated-content p { margin-bottom: 1.1rem; color: #4a4a4a; }
+#ai-generated-content p:last-child { margin-bottom: 0; }
+
+/* Two Column Layout */
+.two-column-layout {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-between;
+    gap: 2.5rem; 
+    margin-bottom: 2.5rem; 
+}
+/* Child .content-card elements within .two-column-layout become the columns */
+.two-column-layout > .content-card.column {
+    min-width: 300px;
+    flex-grow: 1;
+    margin-bottom: 0; 
+}
+#ai-module-suggester.column {
+    flex-basis: calc(45% - 1.25rem); 
+}
+#services-overview-static.column,
+#contact-details.column { 
+    flex-basis: calc(55% - 1.25rem); 
+}
+#services-overview-static.column h3,
+#contact-details.column h3 { 
+    text-align: left; 
+    font-size: 1.4rem; 
+    font-weight: 500;
+}
+
+
+/* AI Module Suggester Section Specifics */
+#ai-module-suggester { text-align: left; }
+.suggester-header { text-align: center; margin-bottom: 1.5rem; }
+.suggester-icon { max-height: 35px; margin-bottom: 0.5rem; }
+#ai-module-suggester h2 { 
+    font-size: 1.8rem; 
+}
+#ai-module-suggester .suggester-header p {
+    font-size: 0.95rem; color: #555; max-width: 100%; margin: 0 auto 1rem auto;
+}
+#needs-form label { display: block; font-weight: 500; margin-bottom: 0.4rem; color: #333; font-size: 0.9rem; }
+#needs-form textarea {
+    width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d1d1;
+    border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.95rem;
+    line-height: 1.5; margin-bottom: 0.4rem; resize: vertical;
+}
+#needs-form textarea:focus {
+    border-color: #35ED54; 
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+}
+.char-count { font-size: 0.8rem; color: #777; margin-bottom: 1rem; text-align: right;}
+
+/* BUTTON STYLING - Inspired by greenit-solution.de */
+.btn {
+    display: inline-block;
+    padding: 12px 30px; 
+    font-size: 1rem;   
+    font-weight: 500;  
+    text-align: center;
+    text-decoration: none;
+    border-radius: 48px; /* Pill shape */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+    border: 2px solid transparent; 
+    line-height: 1.5; 
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { 
+    background-color: #35ED54; 
+    color: #184e51; 
+    border-color: #35ED54; 
+    width: 100%; 
+}
+.btn-primary:hover {
+    background-color: #D9FFE5; 
+    color: #184e51; 
+    border-color: #184e51; 
+}
+.btn-secondary { 
+    background-color: #184e51; 
+    color: #fff;
+    border-color: #184e51;
+}
+.btn-secondary:hover {
+    background-color: #D9FFE5; 
+    color: #184e51;
+    border-color: #184e51; 
+}
+#suggest-modules-button:disabled,
+#generate-resume-button:disabled { 
+    background-color: #d1e7dd; 
+    border-color: #d1e7dd;
+    color: #799988;
+    cursor: not-allowed;
+}
+
+#suggested-modules-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
+#suggested-modules-area h3 { 
+    text-align: left; font-size: 1.4rem; 
+}
+#modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #4a4a4a; }
+
+/* Loading Indicator */
+.loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; text-align: center; width: 100%; }
+.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #005a9c; animation: spin 1s ease infinite; margin-bottom: 12px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loading-text { font-style: italic; color: #555; font-size: 0.95rem; }
+
+/* Contact Details Section */
+#contact-details h2 {} 
+.contact-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; }
+.address-block, .phone-block { padding: 0; } 
+.address-block h3, .phone-block h3 { font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem; text-align: left; font-weight: 500; }
+.address-block address, .phone-block p { font-style: normal; line-height: 1.7; color: #555; font-size: 0.95rem; }
+.phone-block a { color: #005a9c; text-decoration: none; }
+.phone-block a:hover { text-decoration: underline; }
+.contact-info-simple p { margin-bottom: 0.8rem; }
+
+
+/* Services Overview (static) & General Contact Message */
+#services-overview-static h3 {} 
+#general-contact-message h2 {} 
+#general-contact-message .btn { margin-top: 1rem; } 
+
+.service-item { 
+    background: #e9f1f7; 
+    padding: 1rem; 
+    border-radius: 4px; 
+    text-align: center; 
+    font-weight: 500; 
+    color: #004c80;
+    font-size: 0.9rem;
+}
+.centered-text { text-align: center; margin-top: 1rem; font-style: italic; color: #666; font-size: 0.95rem; }
+
+/* Footer */
+footer {
+    background: #2c3e50; 
+    color: #bdc3c7; 
+    text-align: center;
+    padding: 2.5rem 0;
+    margin-top: 3rem;
+}
+footer p { margin: 0; font-size: 0.9rem; }
+
+/* Styles for Resume Generator Page (resume-generator.html) */
+#resume-generator-tool .form-group {
+    margin-bottom: 1.5rem;
+}
+#resume-generator-tool label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 0.95rem;
+}
+#resume-generator-tool input[type="text"],
+#resume-generator-tool textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#resume-generator-tool input[type="text"]:focus,
+#resume-generator-tool textarea:focus {
+    border-color: #35ED54; 
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+}
+#resume-generator-tool #generate-resume-pdf-button.btn-primary, /* Use .btn-primary for consistency */
+#resume-generator-tool #generate-resume-button.btn-primary { /* If old ID still exists */
+    width: auto; 
+    display: inline-block; 
+    margin-top: 1rem;
+    /* It will inherit the .btn-primary styles (green bg, dark text) */
+}
+#generated-resume-area {
+    background-color: #f0f4f8; 
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    margin-top: 2.5rem;
+}
+#generated-resume-area h3 { 
+    text-align: left;
+    font-size: 1.4rem;
+    color: #184e51;
+}
+#resume-result p, 
+#resume-result li {
+    color: #373F41; 
+    font-size: 0.95rem;
+}
+#resume-result ul {
+    list-style-type: disc; 
+    list-style-position: outside;
+    padding-left: 20px;
+    margin-top: 0.5rem;
+}
+#resume-result ul li {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) { 
+    .two-column-layout { flex-direction: column; }
+    .two-column-layout > .column { 
+        flex-basis: 100%; 
+        margin-bottom: 2.5rem;
+    }
+    .two-column-layout > .column:last-child {
+        margin-bottom: 0;
+    }
+     .two-column-layout {
+        margin-bottom: 0; 
+    }
+}
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .nav-container { flex-direction: column; gap: 1rem; }
+    #company-logo { max-height: 40px; }
+    #section-selector { width: 100%; font-size: 0.9rem; }
+    #hero { min-height: 280px; }
+    #hero-text-box { margin-top: -50px; padding: 1.5rem; }
+    #hero-text-box h1 { font-size: 1.8rem; }
+    #hero-text-box p { font-size: 1rem; }
+    main h2 { font-size: 1.7rem; }
+    main h3 { font-size: 1.3rem; }
+    #ai-module-suggester h2 { font-size: 1.5rem; }
+    #suggested-modules-area h3 { font-size: 1.2rem; }
+    .content-card, .two-column-layout > .column { padding: 1.5rem; }
+    .contact-info-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .btn { padding: 10px 24px; font-size: 0.95rem; }
+}
+@media (max-width: 480px) {
+    #hero-text-box h1 { font-size: 1.6rem; }
+    #hero-text-box p { font-size: 0.9rem; }
+    #ai-module-suggester h2 { font-size: 1.3rem; }
+    .btn { width: 100%; } 
+}
