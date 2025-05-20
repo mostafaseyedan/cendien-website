@@ -4,10 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiContentParent = document.getElementById('ai-generated-content');
     const contentTitleElement = document.getElementById('content-title');
     
-    // Element for dynamic year in footer (shared by both pages)
-    const yearSpan = document.getElementById('current-year') || document.getElementById('current-year-resume');
-    
-    // Elements for hero location on homepage
+    const yearSpan = document.getElementById('current-year'); 
     const heroLocationCityElement = document.getElementById('hero-location-city');
 
     // Elements for AI Module Suggester on homepage
@@ -35,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateUserLocationInHero() {
-        if (!heroLocationCityElement) return; // Only run on homepage
+        if (!heroLocationCityElement) return; 
         const defaultCity = "Dallas"; 
 
         if (navigator.geolocation) {
@@ -46,8 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 try {
                     const response = await fetch(nominatimUrl, {
-                        // IMPORTANT: Customize with your app-specific User-Agent and contact email
-                        headers: { 'User-Agent': 'CendienWebsite/1.5 (your-contact-email@example.com)' } 
+                        headers: { 'User-Agent': 'CendienWebsite/1.5 (your-contact-email@example.com)' } // ** CUSTOMIZE User-Agent **
                     });
                     if (!response.ok) throw new Error(`Nominatim API error: ${response.status}`);
                     const data = await response.json();
@@ -69,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cendienCompanyInfo = `Cendien is a premier technology consulting and staffing firm, specializing in providing senior-level consultants for ERP and HIT systems. Based in the Dallas area, we focus on understanding client objectives to deliver projects successfully, on time, and within budget. Our reputation is built on the quality of our consultants and our commitment to exceeding client expectations in today's fast-paced, results-driven culture.`;
     const managedServicesOverview = `Cendien offers comprehensive Managed IT Services designed to ensure your IT infrastructure is reliable, secure, and optimized for performance. We provide proactive monitoring, helpdesk support, cybersecurity solutions, cloud management, and strategic IT planning, allowing Dallas-area businesses to focus on their core objectives while we handle their IT.`;
+
 
     async function fetchAiContent(prompt, targetElement, titleElement, titleText) {
         if (!targetElement) { 
@@ -105,7 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let title = 'Service Details'; 
         const detectedCity = heroLocationCityElement ? heroLocationCityElement.textContent : "the Dallas";
 
-        if (!sectionValue) { 
+        // This check is important for when the disabled option is selected
+        if (!sectionValue || sectionValue === "") { 
             if(contentTitleElement) contentTitleElement.textContent = 'Welcome to Cendien';
             if(aiContentParent) aiContentParent.innerHTML = initialAiContentHtml;
             return;
@@ -122,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         switch (sectionValue) {
-            case 'home_overview': // New default for homepage
+            case 'home_overview': 
                 title = 'Welcome to Cendien - Your Partner in IT Excellence';
                 prompt = `Provide two concise and impactful introductory paragraphs about Cendien, based on: "${cendienCompanyInfo}". Focus on our commitment to providing expert IT consulting, Managed IT services, and staffing, particularly for businesses in the ${detectedCity} area. Emphasize our role as a trusted technology partner. Do not include markdown.`;
                 break;
@@ -131,12 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'oracle_consulting': prompt = createTechPrompt("Oracle E-Business Suite / Oracle Cloud ERP"); break;
             case 'peoplesoft_consulting': prompt = createTechPrompt("PeopleSoft"); break;
             case 'sap_consulting': prompt = createTechPrompt("SAP"); break;
-            case 'hyperion_consulting': prompt = createTechPrompt("Oracle Hyperion"); break;
-            case 'cerner_consulting': prompt = createTechPrompt("Cerner", "Healthcare IT Consulting"); break;
-            case 'epic_consulting': prompt = createTechPrompt("Epic", "Healthcare IT Consulting"); break;
-            case 'mckesson_consulting': prompt = createTechPrompt("McKesson (e.g., Paragon, Horizon)", "Healthcare IT Consulting"); break;
-            case 'crystal_reports_consulting': prompt = createTechPrompt("Crystal Reports", "Reporting & BI Consulting"); break;
-            case 'cognos_consulting': prompt = createTechPrompt("IBM Cognos Analytics", "BI & Performance Management Consulting"); break;
+            // Note: The dropdown in HTML no longer has hyperion, cerner, epic, etc. these cases can be removed or kept for future use if you add them back.
+            // For now, they won't be triggered by the current HTML dropdown.
             case 'managed_it_services':
                 title = `Managed IT Services for ${detectedCity} Businesses`;
                 prompt = `Based on this overview: "${managedServicesOverview}", generate 2 concise and impactful paragraphs about Cendien's Managed IT Services tailored for businesses in the ${detectedCity} area. Elaborate on the benefits like proactive support, cost savings, enhanced security, and business continuity. Keep a professional and reassuring tone. Do not include markdown.`;
@@ -148,16 +142,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 title = `About Cendien - Your ${detectedCity} Technology Partner`;
                 prompt = `Using the following as a base: "${cendienCompanyInfo}", write 2 concise and impactful paragraphs for an "About Us" section. Highlight Cendien's mission, values (e.g., client success, quality, partnership), our ${detectedCity} area presence, and our commitment to being a trusted technology partner for businesses. Do not include markdown.`;
                 break;
-            // resume_generator_page is handled by direct navigation in the event listener
+            // 'resume_generator_page' is handled by direct navigation, no case needed here
             default:
-                if(contentTitleElement) contentTitleElement.textContent = 'Selection Error';
-                if(aiContentParent) aiContentParent.innerHTML = '<p class="loading-text" style="color:red;">Service not recognized.</p>';
-                return;
+                // This handles the disabled "** SELECT OPTION **" if it somehow gets passed, or unknown values
+                if(contentTitleElement) contentTitleElement.textContent = 'Welcome to Cendien';
+                if(aiContentParent) aiContentParent.innerHTML = initialAiContentHtml;
+                console.warn('Unhandled section value:', sectionValue);
+                return; 
         }
         if (aiContentParent && contentTitleElement) {
              fetchAiContent(prompt, aiContentParent, contentTitleElement, title);
         } else {
-            console.error("Missing elements for dropdown content display.");
+            console.error("Missing elements for dropdown content display on homepage.");
         }
     }
 
@@ -176,12 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (businessNeedsTextarea) { // This listener is for the AI Module Suggester on the homepage
+    if (document.body.contains(businessNeedsTextarea)) { 
         updateCharCountAndButton();
         businessNeedsTextarea.addEventListener('input', updateCharCountAndButton);
     }
 
-    if (needsForm) { // This listener is for the AI Module Suggester on the homepage
+    if (document.body.contains(needsForm)) { 
         needsForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             if (!businessNeedsTextarea || businessNeedsTextarea.value.length < minChars || !suggestModulesButton || suggestModulesButton.disabled) {
@@ -218,7 +214,7 @@ Focus on brevity, a direct recommendation, and a professional tone. Do not use m
                     body: JSON.stringify({ prompt: promptForAI }) 
                 });
                 if (!response.ok) {
-                    const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' }));
+                    const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response.' }));
                     throw new Error(errorResult.error || `API error! status: ${response.status}`);
                 }
                 const data = await response.json();
@@ -236,26 +232,26 @@ Focus on brevity, a direct recommendation, and a professional tone. Do not use m
     }
     
     // --- Initialize Homepage ---
-    if (document.body.contains(sectionSelector) && document.body.contains(aiContentParent) && document.body.contains(contentTitleElement)) { // Check if homepage elements exist
+    if (document.body.contains(sectionSelector) && document.body.contains(aiContentParent) && document.body.contains(contentTitleElement)) {
         sectionSelector.addEventListener('change', (event) => {
             const selectedValue = event.target.value;
             if (selectedValue === "resume_generator_page") {
-                window.location.href = "resume-generator.html"; // Navigate to the new page
-            } else if (selectedValue) {
+                window.location.href = "resume-generator.html"; 
+            } else if (selectedValue && selectedValue !== "") { 
                 loadContentForSection(selectedValue);
-            } else {
-                // This case might not be hit if "** SELECT SERVICE **" is disabled and has no value
-                contentTitleElement.textContent = 'Welcome to Cendien';
-                aiContentParent.innerHTML = initialAiContentHtml;
             }
+            // No explicit 'else' needed as the disabled option shouldn't trigger a content load,
+            // and the initial load handles the default state.
         });
 
-        // Load initial content for homepage based on default selection or a specific 'home' value
-        if (sectionSelector.value === "" || sectionSelector.value === "home_overview") {
-             loadContentForSection("home_overview"); // Default to "home_overview" or current selection
-        } else {
-             loadContentForSection(sectionSelector.value);
+        // Initial content load for the homepage
+        let initialSection = sectionSelector.value;
+        if (initialSection === "" || !initialSection) { // If disabled option is selected by default, or no value
+            sectionSelector.value = "home_overview"; // Explicitly set dropdown to default
+            initialSection = "home_overview";
         }
-        updateUserLocationInHero(); // Update hero location only on homepage
+        loadContentForSection(initialSection); // Load content for this default
+        
+        updateUserLocationInHero();
     }
 });
