@@ -13,19 +13,19 @@
             <div class="logo-container">
                 <a href="index.html"><img src="/images/cendien_corp_logo.jpg" alt="Cendien Corporation Logo" id="company-logo"></a>
             </div>
-            <nav>
-                <label for="section-selector" class="visually-hidden">Select a Service or Tool:</label>
-                <select id="section-selector">
-                    <option value="" disabled selected>** SELECT SERVICE / TOOL **</option>
-                    <option value="home_overview">Homepage Overview</option> <option value="infor_consulting">Infor Consulting</option>
-                    <option value="lawson_consulting">Lawson Consulting</option>
-                    <option value="oracle_consulting">Oracle Consulting</option>
-                    <option value="peoplesoft_consulting">Peoplesoft Consulting</option>
-                    <option value="sap_consulting">SAP Consulting</option>
-                    <option value="managed_it_services">Managed IT Services</option>
-                    <option value="it_staffing">IT Staffing Services</option>
-                    <option value="about_us">About Cendien</option>
-                    <option value="resume_generator_page">AI Resume Generator</option> </select>
+            <nav id="main-nav"> {/* Added ID for styling */}
+                <ul>
+                    <li><a href="#" class="nav-link active" data-section="home_overview">Home</a></li>
+                    <li><a href="#" class="nav-link" data-section="infor_consulting">Infor</a></li>
+                    <li><a href="#" class="nav-link" data-section="lawson_consulting">Lawson</a></li>
+                    <li><a href="#" class="nav-link" data-section="oracle_consulting">Oracle</a></li>
+                    <li><a href="#" class="nav-link" data-section="peoplesoft_consulting">Peoplesoft</a></li>
+                    <li><a href="#" class="nav-link" data-section="sap_consulting">SAP</a></li>
+                    <li><a href="#" class="nav-link" data-section="managed_it_services">Managed IT</a></li>
+                    <li><a href="#" class="nav-link" data-section="it_staffing">IT Staffing</a></li>
+                    <li><a href="#" class="nav-link" data-section="about_us">About Us</a></li>
+                    <li><a href="resume-generator.html" class="nav-link">AI Resume Generator</a></li>
+                </ul>
             </nav>
         </div>
     </header>
@@ -44,7 +44,7 @@
             <div id="ai-generated-content">
                 <div class="loading-container">
                     <div class="spinner"></div>
-                    <p class="loading-text">Please select an option from the drop-down menu to view details.</p>
+                    <p class="loading-text">Loading homepage overview...</p> {/* Updated initial message */}
                 </div>
             </div>
         </section>
@@ -58,7 +58,7 @@
                 </div>
                 <form id="needs-form">
                     <label for="business-needs">Your IT Challenges & Goals</label>
-                    <textarea id="business-needs" name="business-needs" rows="6" placeholder="e.g., We need reliable IT support for our 50 employees... (Min 50 characters)"></textarea>
+                    <textarea id="business-needs" name="business-needs" rows="6" placeholder="e.g., We need reliable IT support... (Min 50 characters)"></textarea>
                     <div id="char-count-feedback" class="char-count">Min 50 characters</div>
                     <button type="submit" id="suggest-modules-button" class="btn btn-primary">Suggest Solutions</button>
                 </form>
