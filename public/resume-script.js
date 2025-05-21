@@ -1,3 +1,5 @@
+// In public/resume-script.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const resumeForm = document.getElementById('resume-details-form');
     const generateButton = document.getElementById('generate-resume-pdf-button');
@@ -8,23 +10,24 @@ document.addEventListener('DOMContentLoaded', () => {
         yearSpanResume.textContent = new Date().getFullYear();
     }
 
-    // Make jsPDF available globally if loaded via CDN
-    const { jsPDF } = window.jspdf;
+    const { jsPDF } = window.jspdf; // Make sure jsPDF is available
 
     const showLoadingState = (isLoading, message = "Generating your resume PDF...") => {
+        // ... (this function remains the same)
         if (!resumeStatusArea) return;
         if (isLoading) {
-            resumeStatusArea.style.display = 'flex'; // Use flex from .loading-container
+            resumeStatusArea.style.display = 'flex';
             resumeStatusArea.innerHTML = `
                 <div class="spinner"></div>
                 <p class="loading-text">${message}</p>`;
             if(generateButton) generateButton.disabled = true;
         } else {
-            // Let success/error messages override or clear
+            // Status update will be handled by success/error messages
         }
     };
     
     const hideStatusArea = (delay = 0) => {
+        // ... (this function remains the same)
         setTimeout(() => {
             if (resumeStatusArea) {
                 resumeStatusArea.style.display = 'none';
@@ -32,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, delay);
     };
-
 
     if (resumeForm && generateButton && resumeStatusArea) {
         resumeForm.addEventListener('submit', async function(event) {
@@ -48,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showLoadingState(true, "Generating resume content with AI...");
 
+            // The detailed promptForResumeAI asking for structured text with delimiters
+            // (###SECTION_START###, ####JOB_START####, etc.) should be here.
+            // This prompt is crucial for the advanced PDF parsing to work.
             const promptForResumeAI = `
 Generate the complete text content for a professional resume for: ${fullName}.
 The user's primary prompt, target role, or key details are: "${userPrompt}".
@@ -72,13 +77,6 @@ LinkedIn: linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, '')}
 - Infor M3 Expertise
 - Data Analysis
 - Team Leadership
-- Strategic Planning
-- Budget Management
-- Cloud Solutions (AWS, Azure)
-- SQL
-- ERP Implementation
-- Stakeholder Communication
-- Vendor Management
 ]
 ###SKILLS_END###
 
@@ -86,37 +84,34 @@ LinkedIn: linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, '')}
 [For each job role (generate 2-3 distinct, plausible roles if not detailed in the user's prompt, relevant to the target role):]
 ####JOB_START####
 Job Title: [e.g., Senior Marketing Manager]
-Company: [e.g., Innovate Corp, or a well-known company like "Google", "Microsoft", "Salesforce" if contextually appropriate for a high-caliber fictional example]
+Company: [e.g., Innovate Corp, or a well-known company like "Google", "Microsoft"]
 Location: [e.g., Dallas, TX or a relevant major city]
 Dates: [e.g., May 2020 - Present, or June 2018 - April 2020]
-- [Responsibility/Achievement 1: Use action verbs and quantifiable results where possible. Example: Led a team of 5 in developing and executing multi-channel marketing strategies, increasing lead generation by 25% YoY.]
+- [Responsibility/Achievement 1: Use action verbs and quantifiable results. Example: Led a team of 5, increasing lead generation by 25% YoY.]
 - [Responsibility/Achievement 2]
-- [Responsibility/Achievement 3]
 ####JOB_END####
-[Repeat the ####JOB_START#### to ####JOB_END#### block for each distinct role]
+[Repeat for each distinct role]
 ###EXPERIENCE_END###
 
 ###EDUCATION_START###
-[For each degree (generate 1-2 plausible degrees if not detailed in user's prompt):]
+[For each degree (generate 1-2 plausible degrees):]
 ####DEGREE_START####
-Degree: [e.g., Master of Business Administration (MBA) or Bachelor of Science in Marketing]
-University: [e.g., University of Texas at Dallas, or a well-known institution like "Stanford University", "MIT" if contextually appropriate for a high-caliber fictional example]
+Degree: [e.g., Master of Business Administration (MBA)]
+University: [e.g., University of Texas at Dallas, or a well-known institution like "Stanford University"]
 Location: [e.g., Richardson, TX or relevant city]
 Graduation Year: [e.g., 2016]
-[Optional: GPA: X.X/4.0 or relevant honors]
 ####DEGREE_END####
 [Repeat for other degrees if applicable]
 ###EDUCATION_END###
 
-[OPTIONAL: If highly relevant to the prompt, include a projects or certifications section using similar ###SECTION_NAME_START### and ###SECTION_NAME_END### delimiters, with ####ITEM_START#### and ####ITEM_END#### for individual projects/certifications, and hyphenated bullet points within.]
+[OPTIONAL: PROJECTS or CERTIFICATIONS section using ###SECTION_NAME_START### and ###SECTION_NAME_END### delimiters, with ####ITEM_START#### and ####ITEM_END#### for individual items, and hyphenated bullet points.]
 
-The entire output must be plain text. Use newline characters to separate lines.
-Do NOT use any markdown like \`\`\` or HTML tags in your response.
-Only include sections for which relevant content can be plausibly generated based on the user's prompt. If the user prompt is very generic, create a strong example resume for the target role.
+Output must be plain text. Use newlines for separation. No markdown like \`\`\` or HTML.
+Ensure specific company and university names are used where plausible.
 `;
 
             try {
-                const response = await fetch('/api/generate', { // Using your existing backend endpoint
+                const response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: promptForResumeAI })
@@ -130,9 +125,13 @@ Only include sections for which relevant content can be plausibly generated base
                 const data = await response.json();
                 let resumeText = data.generatedText.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
                 
-                showLoadingState(true, "Formatting and preparing PDF...");
+                showLoadingState(true, "Formatting PDF with professional design...");
 
-                // --- PDF Generation using jsPDF ---
+                // ======================================================================== //
+                // === THIS IS WHERE THE ADVANCED jsPDF LOGIC SECTION STARTS === //
+                // Replace the *previous, simpler jsPDF code* with the more detailed one.
+                // ======================================================================== //
+
                 const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
                 const pageHeight = doc.internal.pageSize.height;
                 const pageWidth = doc.internal.pageSize.width;
@@ -415,9 +414,6 @@ Only include sections for which relevant content can be plausibly generated base
                     });
                 }
                 
-                // ======================================================================== //
-                // === ADVANCED jsPDF LOGIC SECTION ENDS HERE === //
-                // ======================================================================== //
 
                 doc.save(`${fullName.replace(/\s+/g, '_')}_Cendien_AI_Resume.pdf`);
                 showLoadingState(false); // Clear loading spinner
