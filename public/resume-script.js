@@ -1,5 +1,3 @@
-// In public/resume-script.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const resumeForm = document.getElementById('resume-details-form');
     const generateButton = document.getElementById('generate-resume-pdf-button');
@@ -10,10 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
         yearSpanResume.textContent = new Date().getFullYear();
     }
 
-    const { jsPDF } = window.jspdf; // Make sure jsPDF is available
+    const { jsPDF } = window.jspdf;
 
     const showLoadingState = (isLoading, message = "Generating your resume PDF...") => {
-        // ... (this function remains the same)
         if (!resumeStatusArea) return;
         if (isLoading) {
             resumeStatusArea.style.display = 'flex';
@@ -22,12 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="loading-text">${message}</p>`;
             if(generateButton) generateButton.disabled = true;
         } else {
-            // Status update will be handled by success/error messages
+            // Status updates handled explicitly
         }
     };
     
     const hideStatusArea = (delay = 0) => {
-        // ... (this function remains the same)
         setTimeout(() => {
             if (resumeStatusArea) {
                 resumeStatusArea.style.display = 'none';
@@ -50,9 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showLoadingState(true, "Generating resume content with AI...");
 
-            // The detailed promptForResumeAI asking for structured text with delimiters
-            // (###SECTION_START###, ####JOB_START####, etc.) should be here.
-            // This prompt is crucial for the advanced PDF parsing to work.
             const promptForResumeAI = `
 Generate the complete text content for a professional resume for: ${fullName}.
 The user's primary prompt, target role, or key details are: "${userPrompt}".
@@ -60,35 +53,39 @@ The user's primary prompt, target role, or key details are: "${userPrompt}".
 Please structure the output strictly as follows, using the exact headings in ALL CAPS and specific delimiters:
 
 ###CONTACT_INFO_START###
-Email: [Generate a plausible professional email based on the name]
+Email: [Generate a plausible professional email based on the name, e.g., ${fullName.split(' ').join('.').toLowerCase()}@email.com]
 Phone: [Generate a plausible phone number, e.g., (555) 123-4567]
 LinkedIn: linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, '')}
-[Optional: If user prompt mentions a city, add it here. e.g., City, State]
+Location: [If user prompt mentions a city, use it. Otherwise, generate a plausible major US city, e.g., Dallas, TX or San Francisco, CA]
 ###CONTACT_INFO_END###
 
 ###SUMMARY_START###
-[Generate a concise (3-4 sentences) impactful professional summary tailored to the user's prompt and target role. Include specific, plausible company names and university names if appropriate for context, e.g., "Experienced Marketing Manager at companies like 'Innovate Corp' and 'Solutions Ltd.'..."]
+[Generate a concise (3-4 sentences) impactful professional summary tailored to the user's prompt and target role. Include specific, plausible company names like "Innovate Corp", "Solutions Ltd.", "Tech Solutions Inc.", "Global Corp", "Accenture", "Deloitte" and university names like "University of Texas at Austin", "Stanford University", "MIT" if appropriate for context and to make the resume feel realistic.]
 ###SUMMARY_END###
 
 ###SKILLS_START###
-[Generate a list of 8-12 relevant technical and soft skills based on the user's prompt. Each skill should be on a new line, starting with a hyphen '-'. Example: 
+[Generate a list of 8-12 relevant technical and soft skills based on the user's prompt. Each skill should be on a new line, starting with a hyphen '-'. Examples:
 - Project Management
 - Agile Methodologies
 - Infor M3 Expertise
+- Cloud Computing (AWS, Azure)
 - Data Analysis
 - Team Leadership
-]
+- Strategic Planning
+- Software Development (Java, Python)
+- Stakeholder Communication]
 ###SKILLS_END###
 
 ###EXPERIENCE_START###
 [For each job role (generate 2-3 distinct, plausible roles if not detailed in the user's prompt, relevant to the target role):]
 ####JOB_START####
-Job Title: [e.g., Senior Marketing Manager]
-Company: [e.g., Innovate Corp, or a well-known company like "Google", "Microsoft"]
+Job Title: [e.g., Senior Marketing Manager, Lead Software Engineer]
+Company: [e.g., Innovate Corp, or a well-known company like "Google", "Microsoft", "Salesforce"]
 Location: [e.g., Dallas, TX or a relevant major city]
 Dates: [e.g., May 2020 - Present, or June 2018 - April 2020]
-- [Responsibility/Achievement 1: Use action verbs and quantifiable results. Example: Led a team of 5, increasing lead generation by 25% YoY.]
+- [Responsibility/Achievement 1: Use action verbs and quantifiable results. Example: Led a team of 5 in developing and executing multi-channel marketing strategies, increasing lead generation by 25% YoY.]
 - [Responsibility/Achievement 2]
+- [Responsibility/Achievement 3, if applicable]
 ####JOB_END####
 [Repeat for each distinct role]
 ###EXPERIENCE_END###
@@ -96,18 +93,21 @@ Dates: [e.g., May 2020 - Present, or June 2018 - April 2020]
 ###EDUCATION_START###
 [For each degree (generate 1-2 plausible degrees):]
 ####DEGREE_START####
-Degree: [e.g., Master of Business Administration (MBA)]
-University: [e.g., University of Texas at Dallas, or a well-known institution like "Stanford University"]
-Location: [e.g., Richardson, TX or relevant city]
+Degree: [e.g., Master of Business Administration (MBA) or Bachelor of Science in Computer Science]
+University: [e.g., University of Texas at Dallas, or "Stanford University", "Georgia Tech"]
+Location: [e.g., Richardson, TX or relevant city for the university]
 Graduation Year: [e.g., 2016]
+[Optional: GPA: X.X/4.0 or relevant honors, if AI can generate plausibly]
 ####DEGREE_END####
 [Repeat for other degrees if applicable]
 ###EDUCATION_END###
 
-[OPTIONAL: PROJECTS or CERTIFICATIONS section using ###SECTION_NAME_START### and ###SECTION_NAME_END### delimiters, with ####ITEM_START#### and ####ITEM_END#### for individual items, and hyphenated bullet points.]
+[OPTIONAL: If highly relevant to the prompt, include a PROJECTS or CERTIFICATIONS section using ###SECTION_NAME_START### and ###SECTION_NAME_END### delimiters, with ####ITEM_START#### and ####ITEM_END#### for individual items, and hyphenated bullet points within.]
 
-Output must be plain text. Use newlines for separation. No markdown like \`\`\` or HTML.
-Ensure specific company and university names are used where plausible.
+The entire output must be plain text. Use newline characters (\\n) to separate paragraphs, section headings, and bullet points.
+Do NOT use any markdown like \`\`\` or HTML tags in your response.
+Ensure each section heading (like SUMMARY, SKILLS, EXPERIENCE, EDUCATION) is on its own line and in ALL CAPS.
+Ensure each bullet point under Skills, Experience, and Projects starts on a new line.
 `;
 
             try {
@@ -125,252 +125,236 @@ Ensure specific company and university names are used where plausible.
                 const data = await response.json();
                 let resumeText = data.generatedText.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
                 
-                 showLoadingState(true, "Formatting PDF with professional design...");
+                showLoadingState(true, "Formatting PDF with professional design...");
 
+                // --- PDF Generation using jsPDF ---
                 const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-const pageHeight = doc.internal.pageSize.height;
-const pageWidth = doc.internal.pageSize.width;
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                
+                const topMargin = 15;
+                const bottomMargin = 15;
+                const leftMargin = 15;
+                const rightMargin = 15;
+                const usableWidth = pageWidth - leftMargin - rightMargin;
 
-// --- Define Layout & Styles ---
-const leftMargin = 15;
-const rightMargin = 15;
-const topMargin = 15; // Start a bit lower for the name
-const bottomMargin = 20;
-const usableWidth = pageWidth - leftMargin - rightMargin;
-
-// For a single-column layout initially to fix overlapping, then we can re-introduce columns carefully.
-// Let's simplify to a single column first to ensure text flow is correct.
-const currentX = leftMargin;
-const currentMaxWidth = usableWidth;
-
-let yPosition = topMargin;
-
-const fontConfig = {
-    name: "helvetica",
-    nameBold: "helvetica", // jsPDF uses "helvetica-bold"
-    titleSize: 18,
-    subtitleSize: 11,
-    headingSize: 12,
-    subHeadingSize: 10,
-    bodySize: 9.5, // Slightly larger body for better readability
-    smallSize: 8.5,
-    lineHeightFactor: 1.45, // Increased for more space
-};
-
-const colors = {
-    primary: "#102E4A", // Darker Professional Blue
-    text: "#333333",
-    lightText: "#5f6368",
-    line: "#cccccc", // Lighter line
-};
-
-function calculateLineHeight(fontSize) {
-    return fontSize * 0.352777 * fontConfig.lineHeightFactor;
-}
-
-function checkAndAddPage(neededHeight) {
-    if (yPosition + neededHeight > pageHeight - bottomMargin) {
-        doc.addPage();
-        yPosition = topMargin;
-        return true; // Page was added
-    }
-    return false; // No page added
-}
-
-function addWrappedText(text, x, maxWidth, options = {}) {
-    const fontSize = options.fontSize || fontConfig.bodySize;
-    const fontStyle = options.fontStyle || "normal";
-    const color = options.color || colors.text;
-    const isBullet = options.isBullet || false;
-    const bulletChar = "•";
-    const bulletIndent = 4; // Indent for text part of bullet
-
-    doc.setFontSize(fontSize);
-    doc.setFont(fontConfig.name, fontStyle);
-    doc.setTextColor(color);
-
-    let textToPrint = text;
-    let printX = x;
-    let textMaxWidth = maxWidth;
-    const singleLineHeight = calculateLineHeight(fontSize);
-
-    if (isBullet) {
-        printX = x + bulletIndent;
-        textToPrint = text.startsWith('- ') ? text.substring(2) : (text.startsWith('* ') ? text.substring(2) : text);
-        textMaxWidth = maxWidth - bulletIndent;
-        checkAndAddPage(singleLineHeight);
-        doc.text(bulletChar, x, yPosition); // Draw bullet at current y
-    }
-
-    const lines = doc.splitTextToSize(textToPrint, textMaxWidth);
-    lines.forEach((line, index) => {
-        if (index > 0 || !isBullet) { // For subsequent lines of a bullet, or non-bullet lines
-             checkAndAddPage(singleLineHeight);
-        }
-        doc.text(line, printX, yPosition);
-        yPosition += singleLineHeight;
-    });
-}
-
-function addSectionHeading(title) {
-    const headingLineHeight = calculateLineHeight(fontConfig.headingSize);
-    yPosition += 3; // Space before section heading
-    checkAndAddPage(headingLineHeight * 2); // Space for heading and underline
-    
-    doc.setFont(fontConfig.nameBold, "bold");
-    doc.setFontSize(fontConfig.headingSize);
-    doc.setTextColor(colors.primary);
-    doc.text(title.toUpperCase(), currentX, yPosition);
-    yPosition += headingLineHeight -1; // Adjust for underline position
-    
-    doc.setDrawColor(colors.line);
-    doc.setLineWidth(0.2);
-    doc.line(currentX, yPosition, currentX + currentMaxWidth, yPosition); // Full width line
-    yPosition += 5; // Space after heading and line
-}
-
-// --- Parse AI Text (from previous script) ---
-const parsedSections = {};
-const sectionRegexGlobal = /###([A-Z_]+)_START###\n?([\s\S]*?)\n?###\1_END###/g;
-let matchGlobal;
-while ((matchGlobal = sectionRegexGlobal.exec(resumeText)) !== null) {
-    parsedSections[matchGlobal[1]] = matchGlobal[2].trim();
-}
-
-if (parsedSections.EXPERIENCE) {
-    const jobs = [];
-    const jobRegex = /####JOB_START####\n?([\s\S]*?)\n?####JOB_END####/g;
-    let jobMatch;
-    while ((jobMatch = jobRegex.exec(parsedSections.EXPERIENCE)) !== null) {
-        const jobDetails = { title: '', company: '', location: '', dates: '', bullets: [] };
-        const jobLines = jobMatch[1].trim().split('\n');
-        jobLines.forEach(line => {
-            if (line.startsWith("Job Title:")) jobDetails.title = line.substring("Job Title:".length).trim();
-            else if (line.startsWith("Company:")) jobDetails.company = line.substring("Company:".length).trim();
-            else if (line.startsWith("Location:")) jobDetails.location = line.substring("Location:".length).trim();
-            else if (line.startsWith("Dates:")) jobDetails.dates = line.substring("Dates:".length).trim();
-            else if (line.startsWith("- ") || line.startsWith("* ")) {
-                jobDetails.bullets.push(line.trim());
-            } else if (line.trim()) { // Capture other lines as part of description if not bullets
-                 jobDetails.bullets.push(line.trim()); // Treat as a descriptive line
-            }
-        });
-        jobs.push(jobDetails);
-    }
-    parsedSections.EXPERIENCE_PARSED = jobs;
-}
-if (parsedSections.EDUCATION) {
-    const degrees = [];
-    const degreeRegex = /####DEGREE_START####\n?([\s\S]*?)\n?####DEGREE_END####/g;
-    let degreeMatch;
-    while ((degreeMatch = degreeRegex.exec(parsedSections.EDUCATION)) !== null) {
-        const degreeDetails = { degree: '', university: '', location: '', year: '', gpa: '' };
-        const degreeLines = degreeMatch[1].trim().split('\n');
-         degreeLines.forEach(line => {
-            if (line.startsWith("Degree:")) degreeDetails.degree = line.substring("Degree:".length).trim();
-            else if (line.startsWith("University:")) degreeDetails.university = line.substring("University:".length).trim();
-            else if (line.startsWith("Location:")) degreeDetails.location = line.substring("Location:".length).trim();
-            else if (line.startsWith("Graduation Year:")) degreeDetails.year = line.substring("Graduation Year:".length).trim();
-            else if (line.startsWith("GPA:")) degreeDetails.gpa = line.substring("GPA:".length).trim();
-        });
-        degrees.push(degreeDetails);
-    }
-    parsedSections.EDUCATION_PARSED = degrees;
-}
+                // Column definitions
+                const sidebarWidth = usableWidth * 0.32;
+                const mainColWidth = usableWidth * 0.64; // Allowing a small gutter implicitly
+                const gutter = usableWidth - sidebarWidth - mainColWidth; // Should be small
+                const mainColX = leftMargin + sidebarWidth + gutter;
 
 
-// --- RENDER PDF CONTENT (Simplified Single Column for now) ---
+                let y = topMargin; // Global Y for elements that span full width initially
 
-// 1. Name (Large, Centered)
-doc.setFont(fontConfig.nameBold, "bold");
-doc.setFontSize(fontConfig.titleSize);
-doc.setTextColor(colors.primary);
-const nameText = fullName.toUpperCase();
-const nameWidth = doc.getStringUnitWidth(nameText) * doc.getFontSize() / doc.internal.scaleFactor;
-doc.text(nameText, (pageWidth - nameWidth) / 2, yPosition);
-yPosition += calculateLineHeight(fontConfig.titleSize);
+                const fontSizes = {
+                    name: 20,
+                    jobTitle: 11,
+                    sectionTitle: 12,
+                    itemTitle: 10, // e.g., Degree name, Job title within experience
+                    body: 9.5,
+                    small: 8.5,
+                    contact: 9,
+                };
+                const lineHeights = {
+                    name: 8,
+                    jobTitle: 5,
+                    sectionTitle: 7,
+                    itemTitle: 5,
+                    body: 4.5,
+                    small: 4,
+                    contact: 4,
+                };
+                const colors = { primary: "#2c3e50", text: "#333333", lightText: "#5f6368", accent: "#3498db", line: "#cccccc" };
 
-// 2. Contact Info (Centered or Full Width Line)
-if (parsedSections.CONTACT_INFO) {
-    const contactLines = parsedSections.CONTACT_INFO.split('\n').map(l => l.trim()).filter(l => l);
-    const contactText = contactLines.join(' | ');
-    doc.setFont(fontConfig.name, "normal");
-    doc.setFontSize(fontConfig.subtitleSize -1); // Slightly smaller for contact
-    doc.setTextColor(colors.lightText);
-    const contactWidth = doc.getStringUnitWidth(contactText) * doc.getFontSize() / doc.internal.scaleFactor;
-    doc.text(contactText, (pageWidth - contactWidth) / 2, yPosition);
-    yPosition += calculateLineHeight(fontConfig.subtitleSize -1) + 2;
-}
+                // Helper function to add text and manage Y, returns new Y
+                function addText(text, x, currentY, options = {}) {
+                    const fs = options.fontSize || fontSizes.body;
+                    const lh = options.lineHeight || lineHeights.body;
+                    const style = options.fontStyle || "normal";
+                    const color = options.color || colors.text;
+                    const maxWidth = options.maxWidth || (x === leftMargin ? sidebarWidth : mainColWidth);
+                    const isBullet = options.isBullet || false;
+                    const bulletChar = "•";
+                    const bulletIndent = 4;
 
-// Horizontal Line
-doc.setDrawColor(colors.line);
-doc.setLineWidth(0.3);
-doc.line(leftMargin, yPosition, pageWidth - rightMargin, yPosition);
-yPosition += 5;
+                    doc.setFontSize(fs);
+                    doc.setFont("helvetica", style);
+                    doc.setTextColor(color);
 
-// Render sections in desired order
-const renderOrder = ["SUMMARY", "SKILLS", "EXPERIENCE", "EDUCATION", "PROJECTS"]; // Add more if AI generates them
+                    let printX = x;
+                    let textToPrint = text;
+                    let effectiveMaxWidth = maxWidth;
 
-renderOrder.forEach(sectionKey => {
-    if (sectionKey === "EXPERIENCE" && parsedSections.EXPERIENCE_PARSED) {
-        addSectionHeading("EXPERIENCE");
-        parsedSections.EXPERIENCE_PARSED.forEach(job => {
-            checkAndAddPage(calculateLineHeight(fontConfig.subHeadingSize) * 2); // Space for title & company
-            addWrappedText(job.title || "Job Title", currentX, currentMaxWidth, { fontSize: fontConfig.subHeadingSize, fontStyle: "bold" });
-            
-            let companyDateLine = (job.company || "Company Name");
-            if (job.location) companyDateLine += `, ${job.location}`;
-            if (job.dates) companyDateLine += ` (${job.dates})`;
-            addWrappedText(companyDateLine, currentX, currentMaxWidth, { fontSize: fontConfig.smallSize, fontStyle: "italic", color: colors.lightText });
-            yPosition += 1; // Small space
+                    if (isBullet) {
+                        printX = x + bulletIndent;
+                        textToPrint = text.startsWith("- ") ? text.substring(2).trim() : (text.startsWith("* ") ? text.substring(2).trim() : text.trim());
+                        effectiveMaxWidth = maxWidth - bulletIndent;
+                        if (currentY + lh > pageHeight - bottomMargin) { doc.addPage(); currentY = topMargin; }
+                        doc.text(bulletChar, x, currentY); 
+                    }
+                    
+                    const lines = doc.splitTextToSize(textToPrint, effectiveMaxWidth);
+                    for (const line of lines) {
+                        if (currentY + lh > pageHeight - bottomMargin) {
+                            doc.addPage();
+                            currentY = topMargin;
+                            if (isBullet) doc.text(bulletChar, x, currentY); // Redraw bullet on new page
+                        }
+                        doc.text(line, printX, currentY);
+                        currentY += lh;
+                    }
+                    return currentY;
+                }
 
-            if (job.bullets) {
-                job.bullets.forEach(bullet => {
-                    addWrappedText(bullet, currentX, currentMaxWidth, { isBullet: true, fontSize: fontConfig.bodySize });
-                });
-            }
-            yPosition += calculateLineHeight(fontConfig.bodySize) * 0.5; // Space after job entry
-        });
-    } else if (sectionKey === "EDUCATION" && parsedSections.EDUCATION_PARSED) {
-        addSectionHeading("EDUCATION");
-        parsedSections.EDUCATION_PARSED.forEach(edu => {
-            checkAndAddPage(calculateLineHeight(fontConfig.subHeadingSize) * 2);
-            addWrappedText(edu.degree || "Degree", currentX, currentMaxWidth, { fontSize: fontConfig.subHeadingSize, fontStyle: "bold" });
-            addWrappedText(edu.university || "University Name", currentX, currentMaxWidth, { fontSize: fontConfig.bodySize });
-            if(edu.location) addWrappedText(edu.location, currentX, currentMaxWidth, { fontSize: fontConfig.smallSize, color: colors.lightText });
-            if(edu.year) addWrappedText(edu.year, currentX, currentMaxWidth, { fontSize: fontConfig.smallSize, color: colors.lightText });
-            if(edu.gpa) addWrappedText(`GPA: ${edu.gpa}`, currentX, currentMaxWidth, { fontSize: fontConfig.smallSize, color: colors.lightText });
-            yPosition += calculateLineHeight(fontConfig.bodySize) * 0.5;
-        });
-    } else if (sectionKey === "SKILLS" && parsedSections.SKILLS) {
-        addSectionHeading("SKILLS");
-        const skillsList = parsedSections.SKILLS.split('\n').map(s => s.trim()).filter(s => s);
-        // Try a more compact skill listing, perhaps in two pseudo-columns if short
-        // For now, simple list:
-        skillsList.forEach(skill => {
-            addWrappedText(skill, currentX, currentMaxWidth, { isBullet: (skill.startsWith("- ") || skill.startsWith("* ")), fontSize: fontConfig.bodySize });
-        });
-         yPosition += calculateLineHeight(fontConfig.bodySize) * 0.5;
-    } else if (parsedSections[sectionKey]) { // For SUMMARY, PROJECTS, etc.
-        addSectionHeading(sectionKey);
-        // Assuming these are paragraph style from AI
-        const contentParas = parsedSections[sectionKey].split('\n').map(s => s.trim()).filter(s => s);
-        contentParas.forEach(para => {
-            addWrappedText(para, currentX, currentMaxWidth, { fontSize: fontConfig.bodySize });
-             yPosition += calculateLineHeight(fontConfig.bodySize) * 0.25; // Small space between paragraphs in a section
-        });
-         yPosition += calculateLineHeight(fontConfig.bodySize) * 0.5; // Space after section
-    }
-});
+                function addSectionTitle(title, x, currentY, colWidth) {
+                    currentY += 2; // Little space before title
+                    const titleLh = lineHeights.sectionTitle;
+                    if (currentY + titleLh > pageHeight - bottomMargin) { doc.addPage(); currentY = topMargin; }
+                    
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(fontSizes.sectionTitle);
+                    doc.setTextColor(colors.primary);
+                    doc.text(title.toUpperCase(), x, currentY);
+                    currentY += titleLh - 2; // Position for line
+                    doc.setDrawColor(colors.accent);
+                    doc.setLineWidth(0.4);
+                    doc.line(x, currentY, x + colWidth, currentY); // Line under title
+                    currentY += 4; // Space after line
+                    return currentY;
+                }
+
+                // --- Parse AI Text ---
+                const parsedSections = {};
+                const sectionRegexGlobal = /###([A-Z_]+)_START###\n?([\s\S]*?)\n?###\1_END###/g;
+                let matchGlobal;
+                while ((matchGlobal = sectionRegexGlobal.exec(resumeText)) !== null) {
+                    parsedSections[matchGlobal[1]] = matchGlobal[2].trim();
+                }
+                
+                if (parsedSections.EXPERIENCE) { /* ... (same parsing logic for EXPERIENCE_PARSED as before) ... */ }
+                if (parsedSections.EDUCATION) { /* ... (same parsing logic for EDUCATION_PARSED as before) ... */ }
+
+
+                // --- Render PDF ---
+                // 1. Name and User's Target Job Title (from prompt)
+                doc.setFontSize(fontSizes.name);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(colors.primary);
+                doc.text(fullName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+                y += lineHeights.name;
+
+                const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim(); // Get first line of prompt as title
+                if (targetJobTitleUser) {
+                    doc.setFontSize(fontSizes.jobTitle);
+                    doc.setFont("helvetica", "normal"); // Not bold for subtitle
+                    doc.setTextColor(colors.lightText);
+                    doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+                    y += lineHeights.jobTitle;
+                }
+                y += 3; // Extra space
+
+                // ---- Two Column Layout Starts Here ----
+                // We need to track y for sidebar and main column independently
+                // For simplicity, we'll render sidebar, then main content.
+                // A more complex approach would interleave to balance heights, but that's much harder.
+                
+                let ySidebar = y;
+                let yMain = y; // Main content will start at the same Y level initially
+
+                // --- Sidebar Content (Left) ---
+                if (parsedSections.CONTACT_INFO) {
+                    ySidebar = addSectionTitle("CONTACT", leftMargin, ySidebar, sidebarWidth);
+                    const contactItems = parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s);
+                    contactItems.forEach(item => {
+                        ySidebar = addText(item, leftMargin, ySidebar, { fontSize: fontSizes.small, maxWidth: sidebarWidth, color: colors.text });
+                    });
+                     ySidebar += lineHeights.body; // Space after block
+                }
+
+                if (parsedSections.EDUCATION_PARSED) {
+                    ySidebar = addSectionTitle("EDUCATION", leftMargin, ySidebar, sidebarWidth);
+                    parsedSections.EDUCATION_PARSED.forEach(edu => {
+                        ySidebar = addText(edu.degree || "Degree", leftMargin, ySidebar, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: sidebarWidth });
+                        ySidebar = addText(edu.university || "University", leftMargin, ySidebar, { fontSize: fontSizes.body, maxWidth: sidebarWidth });
+                        if (edu.location) ySidebar = addText(edu.location, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
+                        if (edu.year) ySidebar = addText(edu.year, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
+                        if (edu.gpa) ySidebar = addText(`GPA: ${edu.gpa}`, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
+                        ySidebar += lineHeights.small; // Space after an education entry
+                    });
+                    ySidebar += lineHeights.body;
+                }
+
+                if (parsedSections.SKILLS) {
+                    ySidebar = addSectionTitle("SKILLS", leftMargin, ySidebar, sidebarWidth);
+                    const skillsList = parsedSections.SKILLS.split('\n').map(s => s.trim()).filter(s => s);
+                    skillsList.forEach(skill => {
+                        ySidebar = addText(skill, leftMargin, ySidebar, { isBullet: true, fontSize: fontSizes.body, maxWidth: sidebarWidth });
+                    });
+                    ySidebar += lineHeights.body;
+                }
+
+
+                // --- Main Column Content (Right) ---
+                if (parsedSections.SUMMARY) {
+                    yMain = addSectionTitle("SUMMARY", mainColX, yMain, mainColWidth);
+                    yMain = addText(parsedSections.SUMMARY, mainColX, yMain, { fontSize: fontSizes.body, maxWidth: mainColWidth });
+                    yMain += lineHeights.body;
+                }
+
+                if (parsedSections.EXPERIENCE_PARSED) {
+                    yMain = addSectionTitle("EXPERIENCE", mainColX, yMain, mainColWidth);
+                    parsedSections.EXPERIENCE_PARSED.forEach(job => {
+                        // Check space for job title, company, and at least one bullet
+                        const estHeight = lineHeights.itemTitle + lineHeights.small + (job.bullets ? lineHeights.body : 0) + 5;
+                        if (yMain + estHeight > pageHeight - bottomMargin) { doc.addPage(); yMain = topMargin; yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); }
+
+                        yMain = addText(job.title || "Job Title", mainColX, yMain, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: mainColWidth });
+                        
+                        let companyLine = job.company || "Company Name";
+                        if (job.location) companyLine += ` - ${job.location}`;
+                        yMain = addText(companyLine, mainColX, yMain, { fontSize: fontSizes.small, fontStyle: "italic", color: colors.lightText, maxWidth: mainColWidth });
+                        
+                        if (job.dates) {
+                            doc.setFontSize(fontSizes.small);
+                            doc.setFont("helvetica", "italic");
+                            doc.setTextColor(colors.lightText);
+                            doc.text(job.dates, mainColX + mainColWidth, yMain - lineHeights.small, { align: 'right' }); // Attempt to right-align dates
+                        }
+                        yMain += 2; // Space before bullets
+
+                        if (job.bullets) {
+                            job.bullets.forEach(bullet => {
+                                yMain = addText(bullet, mainColX, yMain, { isBullet: true, fontSize: fontSizes.body, maxWidth: mainColWidth });
+                            });
+                        }
+                        yMain += lineHeights.body; // Space after job entry
+                    });
+                }
+
+                if (parsedSections.PROJECTS) {
+                    yMain = addSectionTitle("PROJECTS", mainColX, yMain, mainColWidth);
+                    const projectItems = parsedSections.PROJECTS.split("####ITEM_START####").map(s => s.replace(/####ITEM_END####/g, '').trim()).filter(s => s);
+                     projectItems.forEach(item => {
+                        const lines = item.split('\n');
+                        lines.forEach((line, idx) => {
+                            let isBulletItem = (idx > 0 && (line.startsWith("- ") || line.startsWith("* ")));
+                            let itemFontStyle = (idx === 0 && !isBulletItem) ? "bold" : "normal";
+                            let itemFontSize = (idx === 0 && !isBulletItem) ? fontSizes.itemTitle : fontSizes.body;
+                           yMain = addText(line, mainColX, yMain, {fontSize: itemFontSize, fontStyle: itemFontStyle, isBullet: isBulletItem, maxWidth: mainColWidth});
+                        });
+                        yMain += lineHeights.body;
+                    });
+                }
+
                 doc.save(`${fullName.replace(/\s+/g, '_')}_Cendien_AI_Resume.pdf`);
-                showLoadingState(false); // Clear loading spinner
+                showLoadingState(false); 
                 resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">PDF generated successfully and download started!</p>`;
-                hideStatusArea(5000); // Hide message after 5 seconds
+                hideStatusArea(5000);
 
             } catch (error) {
                 console.error('Error generating resume PDF:', error);
                 showLoadingState(true, `Error: ${error.message}. Please try again.`);
-                // setTimeout(hideStatusArea, 7000); // Optional to hide error
             } finally {
                 if(generateButton) generateButton.disabled = false;
             }
