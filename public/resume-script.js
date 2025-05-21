@@ -124,6 +124,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
                 const data = await response.json();
                 let resumeText = data.generatedText.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
+                console.log("AI Generated Raw Text:", resumeText);
                 
                 showLoadingState(true, "Formatting PDF with professional design...");
 
@@ -245,13 +246,13 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 y += lineHeights.name;
 
                 const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim(); // Get first line of prompt as title
-                if (targetJobTitleUser) {
-                    doc.setFontSize(fontSizes.jobTitle);
-                    doc.setFont("helvetica", "normal"); // Not bold for subtitle
-                    doc.setTextColor(colors.lightText);
-                    doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-                    y += lineHeights.jobTitle;
-                }
+                //if (targetJobTitleUser) {
+                  //  doc.setFontSize(fontSizes.jobTitle);
+                  //  doc.setFont("helvetica", "normal"); // Not bold for subtitle
+                  //  doc.setTextColor(colors.lightText);
+                  //  doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+                  //  y += lineHeights.jobTitle;
+              //  }
                 y += 3; // Extra space
 
                 // ---- Two Column Layout Starts Here ----
