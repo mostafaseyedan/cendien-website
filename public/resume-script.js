@@ -141,18 +141,18 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
                 // Column definitions
                 const sidebarWidth = usableWidth * 0.32;
-                const mainColWidth = usableWidth * 0.64; // Allowing a small gutter implicitly
-                const gutter = usableWidth - sidebarWidth - mainColWidth; // Should be small
+                const mainColWidth = usableWidth * 0.64; 
+                const gutter = usableWidth - sidebarWidth - mainColWidth; 
                 const mainColX = leftMargin + sidebarWidth + gutter;
 
 
-                let y = topMargin; // Global Y for elements that span full width initially
+                let y = topMargin; 
 
                 const fontSizes = {
                     name: 20,
                     jobTitle: 11,
                     sectionTitle: 12,
-                    itemTitle: 10, // e.g., Degree name, Job title within experience
+                    itemTitle: 10, 
                     body: 9.5,
                     small: 8.5,
                     contact: 9,
@@ -168,7 +168,6 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 };
                 const colors = { primary: "#2c3e50", text: "#333333", lightText: "#5f6368", accent: "#3498db", line: "#cccccc" };
 
-                // Helper function to add text and manage Y, returns new Y
                 function addText(text, x, currentY, options = {}) {
                     const fs = options.fontSize || fontSizes.body;
                     const lh = options.lineHeight || lineHeights.body;
@@ -200,7 +199,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                         if (currentY + lh > pageHeight - bottomMargin) {
                             doc.addPage();
                             currentY = topMargin;
-                            if (isBullet) doc.text(bulletChar, x, currentY); // Redraw bullet on new page
+                            if (isBullet) doc.text(bulletChar, x, currentY); 
                         }
                         doc.text(line, printX, currentY);
                         currentY += lh;
@@ -209,7 +208,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 }
 
                 function addSectionTitle(title, x, currentY, colWidth) {
-                    currentY += 2; // Little space before title
+                    currentY += 2; 
                     const titleLh = lineHeights.sectionTitle;
                     if (currentY + titleLh > pageHeight - bottomMargin) { doc.addPage(); currentY = topMargin; }
                     
@@ -217,11 +216,11 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     doc.setFontSize(fontSizes.sectionTitle);
                     doc.setTextColor(colors.primary);
                     doc.text(title.toUpperCase(), x, currentY);
-                    currentY += titleLh - 2; // Position for line
+                    currentY += titleLh - 2; 
                     doc.setDrawColor(colors.accent);
                     doc.setLineWidth(0.4);
-                    doc.line(x, currentY, x + colWidth, currentY); // Line under title
-                    currentY += 4; // Space after line
+                    doc.line(x, currentY, x + colWidth, currentY); 
+                    currentY += 4; 
                     return currentY;
                 }
 
@@ -233,11 +232,27 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     parsedSections[matchGlobal[1]] = matchGlobal[2].trim();
                 }
                 
-                // Placeholder for Experience parsing - would need a similar fix
-                if (parsedSections.EXPERIENCE) { 
-                    // console.log("Raw EXPERIENCE:", parsedSections.EXPERIENCE);
-                    // Add parsing logic for EXPERIENCE into parsedSections.EXPERIENCE_PARSED here
-                    // Similar to the EDUCATION parsing below
+                if (parsedSections.EXPERIENCE) {
+                    parsedSections.EXPERIENCE_PARSED = [];
+                    const jobBlocks = parsedSections.EXPERIENCE.split(/####JOB_START####|####JOB_END####/);
+                    jobBlocks.forEach(block => {
+                        const trimmedBlock = block.trim();
+                        if (trimmedBlock) {
+                            const job = { bullets: [] };
+                            const lines = trimmedBlock.split('\n').map(line => line.trim());
+                            lines.forEach(line => {
+                                if (line.startsWith("Job Title:")) job.title = line.substring("Job Title:".length).trim();
+                                else if (line.startsWith("Company:")) job.company = line.substring("Company:".length).trim();
+                                else if (line.startsWith("Location:")) job.location = line.substring("Location:".length).trim();
+                                else if (line.startsWith("Dates:")) job.dates = line.substring("Dates:".length).trim();
+                                else if (line.startsWith("-")) job.bullets.push(line.substring(1).trim());
+                            });
+                            if (Object.keys(job).length > 1 || job.bullets.length > 0) { // Ensure job has more than just an empty bullets array
+                                parsedSections.EXPERIENCE_PARSED.push(job);
+                            }
+                        }
+                    });
+                     // console.log("Parsed EXPERIENCE_PARSED:", parsedSections.EXPERIENCE_PARSED);
                 }
 
                 if (parsedSections.EDUCATION) {
@@ -265,28 +280,16 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
 
                 // --- Render PDF ---
-                // 1. Name and User's Target Job Title (from prompt)
                 doc.setFontSize(fontSizes.name);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(colors.primary);
                 doc.text(fullName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
                 y += lineHeights.name;
+                y += 3; 
 
-                // const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim(); // Get first line of prompt as title
-                //if (targetJobTitleUser) {
-                  //  doc.setFontSize(fontSizes.jobTitle);
-                  //  doc.setFont("helvetica", "normal"); // Not bold for subtitle
-                  //  doc.setTextColor(colors.lightText);
-                  //  doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-                  //  y += lineHeights.jobTitle;
-              //  }
-                y += 3; // Extra space
-
-                // ---- Two Column Layout Starts Here ----
                 let ySidebar = y;
                 let yMain = y; 
 
-                // --- Sidebar Content (Left) ---
                 if (parsedSections.CONTACT_INFO) {
                     ySidebar = addSectionTitle("CONTACT", leftMargin, ySidebar, sidebarWidth);
                     const contactItems = parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s);
@@ -296,7 +299,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                      ySidebar += lineHeights.body; 
                 }
 
-                if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { // Check if array exists and is not empty
+                if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { 
                     ySidebar = addSectionTitle("EDUCATION", leftMargin, ySidebar, sidebarWidth);
                     parsedSections.EDUCATION_PARSED.forEach(edu => {
                         ySidebar = addText(edu.degree || "Degree", leftMargin, ySidebar, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: sidebarWidth });
@@ -318,20 +321,21 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     ySidebar += lineHeights.body;
                 }
 
-
-                // --- Main Column Content (Right) ---
                 if (parsedSections.SUMMARY) {
                     yMain = addSectionTitle("SUMMARY", mainColX, yMain, mainColWidth);
                     yMain = addText(parsedSections.SUMMARY, mainColX, yMain, { fontSize: fontSizes.body, maxWidth: mainColWidth });
                     yMain += lineHeights.body;
                 }
 
-                // Placeholder for rendering Experience - requires parsedSections.EXPERIENCE_PARSED
                 if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) {
                     yMain = addSectionTitle("EXPERIENCE", mainColX, yMain, mainColWidth);
                     parsedSections.EXPERIENCE_PARSED.forEach(job => {
-                        const estHeight = lineHeights.itemTitle + lineHeights.small + (job.bullets ? lineHeights.body : 0) + 5;
-                        if (yMain + estHeight > pageHeight - bottomMargin) { doc.addPage(); yMain = topMargin; yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); }
+                        const estHeight = lineHeights.itemTitle + lineHeights.small + (job.bullets && job.bullets.length > 0 ? lineHeights.body : 0) + 5;
+                        if (yMain + estHeight > pageHeight - bottomMargin && !(doc.internal.getCurrentPageInfo().pageNumber === 1 && yMain === topMargin +3)) { // Avoid adding page if it's the first element on a fresh page.
+                           doc.addPage(); 
+                           yMain = topMargin; 
+                           yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); 
+                        }
 
                         yMain = addText(job.title || "Job Title", mainColX, yMain, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: mainColWidth });
                         
@@ -340,14 +344,30 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                         yMain = addText(companyLine, mainColX, yMain, { fontSize: fontSizes.small, fontStyle: "italic", color: colors.lightText, maxWidth: mainColWidth });
                         
                         if (job.dates) {
+                            // Save current settings
+                            const currentSize = doc.getFontSize();
+                            const currentStyle = doc.getFont().fontStyle; // This might not directly give 'italic', need to manage manually
+                            const currentTextColor = doc.getTextColor();
+
                             doc.setFontSize(fontSizes.small);
-                            doc.setFont("helvetica", "italic");
+                            doc.setFont("helvetica", "italic"); // Set to italic for dates
                             doc.setTextColor(colors.lightText);
-                            doc.text(job.dates, mainColX + mainColWidth, yMain - lineHeights.small, { align: 'right' });
+
+                            // Calculate y position for dates to align with the bottom of the companyLine text or slightly adjusted
+                            // This is tricky because addText modified yMain. We want it on the same visual line as company/location if possible, or just after.
+                            // For simplicity, placing it just before the companyLine text advanced yMain.
+                            const dateYPosition = yMain - lineHeights.small - (lineHeights.small - lineHeights.itemTitle)/2 ; // trying to align with company name line.
+
+                            doc.text(job.dates, mainColX + mainColWidth, dateYPosition , { align: 'right' });
+                            
+                            // Restore settings
+                            doc.setFontSize(currentSize);
+                            doc.setFont("helvetica", currentStyle); // Assuming currentStyle could be 'bold', 'normal' etc.
+                            doc.setTextColor(currentTextColor);
                         }
                         yMain += 2; 
 
-                        if (job.bullets) {
+                        if (job.bullets && job.bullets.length > 0) {
                             job.bullets.forEach(bullet => {
                                 yMain = addText(bullet, mainColX, yMain, { isBullet: true, fontSize: fontSizes.body, maxWidth: mainColWidth });
                             });
