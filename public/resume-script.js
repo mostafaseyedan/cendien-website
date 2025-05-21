@@ -347,7 +347,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     });
                 }
 
-                doc.save(`${fullName.replace(/\s+/g, '_')}_Cendien_AI_Resume.pdf`);
+                doc.save(`${fullName.replace(/\s+/g, '_')}_CN_AI_Resume.pdf`);
                 showLoadingState(false); 
                 resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">PDF generated successfully and download started!</p>`;
                 hideStatusArea(5000);
