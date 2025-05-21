@@ -233,8 +233,35 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     parsedSections[matchGlobal[1]] = matchGlobal[2].trim();
                 }
                 
-                if (parsedSections.EXPERIENCE) { /* ... (same parsing logic for EXPERIENCE_PARSED as before) ... */ }
-                if (parsedSections.EDUCATION) { /* ... (same parsing logic for EDUCATION_PARSED as before) ... */ }
+                // Placeholder for Experience parsing - would need a similar fix
+                if (parsedSections.EXPERIENCE) { 
+                    // console.log("Raw EXPERIENCE:", parsedSections.EXPERIENCE);
+                    // Add parsing logic for EXPERIENCE into parsedSections.EXPERIENCE_PARSED here
+                    // Similar to the EDUCATION parsing below
+                }
+
+                if (parsedSections.EDUCATION) {
+                    parsedSections.EDUCATION_PARSED = [];
+                    const degreeBlocks = parsedSections.EDUCATION.split(/####DEGREE_START####|####DEGREE_END####/);
+                    degreeBlocks.forEach(block => {
+                        const trimmedBlock = block.trim();
+                        if (trimmedBlock) {
+                            const edu = {};
+                            const lines = trimmedBlock.split('\n').map(line => line.trim());
+                            lines.forEach(line => {
+                                if (line.startsWith("Degree:")) edu.degree = line.substring("Degree:".length).trim();
+                                else if (line.startsWith("University:")) edu.university = line.substring("University:".length).trim();
+                                else if (line.startsWith("Location:")) edu.location = line.substring("Location:".length).trim();
+                                else if (line.startsWith("Graduation Year:")) edu.year = line.substring("Graduation Year:".length).trim();
+                                else if (line.startsWith("GPA:")) edu.gpa = line.substring("GPA:".length).trim();
+                            });
+                            if (Object.keys(edu).length > 0) {
+                                parsedSections.EDUCATION_PARSED.push(edu);
+                            }
+                        }
+                    });
+                    // console.log("Parsed EDUCATION_PARSED:", parsedSections.EDUCATION_PARSED);
+                }
 
 
                 // --- Render PDF ---
@@ -245,7 +272,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 doc.text(fullName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
                 y += lineHeights.name;
 
-                const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim(); // Get first line of prompt as title
+                // const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim(); // Get first line of prompt as title
                 //if (targetJobTitleUser) {
                   //  doc.setFontSize(fontSizes.jobTitle);
                   //  doc.setFont("helvetica", "normal"); // Not bold for subtitle
@@ -256,12 +283,8 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 y += 3; // Extra space
 
                 // ---- Two Column Layout Starts Here ----
-                // We need to track y for sidebar and main column independently
-                // For simplicity, we'll render sidebar, then main content.
-                // A more complex approach would interleave to balance heights, but that's much harder.
-                
                 let ySidebar = y;
-                let yMain = y; // Main content will start at the same Y level initially
+                let yMain = y; 
 
                 // --- Sidebar Content (Left) ---
                 if (parsedSections.CONTACT_INFO) {
@@ -270,10 +293,10 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     contactItems.forEach(item => {
                         ySidebar = addText(item, leftMargin, ySidebar, { fontSize: fontSizes.small, maxWidth: sidebarWidth, color: colors.text });
                     });
-                     ySidebar += lineHeights.body; // Space after block
+                     ySidebar += lineHeights.body; 
                 }
 
-                if (parsedSections.EDUCATION_PARSED) {
+                if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { // Check if array exists and is not empty
                     ySidebar = addSectionTitle("EDUCATION", leftMargin, ySidebar, sidebarWidth);
                     parsedSections.EDUCATION_PARSED.forEach(edu => {
                         ySidebar = addText(edu.degree || "Degree", leftMargin, ySidebar, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: sidebarWidth });
@@ -281,7 +304,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                         if (edu.location) ySidebar = addText(edu.location, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
                         if (edu.year) ySidebar = addText(edu.year, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
                         if (edu.gpa) ySidebar = addText(`GPA: ${edu.gpa}`, leftMargin, ySidebar, { fontSize: fontSizes.small, color: colors.lightText, maxWidth: sidebarWidth });
-                        ySidebar += lineHeights.small; // Space after an education entry
+                        ySidebar += lineHeights.small; 
                     });
                     ySidebar += lineHeights.body;
                 }
@@ -303,10 +326,10 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     yMain += lineHeights.body;
                 }
 
-                if (parsedSections.EXPERIENCE_PARSED) {
+                // Placeholder for rendering Experience - requires parsedSections.EXPERIENCE_PARSED
+                if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) {
                     yMain = addSectionTitle("EXPERIENCE", mainColX, yMain, mainColWidth);
                     parsedSections.EXPERIENCE_PARSED.forEach(job => {
-                        // Check space for job title, company, and at least one bullet
                         const estHeight = lineHeights.itemTitle + lineHeights.small + (job.bullets ? lineHeights.body : 0) + 5;
                         if (yMain + estHeight > pageHeight - bottomMargin) { doc.addPage(); yMain = topMargin; yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); }
 
@@ -320,16 +343,16 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                             doc.setFontSize(fontSizes.small);
                             doc.setFont("helvetica", "italic");
                             doc.setTextColor(colors.lightText);
-                            doc.text(job.dates, mainColX + mainColWidth, yMain - lineHeights.small, { align: 'right' }); // Attempt to right-align dates
+                            doc.text(job.dates, mainColX + mainColWidth, yMain - lineHeights.small, { align: 'right' });
                         }
-                        yMain += 2; // Space before bullets
+                        yMain += 2; 
 
                         if (job.bullets) {
                             job.bullets.forEach(bullet => {
                                 yMain = addText(bullet, mainColX, yMain, { isBullet: true, fontSize: fontSizes.body, maxWidth: mainColWidth });
                             });
                         }
-                        yMain += lineHeights.body; // Space after job entry
+                        yMain += lineHeights.body; 
                     });
                 }
 
