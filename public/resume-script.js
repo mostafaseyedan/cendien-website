@@ -125,12 +125,7 @@ Ensure specific company and university names are used where plausible.
                 const data = await response.json();
                 let resumeText = data.generatedText.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
                 
-                showLoadingState(true, "Formatting PDF with professional design...");
-
-                // ======================================================================== //
-                // === THIS IS WHERE THE ADVANCED jsPDF LOGIC SECTION STARTS === //
-                // Replace the *previous, simpler jsPDF code* with the more detailed one.
-                // ======================================================================== //
+                 showLoadingState(true, "Formatting PDF with professional design...");
 
                 const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
                 const pageHeight = doc.internal.pageSize.height;
@@ -139,45 +134,50 @@ Ensure specific company and university names are used where plausible.
                 // --- Define Layout & Styles (as per the visual examples) ---
                 const leftMargin = 15;
                 const rightMargin = 15;
-                const topMargin = 20; // Increased top margin for name
+                const topMargin = 20;
                 const bottomMargin = 20;
                 const usableWidth = pageWidth - leftMargin - rightMargin;
                 
-                // Column widths for a two-column layout (inspired by some resume templates)
                 const sidebarX = leftMargin;
-                const sidebarWidth = usableWidth * 0.33; // Sidebar takes about 1/3 of the usable width
-                const mainColX = leftMargin + sidebarWidth + 5; // 5mm gutter
+                const sidebarWidth = usableWidth * 0.33; 
+                const mainColX = leftMargin + sidebarWidth + 5; 
                 const mainColWidth = usableWidth - sidebarWidth - 5;
 
                 let yPosition = topMargin;
-                let currentX = mainColX; // Start with main column for name/summary
-                let currentMaxWidth = mainColWidth;
+                // let currentX = mainColX; // This can be set dynamically
+                // let currentMaxWidth = mainColWidth; // This can be set dynamically
 
                 const fontConfig = {
-                    name: "helvetica", // Or "times" for a more traditional resume font
-                    nameBold: "helvetica", // jsPDF supports "helvetica-bold" or "times-bold"
+                    name: "helvetica", 
+                    nameBold: "helvetica", 
                     titleSize: 20,
                     subtitleSize: 11,
-                    headingSize: 12, // Slightly smaller for section headings
-                    subHeadingSize: 10, // For job titles, degree names
-                    bodySize: 9,    // Smaller body for more content
+                    headingSize: 12, 
+                    subHeadingSize: 10, 
+                    bodySize: 9,    
                     smallSize: 8,
-                    lineHeightFactor: 1.4, // Multiplier for font size to get line height
+                    lineHeightFactor: 1.4, 
                 };
 
                 const colors = {
-                    primary: "#1A237E", // Dark Indigo (example professional color)
-                    secondary: "#5C6BC0", // Lighter Indigo
-                    text: "#212121",    // Very dark grey for body
-                    lightText: "#5f6368", // Medium grey
-                    line: "#757575",    // Grey for lines
-                    sidebarBg: "#F5F5F5" // Optional: light grey for sidebar background
+                    primary: "#1A237E", 
+                    secondary: "#5C6BC0", 
+                    text: "#212121",    
+                    lightText: "#5f6368", 
+                    line: "#757575",    
+                    sidebarBg: "#F5F5F5" 
                 };
 
                 function calculateLineHeight(fontSize) {
-                    return fontSize * 0.352777 * fontConfig.lineHeightFactor; // Convert pt to mm and apply factor
+                    return fontSize * 0.352777 * fontConfig.lineHeightFactor; 
                 }
 
+                const defaultLineHeight = calculateLineHeight(fontConfig.bodySize); // Defined using the function
+                const headingLineHeight = calculateLineHeight(fontConfig.headingSize);
+                const nameLineHeight = calculateLineHeight(fontConfig.titleSize); // Assuming titleSize is for the name
+                const sectionSpacing = 4; 
+                const paragraphSpacing = 2;
+                
                 function addTextLines(text, x, y, options = {}) {
                     const fontSize = options.fontSize || fontConfig.bodySize;
                     const fontStyle = options.fontStyle || "normal"; // "normal", "bold", "italic", "bolditalic"
