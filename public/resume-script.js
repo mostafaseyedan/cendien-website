@@ -37,19 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             
             const fullName = document.getElementById('fullNameResume').value.trim();
-            const userPrompt = document.getElementById('resumePrompt').value.trim();
+            const userPromptText = document.getElementById('resumePrompt').value.trim(); // Renamed to avoid conflict
 
-            if (!fullName || !userPrompt) {
+            if (!fullName || !userPromptText) {
                 alert('Please fill in both Full Name and the Resume Prompt.');
                 return;
             }
 
             showLoadingState(true, "Generating resume content with AI...");
 
-            // AI Prompt remains the same as the previous version
             const promptForResumeAI = `
 Generate the complete text content for a professional resume for: ${fullName}.
-The user's primary prompt, target role, or key details are: "${userPrompt}".
+The user's primary prompt, target role, or key details are: "${userPromptText}".
 
 Please structure the output strictly as follows, using the exact headings in ALL CAPS and specific delimiters:
 
@@ -61,7 +60,7 @@ Location: [If user prompt mentions a city, use it. Otherwise, generate a plausib
 ###CONTACT_INFO_END###
 
 ###SUMMARY_START###
-[Generate a concise (3-4 sentences) impactful professional summary tailored to the user's prompt and target role. Include specific, plausible company names like "Innovate Corp", "Solutions Ltd.", "Tech Solutions Inc.", "Global Corp", "Accenture", "Deloitte" and university names like "University of Texas at Austin", "Stanford University", "MIT" if appropriate for context and to make the resume feel realistic.]
+[Generate a very concise (2-3 short sentences) impactful professional summary tailored to the user's prompt and target role. Include specific, plausible company names like "Innovate Corp", "Solutions Ltd.", "Tech Solutions Inc.", "Global Corp", "Accenture", "Deloitte" and university names like "University of Texas at Austin", "Stanford University", "MIT" if appropriate for context and to make the resume feel realistic.]
 ###SUMMARY_END###
 
 ###SKILLS_START###
@@ -125,7 +124,6 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
                 const data = await response.json();
                 let resumeText = data.generatedText.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
-                // console.log("AI Generated Raw Text:", resumeText);
                 
                 showLoadingState(true, "Formatting PDF with professional design...");
 
@@ -133,7 +131,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 const pageHeight = doc.internal.pageSize.height;
                 const pageWidth = doc.internal.pageSize.width;
                 
-                const topMargin = 15;
+                const topMargin = 15; // This will be effectively replaced by newNameHeaderHeight for content start
                 const bottomMargin = 15;
                 const leftMargin = 15;
                 const rightMargin = 15;
@@ -144,11 +142,11 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 const gutter = usableWidth - sidebarWidth - mainColWidth; 
                 const mainColX = leftMargin + sidebarWidth + gutter;
 
-                let y = topMargin; 
+                const newNameHeaderHeight = 30; // Increased header height in mm
 
                 const fontSizes = {
-                    name: 20,
-                    jobTitle: 11, // User's target job title from prompt (optional)
+                    name: 22, // Slightly increased for new header
+                    jobTitle: 10, 
                     sectionTitle: 12,
                     itemTitle: 10, 
                     body: 9.5,
@@ -156,7 +154,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     contact: 9,
                 };
                 const lineHeights = {
-                    name: 8,
+                    name: 9, // Adjusted for new font size
                     jobTitle: 5,
                     sectionTitle: 7,
                     itemTitle: 5,
@@ -167,23 +165,19 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 const colors = { 
                     primary: "#2c3e50", 
                     text: "#333333", 
-                    lightText: "#5f6368", 
+                    lightText: "#5f6368", // For subtitle
                     accent: "#3498db", 
                     line: "#cccccc",
-                    nameBackground: "#f0f0f0" // Light gray for name background
+                    nameBackground: "#e8e3dc" // Beige like color from template
                 };
-
-                // Function to draw page-specific elements like the vertical line
-                function drawPageDecorations(currentPageNumber) {
+                
+                function drawPageDecorations(contentStartingY) {
                     doc.setDrawColor(colors.line);
                     doc.setLineWidth(0.2);
-                    // Draw vertical line only if it's not the first page's initial title drawing phase
-                    // or always draw it if we want it from the very top.
-                    // For simplicity, drawing from top margin down to bottom margin of content area.
                     const lineX = leftMargin + sidebarWidth + (gutter / 2);
-                    doc.line(lineX, topMargin -5 , lineX, pageHeight - bottomMargin + 5);
+                    // Line starts from below the header down to page bottom margin
+                    doc.line(lineX, contentStartingY , lineX, pageHeight - bottomMargin + 5);
                 }
-
 
                 function addText(text, x, currentY, options = {}) {
                     const fs = options.fontSize || fontSizes.body;
@@ -209,7 +203,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                         effectiveMaxWidth = maxWidth - bulletIndent;
                         if (currentY + lh > pageHeight - bottomMargin) { 
                             doc.addPage(); 
-                            drawPageDecorations(doc.internal.getCurrentPageInfo().pageNumber);
+                            drawPageDecorations(topMargin); // Use standard topMargin for subsequent pages
                             currentY = topMargin; 
                         }
                         doc.text(bulletChar, x, currentY); 
@@ -219,7 +213,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     for (const line of lines) {
                         if (currentY + lh > pageHeight - bottomMargin) {
                             doc.addPage();
-                            drawPageDecorations(doc.internal.getCurrentPageInfo().pageNumber);
+                            drawPageDecorations(topMargin); // Use standard topMargin for subsequent pages
                             currentY = topMargin;
                             if (isBullet) doc.text(bulletChar, x, currentY); 
                         }
@@ -234,7 +228,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     const titleLh = lineHeights.sectionTitle;
                     if (currentY + titleLh > pageHeight - bottomMargin) { 
                         doc.addPage(); 
-                        drawPageDecorations(doc.internal.getCurrentPageInfo().pageNumber);
+                        drawPageDecorations(topMargin); // Use standard topMargin for subsequent pages
                         currentY = topMargin; 
                     }
                     
@@ -250,7 +244,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     return currentY;
                 }
 
-                // --- Parse AI Text ---
+                // --- Parse AI Text --- (Parsing logic remains the same)
                 const parsedSections = {};
                 const sectionRegexGlobal = /###([A-Z_]+)_START###\n?([\s\S]*?)\n?###\1_END###/g;
                 let matchGlobal;
@@ -303,40 +297,39 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 }
 
                 // --- Render PDF ---
-                // 1. Name Header with Background
-                const nameHeaderStartY = y;
-                let nameHeaderHeight = lineHeights.name; // Start with name height
-                // Optional: If you want to include a subtitle (e.g., from user prompt) in the header
-                // const targetJobTitleUser = document.getElementById('resumePrompt').value.split('\n')[0].trim();
-                // if (targetJobTitleUser) nameHeaderHeight += lineHeights.jobTitle;
-                nameHeaderHeight += 4; // Some padding within the header box
-
+                // 1. Name Header with Background (Seamless to top)
                 doc.setFillColor(colors.nameBackground);
-                doc.rect(leftMargin / 2, nameHeaderStartY - (lineHeights.name / 2) -2 , pageWidth - leftMargin, nameHeaderHeight + 2, 'F'); // x, y, width, height, style (F for fill)
+                doc.rect(0, 0, pageWidth, newNameHeaderHeight, 'F'); // x=0, y=0, full page width
+
+                let yInHeader = newNameHeaderHeight / 2 - (lineHeights.name / 2); // Initial Y for vertical centering
+                const targetJobTitleUser = userPromptText.split('\n')[0].trim(); // Get first line of prompt as title
+
+                if (targetJobTitleUser && fullName.toLowerCase() !== targetJobTitleUser.toLowerCase()) { // Check if subtitle is meaningful
+                    yInHeader -= lineHeights.jobTitle / 2; // Adjust for two lines
+                }
 
                 doc.setFontSize(fontSizes.name);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(colors.primary);
-                doc.text(fullName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-                y += lineHeights.name;
+                doc.text(fullName.toUpperCase(), pageWidth / 2, yInHeader, { align: 'center' });
+                
+                if (targetJobTitleUser && fullName.toLowerCase() !== targetJobTitleUser.toLowerCase()) {
+                    yInHeader += lineHeights.name;
+                    doc.setFontSize(fontSizes.jobTitle);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(colors.lightText); // Using lightText for subtitle
+                    doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, yInHeader, { align: 'center' });
+                }
+                
+                let contentStartY = newNameHeaderHeight + 5; // Start content below the header + padding
 
-                // if (targetJobTitleUser) {
-                //     doc.setFontSize(fontSizes.jobTitle);
-                //     doc.setFont("helvetica", "normal");
-                //     doc.setTextColor(colors.lightText);
-                //     doc.text(targetJobTitleUser.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-                //     y += lineHeights.jobTitle;
-                // }
-                y = nameHeaderStartY + nameHeaderHeight + 1; // Ensure y is below the colored box + small margin
-
-                // Draw decorations for the first page (vertical line)
-                drawPageDecorations(1);
+                drawPageDecorations(contentStartY);
 
 
-                let ySidebar = y;
-                let yMain = y; 
+                let ySidebar = contentStartY;
+                let yMain = contentStartY; 
 
-                // Sidebar Content
+                // Sidebar Content (uses original topMargin for subsequent pages if content flows)
                 if (parsedSections.CONTACT_INFO) {
                     ySidebar = addSectionTitle("CONTACT", leftMargin, ySidebar, sidebarWidth);
                     const contactItems = parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s);
@@ -379,9 +372,11 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     yMain = addSectionTitle("EXPERIENCE", mainColX, yMain, mainColWidth);
                     parsedSections.EXPERIENCE_PARSED.forEach(job => {
                         const estHeight = lineHeights.itemTitle + lineHeights.small + (job.bullets && job.bullets.length > 0 ? lineHeights.body : 0) + 5;
-                        if (yMain + estHeight > pageHeight - bottomMargin && !(doc.internal.getCurrentPageInfo().pageNumber === 1 && yMain === (nameHeaderStartY + nameHeaderHeight + 1))) { 
+                        // Check if adding this job would exceed page, considering if it's the very first item after header
+                        const isFirstContentElement = (doc.internal.getCurrentPageInfo().pageNumber === 1 && yMain === contentStartY);
+                        if (yMain + estHeight > pageHeight - bottomMargin && !isFirstContentElement) { 
                            doc.addPage(); 
-                           drawPageDecorations(doc.internal.getCurrentPageInfo().pageNumber);
+                           drawPageDecorations(topMargin); // Subsequent pages use standard topMargin
                            yMain = topMargin; 
                            yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); 
                         }
@@ -390,7 +385,6 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                         
                         let companyLine = job.company || "Company Name";
                         if (job.location) companyLine += ` - ${job.location}`;
-                        // Store Y before company line for date placement
                         const yForDate = yMain;
                         yMain = addText(companyLine, mainColX, yMain, { fontSize: fontSizes.small, fontStyle: "italic", color: colors.lightText, maxWidth: mainColWidth });
                         
@@ -398,13 +392,10 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                             const currentSize = doc.getFontSize();
                             const currentStyle = doc.getFont().fontStyle;
                             const currentTextColor = doc.getTextColor();
-
                             doc.setFontSize(fontSizes.small);
                             doc.setFont("helvetica", "italic"); 
                             doc.setTextColor(colors.lightText);
-                            // Use the Y position stored before the company line was fully rendered.
                             doc.text(job.dates, mainColX + mainColWidth, yForDate , { align: 'right' });
-                            
                             doc.setFontSize(currentSize);
                             doc.setFont("helvetica", currentStyle); 
                             doc.setTextColor(currentTextColor);
@@ -420,7 +411,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     });
                 }
 
-                if (parsedSections.PROJECTS) { // Assuming PROJECTS uses similar ####ITEM_START#### logic if added
+                if (parsedSections.PROJECTS) { 
                     yMain = addSectionTitle("PROJECTS", mainColX, yMain, mainColWidth);
                     const projectItems = parsedSections.PROJECTS.split(/####ITEM_START####|####ITEM_END####/).map(s => s.trim()).filter(s => s);
                      projectItems.forEach(item => {
@@ -431,7 +422,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                             let itemFontSize = (idx === 0 && !isBulletItem) ? fontSizes.itemTitle : fontSizes.body;
                            yMain = addText(line, mainColX, yMain, {fontSize: itemFontSize, fontStyle: itemFontStyle, isBullet: isBulletItem, maxWidth: mainColWidth});
                         });
-                        yMain += lineHeights.body; // Space after each project item
+                        yMain += lineHeights.body; 
                     });
                 }
 
