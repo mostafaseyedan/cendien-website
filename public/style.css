@@ -249,26 +249,37 @@ main h3 {
     background-color: #35ED54; 
     color: #184e51; 
     border-color: #35ED54; 
-    width: 100%; 
+    width: 100%; /* Primary buttons are full width by default */
 }
 .btn-primary:hover {
     background-color: #D9FFE5; 
     color: #184e51; 
     border-color: #184e51; 
 }
-.btn-secondary { 
+.btn-secondary { /* Secondary buttons (like DOCX and RFP Generate) will be auto width unless specified */
     background-color: #184e51; 
     color: #fff;
     border-color: #184e51;
+    width: auto; /* Default to auto width for secondary */
+    display: inline-block; /* Needed for auto width to work well */
 }
 .btn-secondary:hover {
     background-color: #D9FFE5; 
     color: #184e51;
     border-color: #184e51; 
 }
+
+/* Ensure resume page's primary PDF button remains full width if desired, or auto if preferred */
+#resume-generator-tool #generate-resume-button.btn-primary {
+     width: 100%; /* Or 'auto' if you prefer it to size to content like secondary */
+     /* display: inline-block; Remove if width: 100% */
+     margin-top: 1rem; /* Retained from previous */
+}
+
+
 #suggest-modules-button:disabled,
-#generate-resume-button:disabled, /* Ensured this is styled for disabled state */
-#generate-resume-pdf-button:disabled { /* Added for new button ID */
+#generate-resume-button:disabled, /* Updated ID */
+#generate-questions-button:disabled { /* Added for RFP page button */
     background-color: #d1e7dd; 
     border-color: #d1e7dd;
     color: #799988;
@@ -352,15 +363,12 @@ footer p { margin: 0; font-size: 0.9rem; }
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
-#resume-generator-tool #resume-details-form {
-    margin-top: 1rem; /* Adjust this value to your preference, e.g., 1.5rem or 20px */
+/* Specific styling for the select dropdown on resume page if needed */
+#resume-generator-tool #outputFormat.section-selector { 
+    /* Inherits #section-selector styles, can override here if needed */
+    margin-bottom: 1rem; /* Ensures space before the button */
 }
-#resume-generator-tool #generate-resume-pdf-button.btn-primary {
-    width: auto; 
-    display: inline-block; 
-    margin-top: 1rem;
-    /* Inherits .btn and .btn-primary styles */
-}
+
 #generated-resume-area, #resume-generation-status { /* Apply to both for consistency */
     background-color: #f0f4f8; 
     padding: 1.5rem;
@@ -390,6 +398,83 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 
 
+/* Styles for RFP Question Generator Page (rfp-question-generator.html) */
+#rfp-question-tool .form-group {
+    margin-bottom: 1.5rem; 
+}
+
+#rfp-question-tool label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 0.95rem; 
+}
+
+#rfp-question-tool input[type="file"] {
+    width: 100%;
+    padding: 0.75rem 1rem; 
+    border: 1px solid #d1d1d1; 
+    border-radius: 4px; 
+    font-family: 'Montserrat', sans-serif; 
+    font-size: 0.95rem; 
+    line-height: 1.5; 
+    box-sizing: border-box;
+    background-color: #fff; 
+    margin-bottom: 1.5rem; /* Added margin below the file input for spacing */
+}
+
+#rfp-question-tool input[type="file"]:focus {
+    border-color: #35ED54; 
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+}
+
+/* Ensure RFP button uses secondary styles and auto width */
+#rfp-question-tool #generate-questions-button.btn-secondary {
+    width: auto; 
+    display: inline-block; 
+    /* margin-top is handled by margin-bottom of file input or general .form-group margin */
+}
+
+#generated-questions-area {
+    background-color: #f0f4f8; 
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    margin-top: 2.5rem;
+}
+
+#generated-questions-area h3 { 
+    text-align: left;
+    font-size: 1.4rem;
+    color: #184e51; 
+    margin-bottom: 1rem; 
+}
+
+#questions-result p, 
+#questions-result li { 
+    color: #373F41; 
+    font-size: 0.95rem; 
+    margin-bottom: 0.75rem; 
+}
+
+#questions-result ul { 
+    list-style-type: decimal; 
+    list-style-position: outside;
+    padding-left: 20px;
+    margin-top: 0.5rem;
+}
+
+#questions-result ul li {
+    margin-bottom: 0.5rem;
+}
+
+#question-generation-status {
+    margin-top: 2.5rem; 
+}
+
+
 /* Responsive Adjustments */
 @media (max-width: 992px) { 
     .two-column-layout { flex-direction: column; }
@@ -415,15 +500,25 @@ footer p { margin: 0; font-size: 0.9rem; }
     /* For resume-generator.html header nav (if different structure) */
     header .nav-container nav:not(:has(#section-selector)) {
         flex-direction: row; /* Keep as row if it's just Home + Current Page */
+        flex-wrap: wrap; /* Allow nav links to wrap on small screens */
+        justify-content: center; /* Center items if they wrap */
+        gap: 0.5rem; /* Reduce gap for wrapped items */
     }
 
     #company-logo { max-height: 40px; }
     #section-selector { width: 100%; font-size: 0.9rem; }
-    .nav-link.resume-nav-link {
+    .nav-link.resume-nav-link { /* This might be too specific now, general .nav-link used more */
         text-align: center; 
-        display: block; 
-        background-color: #f0f0f0; 
+        /* display: block;  -- remove if you want them inline on small screens for tools pages */
+        /* background-color: #f0f0f0;  -- remove if not desired */
     }
+    header nav .nav-link { /* For tool pages, make links stack if needed or just wrap */
+        /* If you want them to stack on tool pages on mobile: */
+        /* display: block; 
+        text-align: center;
+        margin-bottom: 0.5rem; */
+    }
+
     #hero { min-height: 280px; }
     #hero-text-box { margin-top: -50px; padding: 1.5rem; }
     #hero-text-box h1 { font-size: 1.8rem; }
@@ -440,5 +535,16 @@ footer p { margin: 0; font-size: 0.9rem; }
     #hero-text-box h1 { font-size: 1.6rem; }
     #hero-text-box p { font-size: 0.9rem; }
     #ai-module-suggester h2 { font-size: 1.3rem; }
-    .btn { width: 100%; } 
+    /* .btn { width: 100%; } -- Re-enabled for very small screens if desired, but might make auto-width buttons full again */
+    /* If you want buttons to stack and be full-width on smallest screens: */
+    #resume-generator-tool #generate-resume-button.btn-primary,
+    #rfp-question-tool #generate-questions-button.btn-secondary {
+        width: 100%;
+        display: block; /* Make them stack */
+        margin-left: auto; /* Center if block */
+        margin-right: auto; /* Center if block */
+    }
+    #resume-generator-tool #outputFormat.section-selector {
+         margin-bottom: 1rem; /* Ensure space before full-width button */
+    }
 }
