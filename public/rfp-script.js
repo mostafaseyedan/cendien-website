@@ -1,3 +1,6 @@
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
+
 document.addEventListener('DOMContentLoaded', () => {
     const rfpForm = document.getElementById('rfp-details-form');
     const rfpFileUpload = document.getElementById('rfpFileUpload');
@@ -5,22 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const questionStatusArea = document.getElementById('question-generation-status');
     const generatedQuestionsArea = document.getElementById('generated-questions-area');
     const questionsResultDiv = document.getElementById('questions-result');
-    const yearSpanRFP = document.getElementById('current-year-rfp'); // Already in HTML, ensure it's handled if not by inline script
+    const yearSpanRFP = document.getElementById('current-year-rfp'); 
 
-    if (yearSpanRFP && !yearSpanRFP.textContent) { // Only set if not already set by inline script
+    if (yearSpanRFP && !yearSpanRFP.textContent) { 
         yearSpanRFP.textContent = new Date().getFullYear();
     }
 
     const showLoadingStateRFP = (isLoading, message = "Processing...") => {
         if (!questionStatusArea) return;
         if (isLoading) {
-            questionStatusArea.style.display = 'flex'; // Assuming .loading-container uses flex
+            questionStatusArea.style.display = 'flex'; 
             questionStatusArea.innerHTML = `
                 <div class="spinner"></div>
                 <p class="loading-text">${message}</p>`;
             if (generateQuestionsButton) generateQuestionsButton.disabled = true;
-            generatedQuestionsArea.style.display = 'none'; // Hide previous results
-            questionsResultDiv.innerHTML = ''; // Clear previous results
+            generatedQuestionsArea.style.display = 'none'; 
+            questionsResultDiv.innerHTML = ''; 
         } else {
             // Button re-enabling and hiding of status will be handled after processing
         }
@@ -67,13 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let rfpText = "";
             try {
                 showLoadingStateRFP(true, "Extracting text from PDF...");
-                // TODO: Implement PDF text extraction here using a library like PDF.js
-                // For now, we'll simulate it.
-                // In a real implementation, this would be an async operation.
-                // Example (conceptual, actual PDF.js usage is more involved):
-                // rfpText = await extractTextFromPdf(file);
 
-                // Simulate extracted text for now for testing AI call
                 rfpText = `Simulated RFP text from ${file.name}. This RFP is for a new enterprise software solution. Key requirements include cloud compatibility, robust security features, and scalability for up to 10,000 users. The proposal should detail the implementation timeline, training plan, and post-launch support structure. We are also interested in understanding data migration strategies from our current legacy system.`;
                 console.log("Extracted (Simulated) RFP Text:", rfpText.substring(0, 200) + "..."); // Log snippet
 
