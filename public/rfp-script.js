@@ -125,16 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
 Provide two distinct sections in your response, clearly delimited:
 1. A concise summary of the RFP.
-2. A list of 5 to 10 critical and insightful clarification questions based on the RFP. These questions should help in better understanding specific needs, scope, constraints, and expectations to prepare a comprehensive proposal. Focus on questions that uncover ambiguities or unstated assumptions.
+2. A list of at least 10 critical and insightful clarification questions based on the RFP. These questions should help in better understanding specific needs, scope, constraints, and expectations to prepare a comprehensive proposal. Focus on questions that uncover ambiguities or unstated assumptions.
 
 Use the following format strictly:
 
 ###SUMMARY_START###
-[Your generated summary of the RFP here. Aim for 3-5 key bullet points or a short paragraph.]
+[Your generated summary of the RFP here. Aim for key bullet points ideally.]
 ###SUMMARY_END###
 
 ###QUESTIONS_START###
-[Your list of generated questions here. Each question should ideally be on a new line. You can use natural numbering or bullets if appropriate.]
+[Your list of generated questions here. Each question should ideally be on a new line. You can use natural numbering. Use bold titles to separate project sections.]
 ###QUESTIONS_END###
 
 RFP Text:
