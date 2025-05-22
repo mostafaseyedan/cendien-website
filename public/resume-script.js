@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const resumeForm = document.getElementById('resume-details-form');
-    const generatePdfButton = document.getElementById('generate-resume-pdf-button');
-    const generateDocxButton = document.getElementById('generate-resume-docx-button');
+    // const generatePdfButton = document.getElementById('generate-resume-pdf-button'); // Old button, can be removed
+    // const generateDocxButton = document.getElementById('generate-resume-docx-button'); // Old button, can be removed
     const resumeStatusArea = document.getElementById('resume-generation-status');
     const yearSpanResume = document.getElementById('current-year-resume');
+
+    // The new single button from HTML (though we attach listener to form submit)
+    const generateButton = document.getElementById('generate-resume-button');
+
 
     if (yearSpanResume) {
         yearSpanResume.textContent = new Date().getFullYear();
@@ -16,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resumeStatusArea.innerHTML = `
                 <div class="spinner"></div>
                 <p class="loading-text">${message}</p>`;
-            if (generatePdfButton) generatePdfButton.disabled = true;
-            if (generateDocxButton) generateDocxButton.disabled = true;
+            // Disable the new single button
+            if (generateButton) generateButton.disabled = true;
         } else {
             // Status updates handled explicitly by caller
         }
@@ -29,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 resumeStatusArea.style.display = 'none';
                 resumeStatusArea.innerHTML = '';
             }
-            if (generatePdfButton) generatePdfButton.disabled = false;
-            if (generateDocxButton) generateDocxButton.disabled = false;
+             // Enable the new single button
+            if (generateButton) generateButton.disabled = false;
         }, delay);
     };
 
@@ -178,7 +182,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         const { jsPDF } = window.jspdf;
         const { fullName, userPromptText, parsedSections } = resumeData;
 
-        showLoadingState(true, "Formatting PDF with professional design...");
+        // Note: showLoadingState(true, "Generating PDF...") will be called by the main event handler
         
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
         const pageHeight = doc.internal.pageSize.height;
@@ -389,16 +393,13 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         const { fullName, userPromptText, parsedSections } = resumeData;
         const targetJobTitleUser = userPromptText.split('\n')[0].trim();
 
-        showLoadingState(true, "Generating DOCX, this may take a moment...");
-
-        // Define newNameHeaderHeight within this function's scope
-        const newNameHeaderHeight = 30; // Consistent with PDF, value in mm for conceptual use in spacing DOCX
+        // Note: showLoadingState(true, "Generating DOCX...") will be called by the main event handler
+        const newNameHeaderHeight = 30; // Value for conceptual spacing, not direct drawing height here
 
         try {
-            // docx should be available globally now
             const { Document, Packer, Paragraph, TextRun, AlignmentType, ShadingType, Table, TableCell, TableRow, WidthType, BorderStyle, VerticalAlign, TabStopType, TabStopPosition, convertInchesToTwip } = docx;
 
-            const children = []; 
+            const docChildren = []; 
 
             const headerContentParagraphs = [];
             headerContentParagraphs.push(new Paragraph({
@@ -428,14 +429,11 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 ],
                 width: { size: 100, type: WidthType.PERCENTAGE },
             });
-            children.push(headerTable);
-            // The spacing below the header is conceptual; actual DOCX spacing via paragraph or table cell margins.
-            // Using newNameHeaderHeight * 30 was for PDF's "spacing: {before: ...}" for a dummy paragraph.
-            // For DOCX, it's better to control spacing with paragraph properties after the header table.
-            children.push(new Paragraph({ spacing: { after: convertInchesToTwip(0.2) } }));
+            docChildren.push(headerTable);
+            docChildren.push(new Paragraph({ spacing: { after: convertInchesToTwip(0.2) } }));
 
 
-            const addDocxSectionTitle = (titleText) => { /* ... same as before ... */ 
+            const addDocxSectionTitle = (titleText) => { 
                 const titleElements = [];
                 titleElements.push(new Paragraph({
                     children: [new TextRun({ text: titleText.toUpperCase(), bold: true, size: 24, color: "2c3e50", font: "Helvetica" })],
@@ -449,13 +447,13 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
             };
             
             const sidebarChildren = [];
-            if (parsedSections.CONTACT_INFO) { /* ... same as before ... */ 
+            if (parsedSections.CONTACT_INFO) { 
                 sidebarChildren.push(...addDocxSectionTitle("CONTACT"));
                 parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s).forEach(item => {
                     sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: item, size: 18, font: "Helvetica" })], spacing: {after: 100} }));
                 });
             }
-            if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { /* ... same as before ... */ 
+            if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { 
                 sidebarChildren.push(...addDocxSectionTitle("EDUCATION"));
                 parsedSections.EDUCATION_PARSED.forEach(edu => {
                     if(edu.degree) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.degree, bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
@@ -466,7 +464,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     sidebarChildren.push(new Paragraph({ spacing: { after: 150 } }));
                 });
             }
-            if (parsedSections.SKILLS) { /* ... same as before ... */ 
+            if (parsedSections.SKILLS) { 
                 sidebarChildren.push(...addDocxSectionTitle("SKILLS"));
                 parsedSections.SKILLS.split('\n').map(s => s.trim()).filter(s => s && s.startsWith("-")).forEach(skill => {
                     sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: skill.substring(1).trim(), size: 19, font: "Helvetica" })], bullet: { level: 0 }, spacing: {after: 100} }));
@@ -474,11 +472,11 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
             }
 
             const mainContentChildren = [];
-            if (parsedSections.SUMMARY) { /* ... same as before ... */ 
+            if (parsedSections.SUMMARY) { 
                 mainContentChildren.push(...addDocxSectionTitle("SUMMARY"));
                 mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: parsedSections.SUMMARY, size: 19, font: "Helvetica" })], spacing: {after: 150} }));
             }
-            if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) { /* ... same as before ... */ 
+            if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) { 
                 mainContentChildren.push(...addDocxSectionTitle("EXPERIENCE"));
                 parsedSections.EXPERIENCE_PARSED.forEach(job => {
                     if(job.title) mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: job.title, bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
@@ -501,7 +499,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     mainContentChildren.push(new Paragraph({ spacing: { after: 150 } }));
                 });
             }
-            if (parsedSections.PROJECTS) { /* ... same as before ... */ 
+            if (parsedSections.PROJECTS) { 
                 mainContentChildren.push(...addDocxSectionTitle("PROJECTS"));
                 const projectItems = parsedSections.PROJECTS.split(/####ITEM_START####|####ITEM_END####/).map(s => s.trim()).filter(s => s);
                  projectItems.forEach(item => {
@@ -526,7 +524,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 ],
                 width: { size: 100, type: WidthType.PERCENTAGE },
             });
-            children.push(contentTable);
+            docChildren.push(contentTable);
 
             const doc = new Document({
                 creator: "Cendien AI Resume Generator",
@@ -536,7 +534,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                     properties: {
                         page: { margin: { top: convertInchesToTwip(0.5), right: convertInchesToTwip(0.75), bottom: convertInchesToTwip(0.75), left: convertInchesToTwip(0.75) } },
                     },
-                    children: children 
+                    children: docChildren 
                 }],
             });
 
@@ -544,7 +542,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
             Packer.toBlob(doc).then(blob => {
                 console.log("Blob created successfully, attempting to save...");
                 saveAs(blob, `${fullName.replace(/\s+/g, '_')}_CN_AI_Resume.docx`);
-                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">DOCX generated successfully and download started!</p>`;
+                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">DOCX generated successfully!</p>`;
             }).catch(err => {
                 console.error("Error packing or saving DOCX:", err);
                 resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error creating DOCX: ${err.message}</p>`;
@@ -558,49 +556,86 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         }
     }
 
-    if (resumeForm && generatePdfButton) {
-        resumeForm.addEventListener('submit', async function(event) { 
-            event.preventDefault();
+    // Updated Event Listener for the single "Generate & Download" button
+    if (resumeForm) {
+        resumeForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Crucial: Prevent default form submission
+
+            const outputFormat = document.getElementById('outputFormat').value;
             let resumeData;
+            let pdfSuccess = false;
+            let docxSuccess = false;
+            let mainError = null;
+
             try {
-                resumeData = await getResumeData();
+                resumeData = await getResumeData(); // Handles its own "Generating content..." message
+
                 if (resumeData) {
-                    await generatePdfResume(resumeData);
-                    // Success message is handled by generatePdfResume implicitly via showLoadingState(false) & hideStatusArea
+                    if (outputFormat === 'pdf' || outputFormat === 'both') {
+                        showLoadingState(true, "Generating PDF...");
+                        try {
+                            await generatePdfResume(resumeData);
+                            pdfSuccess = true;
+                        } catch (pdfError) {
+                            console.error('Error generating PDF:', pdfError);
+                            mainError = pdfError; // Store the error
+                            resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error generating PDF: ${pdfError.message}</p>`;
+                        }
+                    }
+                    if (outputFormat === 'docx' || outputFormat === 'both') {
+                        // If PDF failed and we only wanted PDF, or if PDF succeeded and we also want DOCX
+                        if (!mainError || outputFormat === 'both' || outputFormat === 'docx') {
+                             showLoadingState(true, "Generating DOCX...");
+                            try {
+                                await generateDocxResume(resumeData); // This now sets its own success/error for DOCX
+                                docxSuccess = true;
+                            } catch (docxError) {
+                                console.error('Error generating DOCX:', docxError);
+                                mainError = docxError; // Store or update the error
+                                // generateDocxResume already updates resumeStatusArea for its specific error
+                            }
+                        }
+                    }
+
+                    // Final status message based on outcomes
+                    if (!mainError) {
+                        if (outputFormat === 'pdf' && pdfSuccess) {
+                            resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">PDF generated successfully!</p>`;
+                        } else if (outputFormat === 'docx' && docxSuccess) {
+                            // DOCX success message is handled within generateDocxResume, avoid double message
+                            if (!resumeStatusArea.textContent.includes("DOCX generated successfully")) {
+                                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">DOCX generated successfully!</p>`;
+                            }
+                        } else if (outputFormat === 'both' && pdfSuccess && docxSuccess) {
+                            resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">PDF and DOCX generated successfully!</p>`;
+                        } else if (outputFormat === 'both' && (pdfSuccess || docxSuccess)) {
+                            // Handle partial success if one failed but was reported by its function
+                            if (!resumeStatusArea.textContent.includes("Error")) { // If no error was specifically set by a failing part
+                                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">Partial success. Check downloads.</p>`;
+                            }
+                        }
+                    } else {
+                        // An error occurred, message should already be set by the failing function or the outer catch
+                        if (!resumeStatusArea.textContent.includes("Error")) { // Fallback
+                             resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">An error occurred: ${mainError.message}</p>`;
+                        }
+                    }
                 }
-            } catch (error) {
-                console.error('Error processing PDF generation:', error);
-                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
+            } catch (error) { // Catch errors from getResumeData or unexpected errors
+                console.error('Error processing resume generation:', error);
+                if (!resumeStatusArea.textContent.includes("Error")) {
+                     resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">An error occurred: ${error.message}</p>`;
+                }
             } finally {
-                showLoadingState(false); 
-                if (resumeData && !resumeStatusArea.textContent.includes("Error")) {
-                     hideStatusArea(5000); // Hide success if no error was set
+                showLoadingState(false); // Re-enable button, hide generic spinner
+                if (resumeData || resumeStatusArea.textContent) { 
+                    hideStatusArea(5000); 
                 } else {
-                     hideStatusArea(resumeStatusArea.textContent.includes("Error") ? 5000 : 0); // Hide error after delay, or immediately if no data
+                    hideStatusArea(0); 
                 }
             }
         });
-    }
-    
-    if (generateDocxButton) { 
-        generateDocxButton.addEventListener('click', async function() {
-            let resumeData; // To check if getResumeData was successful
-            try {
-                resumeData = await getResumeData(); 
-                if (resumeData) {
-                   await generateDocxResume(resumeData); 
-                }
-            } catch (error) {
-                console.error('Error in DOCX generation process:', error);
-                if (!resumeStatusArea.textContent.includes("Error creating DOCX") && !resumeStatusArea.textContent.includes("Error preparing DOCX")) {
-                    resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">An error occurred: ${error.message}</p>`;
-                }
-            } finally {
-                 showLoadingState(false); 
-                 if (resumeStatusArea.textContent) { 
-                    hideStatusArea(5000);
-                 }
-            }
-        });
+    } else {
+        console.error("Resume form (#resume-details-form) not found. Event listener not attached.");
     }
 });
