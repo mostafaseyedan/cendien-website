@@ -436,6 +436,100 @@ footer p { margin: 0; font-size: 0.9rem; }
     display: inline-block; 
     /* margin-top is handled by margin-bottom of file input or general .form-group margin */
 }
+.tabs-container {
+    overflow: hidden; /* Clears floats or ensures border containment */
+    border-bottom: 1px solid #ccc; /* Line below the tabs */
+    margin-bottom: 1.5rem; /* Space below the tabs before content */
+}
+
+/* Individual Tab Button Styles */
+.tabs-container .tab-link {
+    background-color: #f1f1f1; /* Default background for tabs */
+    float: left; /* Align tabs horizontally */
+    border: 1px solid #ccc;
+    border-bottom: none; /* Remove bottom border as it's on the container */
+    outline: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    border-radius: 6px 6px 0 0; /* Rounded top corners */
+    margin-right: 4px; /* Space between tabs */
+}
+
+/* Tab Button Hover Style */
+.tabs-container .tab-link:hover {
+    background-color: #ddd; /* Slightly darker on hover */
+}
+
+/* Active Tab Button Style */
+.tabs-container .tab-link.active {
+    background-color: #fff; /* White background for active tab */
+    color: #005a9c; /* Cendien primary blue for active tab text */
+    border-color: #ccc;
+    border-bottom: 1px solid #fff; /* Make it look like it's part of the content area */
+    position: relative;
+    top: 1px; /* Lifts it slightly to merge with content border */
+}
+
+/* Tab Content Panes */
+.tab-content {
+    display: none; /* Hidden by default, JS will show active one */
+    padding: 1rem 0; /* Padding inside the content area below tabs */
+    /* border: 1px solid #ccc; */ /* Optional: border around content if desired */
+    /* border-top: none; */ /* Optional: if you add border to tab-content */
+}
+
+/* Ensure the initially active tab's content is visible */
+#analysis-results-area .tab-content[style*="display: block;"] {
+    /* This style is applied inline by JS, no extra CSS needed here unless for overrides */
+}
+
+/* Styles for the area where generated questions/summary will be shown */
+#generated-questions-area { /* This ID is still in the HTML, but results are now in tabs */
+    /* background-color: #f0f4f8; 
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0; */
+    margin-top: 0; /* Reset margin as it's now part of the tabbed area */
+}
+#generated-questions-area h3, /* This h3 is now inside the tab-content divs */
+#analysis-results-area .tab-content h3 { 
+    text-align: left;
+    font-size: 1.4rem;
+    color: #184e51; 
+    margin-bottom: 1rem; 
+}
+
+#questions-result-content p, 
+#questions-result-content li,
+#summary-result-content p,
+#summary-result-content li { 
+    color: #373F41; 
+    font-size: 0.95rem; 
+    margin-bottom: 0.75rem; 
+    line-height: 1.7; /* Improved line height for readability */
+}
+
+#questions-result-content ul,
+#summary-result-content ul { 
+    list-style-type: disc; /* Using disc for summary, decimal for questions might be good */
+    list-style-position: outside;
+    padding-left: 20px;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+#questions-result-content ul.numbered-list, /* Add class="numbered-list" in JS if you want numbers */
+#summary-result-content ul.numbered-list { 
+    list-style-type: decimal;
+}
+
+#questions-result-content ul li,
+#summary-result-content ul li {
+    margin-bottom: 0.5rem;
+}
 
 #generated-questions-area {
     background-color: #f0f4f8; 
