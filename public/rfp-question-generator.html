@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cendien RFP Analyzer</title> {/* Changed title */}
+    <title>Cendien RFP Analyzer</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
@@ -16,7 +16,7 @@
             </div>
             <nav>
                 <a href="index.html" class="nav-link">Home</a>
-                <span class="nav-current-page">RFP Analyzer</span> {/* Updated current page name */}
+                <span class="nav-current-page">RFP Analyzer</span> 
                 <a href="resume-generator.html" class="nav-link">AI Resume Generator</a> 
             </nav>
         </div>
@@ -24,23 +24,20 @@
 
     <main>
         <section id="rfp-question-tool" class="container content-card">
-            <h2>Cendien RFP Analyzer</h2> {/* Changed heading */}
-            <p>Upload an RFP (Request for Proposal) PDF file. Our AI will analyze its content, provide a summary, and generate clarification questions to help you prepare a comprehensive proposal.</p>
+            <h2>Cendien RFP Analyzer</h2> 
+            <p></p>
             
             <form id="rfp-details-form">
                 <div class="form-group">
                     <label for="rfpFileUpload">Upload RFP Document (PDF only):</label>
                     <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
                 </div>
-                
                 <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button> {/* Updated button text */}
             </form>
-
             <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
-                {/* Status messages and spinners will go here, changed ID for clarity */}
             </div>
 
-            {/* Tabbed Interface for Results */}
+
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
                     <button class="tab-link active" onclick="openTab(event, 'questions-tab')">Questions</button>
@@ -50,14 +47,14 @@
                 <div id="questions-tab" class="tab-content" style="display: block;">
                     <h3>Generated Clarification Questions:</h3>
                     <div id="questions-result-content">
-                        {/* AI generated questions will be displayed here */}
+                        
                     </div>
                 </div>
 
                 <div id="summary-tab" class="tab-content">
                     <h3>RFP Summary:</h3>
                     <div id="summary-result-content">
-                        {/* AI generated summary will be displayed here */}
+                        
                     </div>
                 </div>
             </div>
