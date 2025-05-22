@@ -352,6 +352,9 @@ footer p { margin: 0; font-size: 0.9rem; }
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
+#resume-generator-tool #resume-details-form {
+    margin-top: 1rem; /* Adjust this value to your preference, e.g., 1.5rem or 20px */
+}
 #resume-generator-tool #generate-resume-pdf-button.btn-primary {
     width: auto; 
     display: inline-block; 
