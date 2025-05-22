@@ -88,12 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Prepare prompt for AI
-            const aiPrompt = `Based on the following Request for Proposal (RFP) text, please generate a list of 5 to 10 critical and insightful clarification questions that should be asked to the client. These questions should help in better understanding their specific needs, scope, constraints, and expectations to prepare a comprehensive and effective proposal. Focus on questions that uncover ambiguities or unstated assumptions.
+            //const aiPrompt = `Based on the following Request for Proposal (RFP) text, please generate a list of 5 to 10 critical and insightful clarification questions that should be asked to the client. These questions should help in better understanding their specific needs, scope, constraints, and expectations to prepare a comprehensive and effective proposal. Focus on questions that uncover ambiguities or unstated assumptions.
+            const aiPrompt = `Generate questions for this RFP.'
 
-RFP Text:
----
 ${rfpText}
----
+
 
 Generated Questions:`;
 
