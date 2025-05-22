@@ -88,13 +88,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Prepare prompt for AI
-            //const aiPrompt = `Based on the following Request for Proposal (RFP) text, please generate a list of 5 to 10 critical and insightful clarification questions that should be asked to the client. These questions should help in better understanding their specific needs, scope, constraints, and expectations to prepare a comprehensive and effective proposal. Focus on questions that uncover ambiguities or unstated assumptions.
-            const aiPrompt = `Generate questions for this RFP.'
+            const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
+Provide two distinct sections in your response, clearly delimited:
+1. A concise summary of the RFP.
+2. A list of 5 to 10 critical and insightful clarification questions based on the RFP. These questions should help in better understanding specific needs, scope, constraints, and expectations to prepare a comprehensive proposal. Focus on questions that uncover ambiguities or unstated assumptions.
 
+Use the following format strictly:
+
+###SUMMARY_START###
+[Your generated summary of the RFP here. Aim for 3-5 key bullet points or a short paragraph.]
+###SUMMARY_END###
+
+###QUESTIONS_START###
+[Your list of generated questions here. Each question should ideally be on a new line, possibly numbered or bulleted.]
+###QUESTIONS_END###
+
+RFP Text:
+---
 ${rfpText}
-
-
-Generated Questions:`;
+---
+`;
 
             try {
                 showLoadingStateRFP(true, "AI is generating questions...");
