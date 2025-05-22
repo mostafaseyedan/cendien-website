@@ -24,7 +24,7 @@ app.post('/api/generate', async (req, res) => {
     }
 
     // Using gemini-1.5-flash-latest as it's efficient and good for text generation
-    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         console.log(`Received prompt. Sending to Gemini...`); // Keep logs concise for production
