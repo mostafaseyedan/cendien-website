@@ -170,38 +170,42 @@ ${rfpText}
                 // Display Summary
                 summaryResultContentDiv.innerHTML = ''; // Clear previous
                 summaryText.split('\n').forEach(line => {
-                    if (line.trim()) {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine) {
                         const p = document.createElement('p');
-                        // Basic formatting: if line starts with typical bullet/number, treat as list item conceptually
-                        if (line.trim().match(/^(\*|-|\d+\.)\s+/)) {
-                            const li = document.createElement('li');
-                            li.textContent = line.trim().replace(/^(\*|-|\d+\.)\s+/, '');
-                            // If you want to append to a UL, create UL first
-                            summaryResultContentDiv.appendChild(li); // Or append to a UL
-                        } else {
-                            p.textContent = line.trim();
-                            summaryResultContentDiv.appendChild(p);
-                        }
+                        let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+                        p.innerHTML = formattedLine; 
+                        summaryResultContentDiv.appendChild(p);
                     }
                 });
 
 
                 // Display Questions (formatted as an ordered list)
-                questionsResultContentDiv.innerHTML = ''; // Clear previous
+                questionsResultContentDiv.innerHTML = '';
                 const questionsList = document.createElement('ol');
-                questionsList.className = 'numbered-list'; // For potential specific styling
+                questionsList.className = 'numbered-list';
                 questionsText.split('\n').forEach(q => {
-                    if (q.trim()) {
+                    const trimmedQuestion = q.trim();
+                    if (trimmedQuestion) {
                         const listItem = document.createElement('li');
-                        listItem.textContent = q.trim().replace(/^(\*|-|\d+\.)\s+/, ''); // Clean up existing bullets/numbers
+
+                        let formattedQuestion = trimmedQuestion.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                        formattedQuestion = formattedQuestion.replace(/^(\*|-|\d+\.)\s+/, ''); 
+        
+                        listItem.innerHTML = formattedQuestion; // Use innerHTML
                         questionsList.appendChild(listItem);
                     }
                 });
                 questionsResultContentDiv.appendChild(questionsList);
 
                 analysisResultsArea.style.display = 'block';
-                // Ensure the "Questions" tab is active by default if it's the first one
-                document.querySelector('.tabs-container .tab-link').click(); // Simulate click on first tab to show it
+                const firstTabLink = document.querySelector('.tabs-container .tab-link');
+                if (firstTabLink) { // Check if the element exists
+                    firstTabLink.click(); 
+                }
+
 
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete!</p>`;
                 analysisStatusArea.style.display = 'flex';
