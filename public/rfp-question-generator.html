@@ -6,6 +6,7 @@
     <title>Cendien - RFP Question Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
     </head>
 <body>
     <header>
@@ -16,19 +17,19 @@
             <nav>
                 <a href="index.html" class="nav-link">Home</a>
                 <span class="nav-current-page">RFP Question Generator</span>
-                <a href="resume-generator.html" class="nav-link resume-nav-link">Resume Generator</a>
+                <a href="resume-generator.html" class="nav-link">AI Resume Generator</a> 
             </nav>
         </div>
     </header>
 
     <main>
         <section id="rfp-question-tool" class="container content-card">
-            <h2>RFP Question Generator</h2>
-            <p>Upload your RFP PDF file. Our AI will analyze its content and generate clarification questions to help you prepare a comprehensive proposal.</p>
+            <h2>AI RFP Question Generator</h2>
+            <p>Upload an RFP (Request for Proposal) PDF file. Our AI will analyze its content and generate clarification questions to help you prepare a comprehensive proposal.</p>
             
             <form id="rfp-details-form">
                 <div class="form-group">
-                    <label for="rfpFileUpload">Upload RFP (PDF only):</label>
+                    <label for="rfpFileUpload">Upload RFP Document (PDF only):</label>
                     <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
                 </div>
                 
@@ -52,7 +53,7 @@
         </div>
     </footer>
 
-    <script src="rfp-script.js"></script> 
+    <script type="module" src="rfp-script.js"></script> 
     <script>
         // Simple script to set the year in the footer for this new page
         const yearSpanRFP = document.getElementById('current-year-rfp');
