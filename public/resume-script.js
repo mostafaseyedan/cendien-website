@@ -115,7 +115,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         });
 
         if (!response.ok) {
-            const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' })); // More specific catch
+            const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' }));
             throw new Error(errorResult.error || `API error! status: ${response.status}`);
         }
         const data = await response.json();
@@ -184,7 +184,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         const pageHeight = doc.internal.pageSize.height;
         const pageWidth = doc.internal.pageSize.width;
         
-        const topMarginForContent = 15; // Standard top margin for content on subsequent pages
+        const topMarginForContent = 15; 
         const bottomMargin = 15;
         const leftMargin = 15;
         const rightMargin = 15;
@@ -197,32 +197,9 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
         const newNameHeaderHeight = 30; 
 
-        const fontSizes = {
-            name: 22, 
-            jobTitle: 10, 
-            sectionTitle: 12,
-            itemTitle: 10, 
-            body: 9.5,
-            small: 8.5,
-            contact: 9,
-        };
-        const lineHeights = { 
-            name: 9, 
-            jobTitle: 5.5, 
-            sectionTitle: 7.5, 
-            itemTitle: 6,  
-            body: 5.0,    
-            small: 4.8,   
-            contact: 5.0, 
-        };
-        const colors = { 
-            primary: "#2c3e50", 
-            text: "#333333", 
-            lightText: "#5f6368", 
-            accent: "#3498db", 
-            line: "#cccccc",
-            nameBackground: "#f0f0f0" 
-        };
+        const fontSizes = { name: 22, jobTitle: 10, sectionTitle: 12, itemTitle: 10, body: 9.5, small: 8.5, contact: 9 };
+        const lineHeights = { name: 9, jobTitle: 5.5, sectionTitle: 7.5, itemTitle: 6, body: 5.0, small: 4.8, contact: 5.0 };
+        const colors = { primary: "#2c3e50", text: "#333333", lightText: "#5f6368", accent: "#3498db", line: "#cccccc", nameBackground: "#f0f0f0" };
         
         function drawPageDecorations(contentStartingYValue) {
             doc.setDrawColor(colors.line);
@@ -246,7 +223,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
             doc.setTextColor(color);
 
             let printX = x;
-            let textToPrint = String(text || ''); // Ensure text is a string
+            let textToPrint = String(text || ''); 
             let effectiveMaxWidth = maxWidth;
 
             if (isBullet) {
@@ -320,9 +297,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
         }
         
         let contentStartY = newNameHeaderHeight + 8; 
-
         drawPageDecorations(contentStartY);
-
         let ySidebar = contentStartY;
         let yMain = contentStartY; 
 
@@ -372,28 +347,18 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                    yMain = topMarginForContent; 
                    yMain = addSectionTitle("EXPERIENCE (Continued)", mainColX, yMain, mainColWidth); 
                 }
-
                 yMain = addText(job.title || "Job Title", mainColX, yMain, { fontSize: fontSizes.itemTitle, fontStyle: "bold", maxWidth: mainColWidth });
-                
                 let companyLine = job.company || "Company Name";
                 if (job.location) companyLine += ` - ${job.location}`;
                 const yForDate = yMain;
                 yMain = addText(companyLine, mainColX, yMain, { fontSize: fontSizes.small, fontStyle: "italic", color: colors.lightText, maxWidth: mainColWidth });
-                
                 if (job.dates) {
-                    const currentSize = doc.getFontSize();
-                    const currentStyle = doc.getFont().fontStyle;
-                    const currentTextColor = doc.getTextColor();
-                    doc.setFontSize(fontSizes.small);
-                    doc.setFont("helvetica", "italic"); 
-                    doc.setTextColor(colors.lightText);
+                    const currentSize = doc.getFontSize(); const currentStyle = doc.getFont().fontStyle; const currentTextColor = doc.getTextColor();
+                    doc.setFontSize(fontSizes.small); doc.setFont("helvetica", "italic"); doc.setTextColor(colors.lightText);
                     doc.text(job.dates, mainColX + mainColWidth, yForDate , { align: 'right' });
-                    doc.setFontSize(currentSize);
-                    doc.setFont("helvetica", currentStyle); 
-                    doc.setTextColor(currentTextColor);
+                    doc.setFontSize(currentSize); doc.setFont("helvetica", currentStyle); doc.setTextColor(currentTextColor);
                 }
                 yMain += 2.5; 
-
                 if (job.bullets && job.bullets.length > 0) {
                     job.bullets.forEach(bullet => {
                         yMain = addText(bullet, mainColX, yMain, { isBullet: true, fontSize: fontSizes.body, maxWidth: mainColWidth });
@@ -417,11 +382,7 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
                 yMain += lineHeights.body * 1.2; 
             });
         }
-
         doc.save(`${fullName.replace(/\s+/g, '_')}_CN_AI_Resume.pdf`);
-        // showLoadingState(false); // Will be handled by the caller's finally block
-        // resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">PDF generated successfully and download started!</p>`;
-        // hideStatusArea(5000); // Will be handled by the caller's finally block
     }
 
     async function generateDocxResume(resumeData) {
@@ -430,193 +391,214 @@ Ensure each bullet point under Skills, Experience, and Projects starts on a new 
 
         showLoadingState(true, "Generating DOCX, this may take a moment...");
 
-        const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ShadingType, Table, TableCell, TableRow, WidthType, BorderStyle, VerticalAlign, TabStopType, TabStopPosition, PageBreak, convertInchesToTwip } = docx;
-        
-        const headerChildren = [];
-        headerChildren.push(new Paragraph({
-            children: [new TextRun({ text: fullName.toUpperCase(), bold: true, size: 44, font: "Helvetica" })],
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 100 }
-        }));
-        if (targetJobTitleUser && fullName.toLowerCase() !== targetJobTitleUser.toLowerCase()) {
-            headerChildren.push(new Paragraph({
-                children: [new TextRun({ text: targetJobTitleUser.toUpperCase(), size: 20, color: "5f6368", font: "Helvetica" })],
+        // Define newNameHeaderHeight within this function's scope
+        const newNameHeaderHeight = 30; // Consistent with PDF, value in mm for conceptual use in spacing DOCX
+
+        try {
+            // docx should be available globally now
+            const { Document, Packer, Paragraph, TextRun, AlignmentType, ShadingType, Table, TableCell, TableRow, WidthType, BorderStyle, VerticalAlign, TabStopType, TabStopPosition, convertInchesToTwip } = docx;
+
+            const children = []; 
+
+            const headerContentParagraphs = [];
+            headerContentParagraphs.push(new Paragraph({
+                children: [new TextRun({ text: fullName.toUpperCase(), bold: true, size: 44, font: "Helvetica" })],
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 200 }
+                spacing: { after: 100 } 
             }));
-        }
-        
-        const addDocxSectionTitle = (titleText) => {
-            return [
-                new Paragraph({
-                    children: [new TextRun({ text: titleText.toUpperCase(), bold: true, size: 24, color: "2c3e50", font: "Helvetica" })],
-                    spacing: { before: 300, after: 100 } // Increased spacing
-                }),
-                new Paragraph({
-                    border: { bottom: { color: "3498db", space: 1, style: BorderStyle.SINGLE, size: 6 } },
-                    spacing: { after: 250 } // Increased spacing
-                })
-            ];
-        };
-        
-        const sidebarChildren = [];
-        if (parsedSections.CONTACT_INFO) {
-            sidebarChildren.push(...addDocxSectionTitle("CONTACT"));
-            parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s).forEach(item => {
-                sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: item, size: 18, font: "Helvetica" })], spacing: {after: 100} }));
-            });
-        }
-
-        if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) {
-            sidebarChildren.push(...addDocxSectionTitle("EDUCATION"));
-            parsedSections.EDUCATION_PARSED.forEach(edu => {
-                sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.degree || "Degree", bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
-                sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.university || "University", size: 19, font: "Helvetica" })], spacing: {after: 70} }));
-                if (edu.location) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.location, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
-                if (edu.year) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.year, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
-                if (edu.gpa) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
-                sidebarChildren.push(new Paragraph({ spacing: { after: 150 } }));
-            });
-        }
-        
-        if (parsedSections.SKILLS) {
-            sidebarChildren.push(...addDocxSectionTitle("SKILLS"));
-            parsedSections.SKILLS.split('\n').map(s => s.trim()).filter(s => s && s.startsWith("-")).forEach(skill => {
-                sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: skill.substring(1).trim(), size: 19, font: "Helvetica" })], bullet: { level: 0 }, spacing: {after: 100} }));
-            });
-        }
-
-        const mainContentChildren = [];
-        if (parsedSections.SUMMARY) {
-            mainContentChildren.push(...addDocxSectionTitle("SUMMARY"));
-            mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: parsedSections.SUMMARY, size: 19, font: "Helvetica" })], spacing: {after: 150} }));
-        }
-
-        if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) {
-            mainContentChildren.push(...addDocxSectionTitle("EXPERIENCE"));
-            parsedSections.EXPERIENCE_PARSED.forEach(job => {
-                mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: job.title || "Job Title", bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
-                const companyDateChildren = [new TextRun({ text: `${job.company || "Company Name"}${job.location ? ` - ${job.location}` : ''}`, size: 18, color: "5f6368", italics: true, font: "Helvetica" })];
-                if (job.dates) {
-                    companyDateChildren.push(new TextRun({children: [new docx.Tab()], text: ""})); 
-                    companyDateChildren.push(new TextRun({ text: job.dates, size: 18, color: "5f6368", italics: true, font: "Helvetica" }));
-                }
-                mainContentChildren.push(new Paragraph({ 
-                    children: companyDateChildren,
-                    tabStops: job.dates ? [{type: TabStopType.RIGHT, position: TabStopPosition.MAX }] : [], // Max for right align
-                    spacing: {after: 100}
+            if (targetJobTitleUser && fullName.toLowerCase() !== targetJobTitleUser.toLowerCase()) {
+                headerContentParagraphs.push(new Paragraph({
+                    children: [new TextRun({ text: targetJobTitleUser.toUpperCase(), size: 20, color: "5f6368", font: "Helvetica" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 }
                 }));
-                if (job.bullets && job.bullets.length > 0) {
-                    job.bullets.forEach(bullet => {
-                        mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: bullet, size: 19, font: "Helvetica" })], bullet: { level: 0 }, spacing: {after: 100} }));
-                    });
-                }
-                mainContentChildren.push(new Paragraph({ spacing: { after: 150 } }));
-            });
-        }
-        
-        if (parsedSections.PROJECTS) {
-            mainContentChildren.push(...addDocxSectionTitle("PROJECTS"));
-             const projectItems = parsedSections.PROJECTS.split(/####ITEM_START####|####ITEM_END####/).map(s => s.trim()).filter(s => s);
-             projectItems.forEach(item => { /* ... existing parsing ... */ });
-        }
-        
-        // Document structure
-        const doc = new Document({
-            creator: "Cendien AI Resume Generator",
-            title: `${fullName} Resume`,
-            styles: {
-                default: {
-                    document: { run: { font: "Helvetica", size: 22 } }, // 11pt default (22 half-points)
-                },
-            },
-            sections: [{
-                properties: {
-                    page: {
-                        margin: {
-                            top: 0, // For seamless header
-                            right: convertInchesToTwip(0.75), 
-                            bottom: convertInchesToTwip(0.75), 
-                            left: convertInchesToTwip(0.75),
-                        },
-                    },
-                },
-                headers: { // Put the colored block and name in the actual header
-                    default: new docx.Header({
-                        children: [
-                            new Paragraph({
-                                children: headerChildren, // Use the pre-built header children
+            }
+
+            const headerTable = new Table({
+                rows: [ new TableRow({
+                        children: [ new TableCell({
+                                children: headerContentParagraphs,
                                 shading: { type: ShadingType.SOLID, color: "f0f0f0", fill: "f0f0f0" },
-                            })
-                        ],
-                    }),
-                },
-                children: [
-                    new Paragraph({text: "", spacing: {before: newNameHeaderHeight * 30}}), // Push content below header
-                    new Table({
-                        columnWidths: [35, 65], // Percentage based
-                        rows: [
-                            new TableRow({
-                                children: [
-                                    new TableCell({ children: sidebarChildren, verticalAlign: VerticalAlign.TOP, borders: {right: {style: BorderStyle.SINGLE, size: 4, color: "cccccc"}} }),
-                                    new TableCell({ children: mainContentChildren, verticalAlign: VerticalAlign.TOP, margins: {left: convertInchesToTwip(0.15)} })
-                                ],
+                                margins: { top: convertInchesToTwip(0.3), bottom: convertInchesToTwip(0.3) },
+                                borders: { top: { style: BorderStyle.NONE, size: 0, color: "auto" }, bottom: { style: BorderStyle.NONE, size: 0, color: "auto" }, left: { style: BorderStyle.NONE, size: 0, color: "auto" }, right: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                                }
                             }),
                         ],
-                        width: { size: 100, type: WidthType.PERCENTAGE },
-                    })
+                    }),
                 ],
-            }],
-        });
+                width: { size: 100, type: WidthType.PERCENTAGE },
+            });
+            children.push(headerTable);
+            // The spacing below the header is conceptual; actual DOCX spacing via paragraph or table cell margins.
+            // Using newNameHeaderHeight * 30 was for PDF's "spacing: {before: ...}" for a dummy paragraph.
+            // For DOCX, it's better to control spacing with paragraph properties after the header table.
+            children.push(new Paragraph({ spacing: { after: convertInchesToTwip(0.2) } }));
 
-        Packer.toBlob(doc).then(blob => {
-            saveAs(blob, `${fullName.replace(/\s+/g, '_')}_CN_AI_Resume.docx`);
-            // showLoadingState handled by caller's finally
-        }).catch(err => {
-            console.error("Error generating DOCX:", err);
-            throw err; // Re-throw to be caught by caller
-        });
+
+            const addDocxSectionTitle = (titleText) => { /* ... same as before ... */ 
+                const titleElements = [];
+                titleElements.push(new Paragraph({
+                    children: [new TextRun({ text: titleText.toUpperCase(), bold: true, size: 24, color: "2c3e50", font: "Helvetica" })],
+                    spacing: { before: 300, after: 100 } 
+                }));
+                titleElements.push(new Paragraph({ 
+                    border: { bottom: { color: "3498db", space: 1, style: BorderStyle.SINGLE, size: 6 } },
+                    spacing: { after: 250 }
+                }));
+                return titleElements;
+            };
+            
+            const sidebarChildren = [];
+            if (parsedSections.CONTACT_INFO) { /* ... same as before ... */ 
+                sidebarChildren.push(...addDocxSectionTitle("CONTACT"));
+                parsedSections.CONTACT_INFO.split('\n').map(s => s.trim()).filter(s => s).forEach(item => {
+                    sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: item, size: 18, font: "Helvetica" })], spacing: {after: 100} }));
+                });
+            }
+            if (parsedSections.EDUCATION_PARSED && parsedSections.EDUCATION_PARSED.length > 0) { /* ... same as before ... */ 
+                sidebarChildren.push(...addDocxSectionTitle("EDUCATION"));
+                parsedSections.EDUCATION_PARSED.forEach(edu => {
+                    if(edu.degree) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.degree, bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
+                    if(edu.university) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.university, size: 19, font: "Helvetica" })], spacing: {after: 70} }));
+                    if (edu.location) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.location, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
+                    if (edu.year) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: edu.year, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
+                    if (edu.gpa) sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 18, color: "5f6368", font: "Helvetica" })], spacing: {after: 70} }));
+                    sidebarChildren.push(new Paragraph({ spacing: { after: 150 } }));
+                });
+            }
+            if (parsedSections.SKILLS) { /* ... same as before ... */ 
+                sidebarChildren.push(...addDocxSectionTitle("SKILLS"));
+                parsedSections.SKILLS.split('\n').map(s => s.trim()).filter(s => s && s.startsWith("-")).forEach(skill => {
+                    sidebarChildren.push(new Paragraph({ children: [new TextRun({ text: skill.substring(1).trim(), size: 19, font: "Helvetica" })], bullet: { level: 0 }, spacing: {after: 100} }));
+                });
+            }
+
+            const mainContentChildren = [];
+            if (parsedSections.SUMMARY) { /* ... same as before ... */ 
+                mainContentChildren.push(...addDocxSectionTitle("SUMMARY"));
+                mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: parsedSections.SUMMARY, size: 19, font: "Helvetica" })], spacing: {after: 150} }));
+            }
+            if (parsedSections.EXPERIENCE_PARSED && parsedSections.EXPERIENCE_PARSED.length > 0) { /* ... same as before ... */ 
+                mainContentChildren.push(...addDocxSectionTitle("EXPERIENCE"));
+                parsedSections.EXPERIENCE_PARSED.forEach(job => {
+                    if(job.title) mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: job.title, bold: true, size: 20, font: "Helvetica" })], spacing: {after: 70} }));
+                    const companyLineText = `${job.company || "Company Name"}${job.location ? ` - ${job.location}` : ''}`;
+                    const companyDateChildren = [new TextRun({ text: companyLineText, size: 18, color: "5f6368", italics: true, font: "Helvetica" })];
+                    if (job.dates) {
+                        companyDateChildren.push(new TextRun({children: [new docx.Tab()]})); 
+                        companyDateChildren.push(new TextRun({ text: job.dates, size: 18, color: "5f6368", italics: true, font: "Helvetica" }));
+                    }
+                    mainContentChildren.push(new Paragraph({ 
+                        children: companyDateChildren,
+                        tabStops: job.dates ? [{type: TabStopType.RIGHT, position: TabStopPosition.MAX }] : [],
+                        spacing: {after: 100}
+                    }));
+                    if (job.bullets && job.bullets.length > 0) {
+                        job.bullets.forEach(bullet => {
+                            mainContentChildren.push(new Paragraph({ children: [new TextRun({ text: bullet, size: 19, font: "Helvetica" })], bullet: { level: 0 }, spacing: {after: 100} }));
+                        });
+                    }
+                    mainContentChildren.push(new Paragraph({ spacing: { after: 150 } }));
+                });
+            }
+            if (parsedSections.PROJECTS) { /* ... same as before ... */ 
+                mainContentChildren.push(...addDocxSectionTitle("PROJECTS"));
+                const projectItems = parsedSections.PROJECTS.split(/####ITEM_START####|####ITEM_END####/).map(s => s.trim()).filter(s => s);
+                 projectItems.forEach(item => {
+                    const lines = item.split('\n');
+                    lines.forEach((line, idx) => {
+                        const isBulletItem = (idx > 0 && (line.startsWith("- ") || line.startsWith("* ")));
+                        const textRunOptions = { text: isBulletItem ? line.substring(1).trim() : line, size: (idx === 0 && !isBulletItem) ? 20 : 19, bold: (idx === 0 && !isBulletItem), font: "Helvetica"};
+                        mainContentChildren.push(new Paragraph({ children: [new TextRun(textRunOptions)], bullet: isBulletItem ? { level: 0 } : undefined, spacing: {after: 100} }));
+                    });
+                    mainContentChildren.push(new Paragraph({ spacing: { after: 150 } }));
+                });
+            }
+
+            const contentTable = new Table({
+                columnWidths: [35, 65], 
+                rows: [ new TableRow({
+                        children: [
+                            new TableCell({ children: sidebarChildren, verticalAlign: VerticalAlign.TOP, borders: { right: {style: BorderStyle.SINGLE, size: 4, color: "cccccc"} } }),
+                            new TableCell({ children: mainContentChildren, verticalAlign: VerticalAlign.TOP, margins: {left: convertInchesToTwip(0.15)} })
+                        ],
+                    }),
+                ],
+                width: { size: 100, type: WidthType.PERCENTAGE },
+            });
+            children.push(contentTable);
+
+            const doc = new Document({
+                creator: "Cendien AI Resume Generator",
+                title: `${fullName} Resume`,
+                styles: { default: { document: { run: { font: "Helvetica", size: 22 } } } },
+                sections: [{
+                    properties: {
+                        page: { margin: { top: convertInchesToTwip(0.5), right: convertInchesToTwip(0.75), bottom: convertInchesToTwip(0.75), left: convertInchesToTwip(0.75) } },
+                    },
+                    children: children 
+                }],
+            });
+
+            console.log("DOCX document object created, attempting to pack...");
+            Packer.toBlob(doc).then(blob => {
+                console.log("Blob created successfully, attempting to save...");
+                saveAs(blob, `${fullName.replace(/\s+/g, '_')}_CN_AI_Resume.docx`);
+                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:green;">DOCX generated successfully and download started!</p>`;
+            }).catch(err => {
+                console.error("Error packing or saving DOCX:", err);
+                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error creating DOCX: ${err.message}</p>`;
+                throw err; 
+            });
+
+        } catch (error) {
+            console.error("Error preparing DOCX data:", error);
+            resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error preparing DOCX: ${error.message}</p>`;
+            throw error; 
+        }
     }
 
-
     if (resumeForm && generatePdfButton) {
-        resumeForm.addEventListener('submit', async function(event) { // Changed PDF to only respond to submit
+        resumeForm.addEventListener('submit', async function(event) { 
             event.preventDefault();
             let resumeData;
             try {
                 resumeData = await getResumeData();
                 if (resumeData) {
                     await generatePdfResume(resumeData);
+                    // Success message is handled by generatePdfResume implicitly via showLoadingState(false) & hideStatusArea
                 }
             } catch (error) {
                 console.error('Error processing PDF generation:', error);
                 resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
             } finally {
-                showLoadingState(false); // Always hide loading state
-                if (resumeData) hideStatusArea(5000); else hideStatusArea(0);
+                showLoadingState(false); 
+                if (resumeData && !resumeStatusArea.textContent.includes("Error")) {
+                     hideStatusArea(5000); // Hide success if no error was set
+                } else {
+                     hideStatusArea(resumeStatusArea.textContent.includes("Error") ? 5000 : 0); // Hide error after delay, or immediately if no data
+                }
             }
         });
     }
     
     if (generateDocxButton) { 
         generateDocxButton.addEventListener('click', async function() {
-            let resumeData;
+            let resumeData; // To check if getResumeData was successful
             try {
-                resumeData = await getResumeData(); // This calls showLoadingState itself
+                resumeData = await getResumeData(); 
                 if (resumeData) {
-                   await generateDocxResume(resumeData); // This also calls showLoadingState
-                   // Success message will be set by generateDocxResume on successful blob creation
+                   await generateDocxResume(resumeData); 
                 }
             } catch (error) {
-                console.error('Error processing DOCX generation:', error);
-                resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
+                console.error('Error in DOCX generation process:', error);
+                if (!resumeStatusArea.textContent.includes("Error creating DOCX") && !resumeStatusArea.textContent.includes("Error preparing DOCX")) {
+                    resumeStatusArea.innerHTML = `<p class="loading-text" style="color:red;">An error occurred: ${error.message}</p>`;
+                }
             } finally {
-                 showLoadingState(false); // Ensure it's hidden
-                 // hideStatusArea will be called by generateDocxResume on success/failure within its own flow
-                 if (resumeData && !resumeStatusArea.textContent.includes("Error")) { // Check if an error message wasn't already set
-                    // Only call hideStatusArea if not already handled by specific success/error in generateDocxResume
-                 } else {
-                    hideStatusArea(0); // If getResumeData failed
+                 showLoadingState(false); 
+                 if (resumeStatusArea.textContent) { 
+                    hideStatusArea(5000);
                  }
             }
         });
