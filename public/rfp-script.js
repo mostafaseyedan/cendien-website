@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dateSpan = document.createElement('span');
                     dateSpan.className = 'rfp-date';
                     // Format Firestore Timestamp (assuming analysisDate is a Firestore Timestamp object)
+                    analyses.forEach(analysis => {
+                        console.log("Raw analysisDate from server:", analysis.analysisDate); // <-- ADD THIS LOG
+                        console.log("Type of analysisDate:", typeof analysis.analysisDate); // <-- AND THIS
                     let formattedDate = 'N/A';
                     if (analysis.analysisDate && typeof analysis.analysisDate.seconds === 'number') { // More robust check for Timestamp-like object
                         const date = new Date(analysis.analysisDate.seconds * 1000);
@@ -127,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn("analysisDate is in an unexpected format:", analysis.analysisDate);
                     }
                     dateSpan.textContent = formattedDate;
+                });
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'rfp-name';
