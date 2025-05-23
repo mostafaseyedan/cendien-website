@@ -14,7 +14,7 @@ const db = new Firestore();
 
 // Middleware
 app.use(express.json()); // To parse JSON request bodies
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(express.json({ limit: '10mb' })); // Serve static files
 
 // API Endpoint to communicate with Gemini (existing)
 app.post('/api/generate', async (req, res) => {
