@@ -105,14 +105,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     dateSpan.className = 'rfp-date';
                     // Format Firestore Timestamp (assuming analysisDate is a Firestore Timestamp object)
                     let formattedDate = 'N/A';
-                    if (analysis.analysisDate && analysis.analysisDate.seconds) {
+                    if (analysis.analysisDate && typeof analysis.analysisDate.seconds === 'number') { // More robust check for Timestamp-like object
                         const date = new Date(analysis.analysisDate.seconds * 1000);
-                        formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                    } else if (typeof analysis.analysisDate === 'string') { // Fallback if it's already a string
+                        if (!isNaN(date.valueOf())) { // Check if date is valid
+                            formattedDate = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                        } else {
+                            console.warn("Timestamp object resulted in invalid Date:", analysis.analysisDate);
+                        }
+                    } else if (typeof analysis.analysisDate === 'string') { 
                         try {
                             const date = new Date(analysis.analysisDate);
-                             formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                        } catch(e) {/* ignore invalid date string */}
+                            if (!isNaN(date.valueOf())) { 
+                                 formattedDate = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                            } else {
+                                 console.warn("Date string was unparsable or resulted in invalid Date:", analysis.analysisDate);
+                            }
+                        } catch(e) { 
+                            console.error("Error parsing date string:", analysis.analysisDate, e);
+                        }
+                    } else if (analysis.analysisDate) { // If it exists but isn't a string or typical timestamp object
+                        console.warn("analysisDate is in an unexpected format:", analysis.analysisDate);
                     }
                     dateSpan.textContent = formattedDate;
 
