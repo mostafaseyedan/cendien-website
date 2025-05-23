@@ -1,15 +1,22 @@
 const express = require('express');
 const path = require('path');
-// Ensure global fetch is available (Node.js 18+ has it built-in)
+// Import the Firestore library
+const { Firestore, Timestamp } = require('@google-cloud/firestore'); // Added Timestamp
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Initialize Firestore
+// This will automatically use the Cloud Run service account's credentials
+// when running on Google Cloud. For local development, you might need to
+// set up authentication (e.g., gcloud auth application-default login).
+const db = new Firestore();
+
 // Middleware
 app.use(express.json()); // To parse JSON request bodies
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
-// API Endpoint to communicate with Gemini
+// API Endpoint to communicate with Gemini (existing)
 app.post('/api/generate', async (req, res) => {
     const { prompt } = req.body;
 
@@ -23,22 +30,16 @@ app.post('/api/generate', async (req, res) => {
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
 
-    // Using gemini-1.5-flash-latest as it's efficient and good for text generation
-    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`; // Using the corrected model
 
     try {
-        console.log(`Received prompt. Sending to Gemini...`); // Keep logs concise for production
+        console.log(`Received prompt for Gemini. Sending...`);
         const geminiResponse = await fetch(GEMINI_API_ENDPOINT, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { // Optional: Adjust temperature for more/less creative responses
-                    // temperature: 0.7, 
-                    // maxOutputTokens: 800, // Adjust if you need longer responses
-                }
+                // generationConfig: { ... } // Optional
             }),
         });
 
@@ -57,15 +58,13 @@ app.post('/api/generate', async (req, res) => {
             return res.status(geminiResponse.status).json({ error: errorMessage, details: data });
         }
         
-        // console.log('Gemini API Raw Response Data:', JSON.stringify(data, null, 2)); // For debugging
-
         if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
             res.json({ generatedText: data.candidates[0].content.parts[0].text });
         } else if (data.promptFeedback && data.promptFeedback.blockReason) {
             const blockMessage = `Prompt blocked by Gemini API. Reason: ${data.promptFeedback.blockReason}.`;
             console.warn(blockMessage, data.promptFeedback.safetyRatings);
             res.status(400).json({ error: blockMessage, details: data.promptFeedback.safetyRatings });
-        } else if (data.error) {
+        }  else if (data.error) {
             console.error('Gemini API returned an error structure:', data.error.message);
             res.status(500).json({ error: `Error from Gemini API: ${data.error.message}`, details: data.error });
         } else {
@@ -79,8 +78,85 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
+// --- New API Endpoints for RFP Analysis ---
+
+// POST: Save a new RFP analysis
+app.post('/api/rfp-analysis', async (req, res) => {
+    try {
+        const { rfpFileName, rfpSummary, generatedQuestions, status } = req.body;
+
+        if (!rfpFileName || !rfpSummary || !generatedQuestions) {
+            return res.status(400).json({ error: 'Missing required fields: rfpFileName, rfpSummary, generatedQuestions' });
+        }
+
+        const analysisData = {
+            rfpFileName,
+            rfpSummary,
+            generatedQuestions,
+            analysisDate: Timestamp.now(), // Use Firestore Timestamp
+            status: status || 'new', // Default status if not provided
+        };
+
+        // Add a new document with a generated ID to the 'rfpAnalyses' collection
+        const docRef = await db.collection('rfpAnalyses').add(analysisData);
+        console.log('RFP Analysis saved with ID:', docRef.id);
+        res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.' });
+
+    } catch (error) {
+        console.error('Error saving RFP analysis:', error);
+        res.status(500).json({ error: 'Failed to save RFP analysis.', details: error.message });
+    }
+});
+
+// GET: Retrieve all RFP analyses (or a paginated list)
+app.get('/api/rfp-analyses', async (req, res) => {
+    try {
+        const analysesSnapshot = await db.collection('rfpAnalyses')
+                                        .orderBy('analysisDate', 'desc') // Order by date, newest first
+                                        .get();
+        
+        if (analysesSnapshot.empty) {
+            return res.status(200).json([]); // Return empty array if no documents
+        }
+
+        const analyses = [];
+        analysesSnapshot.forEach(doc => {
+            analyses.push({ id: doc.id, ...doc.data() });
+        });
+        
+        res.status(200).json(analyses);
+
+    } catch (error) {
+        console.error('Error retrieving RFP analyses:', error);
+        res.status(500).json({ error: 'Failed to retrieve RFP analyses.', details: error.message });
+    }
+});
+
+// GET: Retrieve a specific RFP analysis by ID (Optional, but good for viewing details)
+app.get('/api/rfp-analysis/:id', async (req, res) => {
+    try {
+        const analysisId = req.params.id;
+        if (!analysisId) {
+            return res.status(400).json({ error: 'Analysis ID is required.' });
+        }
+
+        const docRef = db.collection('rfpAnalyses').doc(analysisId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'RFP analysis not found.' });
+        }
+
+        res.status(200).json({ id: doc.id, ...doc.data() });
+
+    } catch (error) {
+        console.error('Error retrieving specific RFP analysis:', error);
+        res.status(500).json({ error: 'Failed to retrieve RFP analysis.', details: error.message });
+    }
+});
+
+
 // Fallback for SPA or direct GET requests to non-API routes
-// This should serve your main index.html for any GET request not matched above
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
