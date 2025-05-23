@@ -106,33 +106,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Format Firestore Timestamp (assuming analysisDate is a Firestore Timestamp object)
                     analyses.forEach(analysis => {
                         console.log("Raw analysisDate from server:", analysis.analysisDate); 
-console.log("Type of analysisDate:", typeof analysis.analysisDate);
+                        console.log("Type of analysisDate:", typeof analysis.analysisDate);
 
-let formattedDate = 'N/A';
-// MODIFIED CONDITION: Check for _seconds
-if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
-    const date = new Date(analysis.analysisDate._seconds * 1000); // Use _seconds
-    if (!isNaN(date.valueOf())) { 
-        formattedDate = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-    } else {
-        console.warn("Timestamp object with _seconds resulted in invalid Date:", analysis.analysisDate);
-    }
-} else if (typeof analysis.analysisDate === 'string') { 
+                        let formattedDate = 'N/A';
+                    // MODIFIED CONDITION: Check for _seconds
+                            if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
+                                const date = new Date(analysis.analysisDate._seconds * 1000); // Use _seconds
+                            if (!isNaN(date.valueOf())) { 
+                                formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                            } else {
+                                console.warn("Timestamp object with _seconds resulted in invalid Date:", analysis.analysisDate);
+                          }
+                            } else if (typeof analysis.analysisDate === 'string') { 
     // This block remains as a fallback if the date is already a string
-    try {
-        const date = new Date(analysis.analysisDate);
-        if (!isNaN(date.valueOf())) { 
-             formattedDate = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-        } else {
-            console.warn("Date string was unparsable or resulted in invalid Date:", analysis.analysisDate);
-        }
-    } catch(e) { 
-        console.error("Error parsing date string:", analysis.analysisDate, e);
-    }
-} else if (analysis.analysisDate) { 
-    console.warn("analysisDate is in an unexpected format (not string or expected timestamp object):", analysis.analysisDate);
-}
-dateSpan.textContent = formattedDate;
+                              try {
+                                const date = new Date(analysis.analysisDate);
+                                if (!isNaN(date.valueOf())) { 
+                                 formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                            } else {
+                                console.warn("Date string was unparsable or resulted in invalid Date:", analysis.analysisDate);
+                            }
+                            } catch(e) { 
+                                console.error("Error parsing date string:", analysis.analysisDate, e);
+                            }
+                            } else if (analysis.analysisDate) { 
+                                console.warn("analysisDate is in an unexpected format (not string or expected timestamp object):", analysis.analysisDate);
+                            }
+                            dateSpan.textContent = formattedDate;
                 });
 
                     const nameSpan = document.createElement('span');
@@ -323,7 +323,7 @@ ${rfpText}
                 generateAnalysisButton.disabled = false;
             }
         });
-    } else {
+            } else {
         console.error("RFP form (#rfp-details-form) not found.");
     }
 
