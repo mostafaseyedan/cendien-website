@@ -6,7 +6,7 @@
     <title>Cendien RFP Analyzer</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
@@ -16,7 +16,7 @@
             </div>
             <nav>
                 <a href="index.html" class="nav-link">Home</a>
-                <span class="nav-current-page">RFP Analyzer</span> 
+                <span class="nav-current-page">RFP Analyzer</span>
                 <a href="resume-generator.html" class="nav-link">AI Resume Generator</a> 
             </nav>
         </div>
@@ -24,38 +24,40 @@
 
     <main>
         <section id="rfp-question-tool" class="container content-card">
-            <h2>Cendien RFP Analyzer</h2> 
-            <p></p>
+            <h2>Cendien RFP Analyzer</h2>
+
+            <div id="saved-analyses-section" style="margin-bottom: 2.5rem;">
+                <h3>Previously Analyzed RFPs</h3>
+                <div id="saved-analyses-list" class="analyzed-rfp-list-container">
+                    </div>
+                <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses saved yet.</p>
+            </div>
+            <p>Upload an RFP (Request for Proposal) PDF file. Our AI will analyze its content, provide a summary, and generate clarification questions to help you prepare a comprehensive proposal.</p>
             
             <form id="rfp-details-form">
                 <div class="form-group">
                     <label for="rfpFileUpload">Upload RFP Document (PDF only):</label>
                     <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
                 </div>
+                
                 <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button>
             </form>
+
             <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
             </div>
-
 
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
                     <button class="tab-link active" onclick="openTab(event, 'questions-tab')">Questions</button>
                     <button class="tab-link" onclick="openTab(event, 'summary-tab')">Summary</button>
                 </div>
-
                 <div id="questions-tab" class="tab-content" style="display: block;">
                     <h3>Generated Clarification Questions:</h3>
-                    <div id="questions-result-content">
-                        
-                    </div>
+                    <div id="questions-result-content"></div>
                 </div>
-
                 <div id="summary-tab" class="tab-content">
                     <h3>RFP Summary:</h3>
-                    <div id="summary-result-content">
-                        
-                    </div>
+                    <div id="summary-result-content"></div>
                 </div>
             </div>
         </section>
@@ -73,8 +75,6 @@
         if (yearSpanRFP) {
             yearSpanRFP.textContent = new Date().getFullYear();
         }
-
-        // Basic Tab switching logic (can be moved to rfp-script.js later if preferred)
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -85,8 +85,9 @@
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) targetTab.style.display = "block";
+            if (evt && evt.currentTarget) evt.currentTarget.className += " active";
         }
     </script>
 </body>
