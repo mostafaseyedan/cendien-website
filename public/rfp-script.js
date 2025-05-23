@@ -1,21 +1,16 @@
 // At the top of rfp-script.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
-// Set the workerSrc for PDF.js
-// Ensure this URL is correct and the worker file is accessible.
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
     const rfpForm = document.getElementById('rfp-details-form');
     const rfpFileUpload = document.getElementById('rfpFileUpload');
-    const generateAnalysisButton = document.getElementById('generate-analysis-button'); // ID updated in HTML
-    const analysisStatusArea = document.getElementById('analysis-status-area'); // ID updated in HTML
-    const analysisResultsArea = document.getElementById('analysis-results-area'); // Main container for tabs
-    
-    // Specific content divs within tabs
+    const generateAnalysisButton = document.getElementById('generate-analysis-button');
+    const analysisStatusArea = document.getElementById('analysis-status-area');
+    const analysisResultsArea = document.getElementById('analysis-results-area');
     const questionsResultContentDiv = document.getElementById('questions-result-content');
     const summaryResultContentDiv = document.getElementById('summary-result-content');
-    
     const yearSpanRFP = document.getElementById('current-year-rfp');
 
     if (yearSpanRFP && !yearSpanRFP.textContent) {
@@ -23,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const showLoadingStateRFP = (isLoading, message = "Processing...") => {
+        // ... (your existing showLoadingStateRFP function)
         if (!analysisStatusArea) return;
         if (isLoading) {
             analysisStatusArea.style.display = 'flex';
@@ -33,16 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
             analysisResultsArea.style.display = 'none'; 
             if(questionsResultContentDiv) questionsResultContentDiv.innerHTML = ''; 
             if(summaryResultContentDiv) summaryResultContentDiv.innerHTML = '';
-        } else {
-            // Button re-enabling handled in finally or specific success/error
         }
     };
 
     const hideLoadingStateRFP = (delay = 0) => {
-        setTimeout(() => {
+        // ... (your existing hideLoadingStateRFP function)
+         setTimeout(() => {
             if (analysisStatusArea) {
-                // Only hide if it's just a generic loading message, not an error/success message
-                 if (analysisStatusArea.innerHTML.includes('<div class="spinner">')) {
+                 if (analysisStatusArea.innerHTML.includes('<div class="spinner">')) { // Only hide if it's a generic loading
                     analysisStatusArea.style.display = 'none';
                     analysisStatusArea.innerHTML = '';
                 }
@@ -51,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, delay);
     };
 
-    // Basic conceptual function for PDF text extraction
     async function extractTextFromPdf(file) {
+        // ... (your existing extractTextFromPdf function)
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async (event) => {
@@ -63,8 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const text = await page.getTextContent();
-                        // Join text items, ensuring spaces between words that might be separate items
-                        textContent += text.items.map(item => item.str).join(' ') + '\n'; // Add newline after each page's content
+                        textContent += text.items.map(item => item.str).join(' ') + '\n'; 
                     }
                     resolve(textContent.trim());
                 } catch (err) {
@@ -80,13 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     if (rfpForm) {
         rfpForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             showLoadingStateRFP(true, "Starting analysis...");
 
             const file = rfpFileUpload.files[0];
+            let rfpFileName = "UnknownRFP"; // Default filename
 
             if (!file) {
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Please select an RFP PDF file.</p>`;
@@ -95,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateAnalysisButton.disabled = false;
                 return;
             }
+            rfpFileName = file.name; // Get the filename
 
             if (file.type !== "application/pdf") {
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Invalid file type. Please upload a PDF.</p>`;
@@ -110,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 rfpText = await extractTextFromPdf(file);
                 console.log("Extracted RFP Text (first 500 chars):", rfpText.substring(0, 500) + "...");
 
-                if (!rfpText || rfpText.trim().length < 50) { // Basic check for content
+                if (!rfpText || rfpText.trim().length < 50) {
                     throw new Error("Could not extract sufficient text from the PDF, or PDF is empty/corrupted.");
                 }
             } catch (error) {
@@ -143,6 +137,9 @@ ${rfpText}
 ---
 `;
 
+            let summaryText = "Summary could not be extracted."; // Initialize for broader scope
+            let questionsText = "Questions could not be extracted."; // Initialize for broader scope
+
             try {
                 showLoadingStateRFP(true, "AI is analyzing and generating content...");
                 const response = await fetch('/api/generate', {
@@ -157,44 +154,37 @@ ${rfpText}
                 }
 
                 const data = await response.json();
-                let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, ''); // Handle multiline ```
+                let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
 
-                // Parse summary
                 const summaryMatch = rawAiOutput.match(/###SUMMARY_START###([\s\S]*?)###SUMMARY_END###/);
-                const summaryText = summaryMatch && summaryMatch[1] ? summaryMatch[1].trim() : "Summary could not be extracted.";
+                summaryText = summaryMatch && summaryMatch[1] ? summaryMatch[1].trim() : summaryText;
                 
-                // Parse questions
                 const questionsMatch = rawAiOutput.match(/###QUESTIONS_START###([\s\S]*?)###QUESTIONS_END###/);
-                const questionsText = questionsMatch && questionsMatch[1] ? questionsMatch[1].trim() : "Questions could not be extracted.";
+                questionsText = questionsMatch && questionsMatch[1] ? questionsMatch[1].trim() : questionsText;
 
                 // Display Summary
-                summaryResultContentDiv.innerHTML = ''; // Clear previous
-                summaryText.split('\n').forEach(line => {
+                summaryResultContentDiv.innerHTML = '';
+                summaryText.split('\n').forEach(line => { /* ... (your existing display logic for summary, converting ** to <strong>) ... */ 
                     const trimmedLine = line.trim();
                     if (trimmedLine) {
                         const p = document.createElement('p');
                         let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
                         p.innerHTML = formattedLine; 
                         summaryResultContentDiv.appendChild(p);
                     }
                 });
 
-
-                // Display Questions (formatted as an ordered list)
+                // Display Questions
                 questionsResultContentDiv.innerHTML = '';
                 const questionsList = document.createElement('ol');
                 questionsList.className = 'numbered-list';
-                questionsText.split('\n').forEach(q => {
+                questionsText.split('\n').forEach(q => { /* ... (your existing display logic for questions, converting ** to <strong>) ... */ 
                     const trimmedQuestion = q.trim();
                     if (trimmedQuestion) {
                         const listItem = document.createElement('li');
-
                         let formattedQuestion = trimmedQuestion.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
                         formattedQuestion = formattedQuestion.replace(/^(\*|-|\d+\.)\s+/, ''); 
-        
-                        listItem.innerHTML = formattedQuestion; // Use innerHTML
+                        listItem.innerHTML = formattedQuestion; 
                         questionsList.appendChild(listItem);
                     }
                 });
@@ -202,19 +192,43 @@ ${rfpText}
 
                 analysisResultsArea.style.display = 'block';
                 const firstTabLink = document.querySelector('.tabs-container .tab-link');
-                if (firstTabLink) { // Check if the element exists
-                    firstTabLink.click(); 
-                }
+                if (firstTabLink) firstTabLink.click(); 
 
-
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete!</p>`;
+                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete! Saving results...</p>`;
                 analysisStatusArea.style.display = 'flex';
+
+                // **** NEW: Save the analysis ****
+                try {
+                    const saveResponse = await fetch('/api/rfp-analysis', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            rfpFileName: rfpFileName,
+                            rfpSummary: summaryText,
+                            generatedQuestions: questionsText,
+                            status: 'analyzed' // Or any default status you prefer
+                        })
+                    });
+                    if (!saveResponse.ok) {
+                        const saveErrorResult = await saveResponse.json().catch(() => ({error: "Failed to save analysis and couldn't parse error."}));
+                        throw new Error(saveErrorResult.error || `Failed to save analysis. Status: ${saveResponse.status}`);
+                    }
+                    const saveData = await saveResponse.json();
+                    console.log("Save response:", saveData);
+                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete and results saved!</p>`;
+                } catch (saveError) {
+                    console.error("Error saving RFP analysis:", saveError);
+                    // Update status to show analysis was done but saving failed.
+                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">RFP analysis complete, but failed to save results: ${saveError.message}</p>`;
+                }
+                // ******************************
+
                 hideLoadingStateRFP(5000);
 
             } catch (error) {
-                console.error("Error generating analysis with AI:", error);
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error during AI analysis: ${error.message}</p>`;
-                analysisStatusArea.style.display = 'flex';
+                console.error("Error during AI analysis or saving:", error);
+                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
+                analysisStatusArea.style.display = 'flex'; // Ensure status area is visible for errors
                 hideLoadingStateRFP(5000);
             } finally {
                 generateAnalysisButton.disabled = false;
@@ -224,10 +238,7 @@ ${rfpText}
         console.error("RFP form (#rfp-details-form) not found.");
     }
 
-    // Tab switching logic (if you move it from HTML)
-    // Ensure the openTab function is defined here if not inline in HTML.
-    // Example:
-    window.openTab = function(evt, tabName) { // Expose to global scope if called by inline HTML onclick
+    window.openTab = function(evt, tabName) { /* ... (your existing openTab function) ... */ 
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("tab-content");
         for (i = 0; i < tabcontent.length; i++) {
@@ -244,23 +255,18 @@ ${rfpText}
         if (evt && evt.currentTarget) {
             evt.currentTarget.className += " active";
         }
-    }
-    // Initialize the first tab (Questions) as active if not already handled by HTML/CSS
+    };
     const firstTabLink = document.querySelector('.tabs-container .tab-link');
     if (firstTabLink && document.getElementById('questions-tab')) {
-         // Check if no tab is active yet (e.g. on initial load after results are populated)
         const activeTab = document.querySelector('.tabs-container .tab-link.active');
         if(!activeTab){
             document.getElementById('questions-tab').style.display = "block";
             firstTabLink.className += " active";
         } else {
-             // If a tab is already active (e.g. from previous interaction or HTML default), ensure its content is visible
             const activeTabName = activeTab.getAttribute('onclick').match(/'([^']+)'/)[1];
             if (document.getElementById(activeTabName)) {
                 document.getElementById(activeTabName).style.display = "block";
             }
         }
     }
-
-
 });
