@@ -28,24 +28,31 @@
 
             <div id="saved-analyses-section" style="margin-bottom: 2.5rem;">
                 <h3>Previously Analyzed RFPs</h3>
+                
+                <div class="rfp-list-tabs">
+                    <button class="rfp-list-tab-button active" data-status-filter="all">All Analyzed</button>
+                    <button class="rfp-list-tab-button" data-status-filter="active">Active</button>
+                    <button class="rfp-list-tab-button" data-status-filter="not_pursuing">Not Pursuing</button>
+                </div>
+
                 <div id="saved-analyses-header" class="analyzed-rfp-item" style="font-weight: bold; border-bottom: 2px solid #ccc; background-color: #f8f9fa;">
-                    <span class="rfp-col-title">RFP Title</span>
-                    <span class="rfp-col-type">RFP Type</span>
-                    <span class="rfp-col-owner">Owner</span>
-                    <span class="rfp-col-date">Date</span>
+                    <span class="rfp-col-title sortable-header" data-sort-key="rfpTitle">RFP Title ⇅</span>
+                    <span class="rfp-col-type sortable-header" data-sort-key="rfpType">RFP Type ⇅</span>
+                    <span class="rfp-col-owner sortable-header" data-sort-key="submittedBy">Owner ⇅</span>
+                    <span class="rfp-col-date sortable-header" data-sort-key="analysisDate">Date ⇅</span>
                     <span class="rfp-col-status">Status</span>
                     <span class="rfp-col-actions">Actions</span>
                 </div>
                 <div id="saved-analyses-list" class="analyzed-rfp-list-container">
                     </div>
-                <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses saved yet.</p>
+                <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses saved yet for this category.</p>
             </div>
-            <p style="margin-bottom: 1.5rem;"></p>
             
-            <form id="rfp-details-form">
+            <form id="rfp-details-form" style="margin-top:2.5rem; padding-top:1.5rem; border-top: 1px solid #e0e0e0;">
+                 <h3 style="text-align:left; font-size:1.6rem; margin-bottom:1rem;">Analyze New RFP</h3>
                 <div class="form-group">
                     <label for="rfpTitle">RFP Title:</label>
-                    <input type="text" id="rfpTitle" name="rfpTitle" placeholder="Enter a Title" required>
+                    <input type="text" id="rfpTitle" name="rfpTitle" placeholder="Enter a Title">
                 </div>
 
                 <div class="form-group">
@@ -80,9 +87,7 @@
             </form>
 
             <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
-
             </div>
-
 
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
@@ -93,47 +98,31 @@
                     <button class="tab-link" onclick="openTab(event, 'stakeholders-tab')">Stakeholders</button>
                     <button class="tab-link" onclick="openTab(event, 'risks-tab')">Risks</button>
                 </div>
-
                 <div id="summary-tab" class="tab-content" style="display: block;">
                     <h3>RFP Summary:</h3>
-                    <div id="summary-result-content">
-
-                    </div>
+                    <div id="summary-result-content"></div>
                 </div>
-
                 <div id="questions-tab" class="tab-content">
                     <h3>Generated Clarification Questions:</h3>
-                    <div id="questions-result-content">
-
-                    </div>
+                    <div id="questions-result-content"></div>
                 </div>
-
                 <div id="deadlines-tab" class="tab-content">
                     <h3>Key Deadlines:</h3>
-                    <div id="deadlines-result-content">
-
-                    </div>
+                    <div id="deadlines-result-content"></div>
                 </div>
-
                 <div id="requirements-tab" class="tab-content">
                     <h3>Key Requirements:</h3>
-                    <div id="requirements-result-content">
-                    </div>
+                    <div id="requirements-result-content"></div>
                 </div>
-
                 <div id="stakeholders-tab" class="tab-content">
                     <h3>Mentioned Stakeholders:</h3>
-                    <div id="stakeholders-result-content">
-                    </div>
+                    <div id="stakeholders-result-content"></div>
                 </div>
-
                 <div id="risks-tab" class="tab-content">
                     <h3>Potential Risks/Red Flags:</h3>
-                    <div id="risks-result-content">
-                    </div>
+                    <div id="risks-result-content"></div>
                 </div>
             </div>
-
         </section>
     </main>
 
@@ -164,7 +153,7 @@
             if (targetTab) {
                 targetTab.style.display = "block";
             }
-            if (evt && evt.currentTarget) { // Check if evt and currentTarget exist
+            if (evt && evt.currentTarget) {
                 evt.currentTarget.className += " active";
             }
         }
