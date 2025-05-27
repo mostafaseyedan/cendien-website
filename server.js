@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 // This will automatically use the Cloud Run service account's credentials
 // when running on Google Cloud. For local development, you might need to
 // set up authentication (e.g., gcloud auth application-default login).
-const db = new Firestore();
+const db = new Firestore({
+    projectId: 'temporal-grin-460413-q9', // Replace with the actual Project ID
+});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
