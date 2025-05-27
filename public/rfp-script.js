@@ -165,28 +165,35 @@ document.addEventListener('DOMContentLoaded', () => {
         savedAnalysesListDiv.innerHTML = '';
         let filteredAnalyses = [...allFetchedAnalyses];
 
+        // Apply status filter
         if (currentStatusFilter === 'active') {
             filteredAnalyses = filteredAnalyses.filter(a => a.status === 'active');
         } else if (currentStatusFilter === 'not_pursuing') {
             filteredAnalyses = filteredAnalyses.filter(a => a.status === 'not_pursuing');
         } else if (currentStatusFilter === 'all') { 
-            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new');
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new'); // Include 'new' if applicable
         }
+        // else: if a different 'all' is needed, adjust filter condition
 
+
+        // Apply sorting
         filteredAnalyses.sort((a, b) => {
             let valA = a[currentSortKey];
             let valB = b[currentSortKey];
-            if (currentSortKey === 'analysisDate') {
+
+            if (currentSortKey === 'analysisDate') { 
                 valA = a.analysisDate && a.analysisDate._seconds ? Number(a.analysisDate._seconds) : 0;
                 valB = b.analysisDate && b.analysisDate._seconds ? Number(b.analysisDate._seconds) : 0;
-            } else {
+            } else { 
                 valA = (typeof valA === 'string' ? valA.toLowerCase() : (valA || '')).toString();
                 valB = (typeof valB === 'string' ? valB.toLowerCase() : (valB || '')).toString();
             }
+            
             if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
             if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
             return 0;
         });
+
 
         if (filteredAnalyses.length === 0) {
             noSavedAnalysesP.style.display = 'block';
@@ -198,12 +205,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemDiv.className = 'analyzed-rfp-item';
                 const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
                 
+                // Date and Time Formatting Update
+                let formattedDateTime = 'N/A';
+                if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
+                    const date = new Date(analysis.analysisDate._seconds * 1000); 
+                    if (!isNaN(date.valueOf())) { 
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        formattedDateTime = `${year}/${month}/${day} ${hours}:${minutes}`; // Shows YYYY/MM/DD HH:MM
+                    }
+                }
+
+                // Status dot color logic (already implements the requested scheme)
+                const statusDotClass = analysis.status === 'active' ? 'green' :
+                                       analysis.status === 'not_pursuing' ? 'red' :
+                                       'orange'; // Default to orange for 'analyzed' or other initial states
+
                 itemDiv.innerHTML = `
                     <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
                     <span class="rfp-col-type">${analysis.rfpType || 'N/A'}</span>
                     <span class="rfp-col-owner">${analysis.submittedBy || 'N/A'}</span>
-                    <span class="rfp-col-date">${analysis.analysisDate && analysis.analysisDate._seconds ? new Date(analysis.analysisDate._seconds * 1000).toLocaleDateString() : 'N/A'}</span>
-                    <span class="rfp-col-status"><span class="rfp-status-dot ${analysis.status === 'active' ? 'green' : analysis.status === 'not_pursuing' ? 'red' : 'orange'}" title="${analysis.status || 'analyzed'}"></span></span>
+                    <span class="rfp-col-date">${formattedDateTime}</span>
+                    <span class="rfp-col-status"><span class="rfp-status-dot ${statusDotClass}" title="${analysis.status || 'analyzed'}"></span></span>
                     <span class="rfp-col-actions"></span>`; 
 
                 const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
@@ -268,6 +294,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     setNotPursuingButton.onclick = () => updateRfpStatus(analysis.id, 'not_pursuing');
                     actionsSpan.appendChild(setNotPursuingButton);
                 }
+                // Add a button to move back to 'analyzed' (unactuated) if it's 'active' or 'not_pursuing'
+                if (analysis.status === 'active' || analysis.status === 'not_pursuing') {
+                    const setAnalyzedButton = document.createElement('button');
+                    setAnalyzedButton.className = 'action-icon';
+                    setAnalyzedButton.innerHTML = '<i class="fas fa-inbox" aria-hidden="true"></i>'; // Example icon
+                    setAnalyzedButton.title = "Move to Analyzed/Unactuated";
+                    setAnalyzedButton.onclick = () => updateRfpStatus(analysis.id, 'analyzed');
+                    actionsSpan.appendChild(setAnalyzedButton);
+                }
+
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'action-icon delete';
                 deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i>';
