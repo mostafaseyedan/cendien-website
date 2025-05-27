@@ -515,8 +515,8 @@ footer p { margin: 0; font-size: 0.9rem; }
     font-size: 0.95rem; 
 }
 
-#rfp-question-tool input[type="text"] { /* Added for RFP Title input */
-    width: 100%;
+#rfp-question-tool input[type="text"] { 
+    width: 100%; /* Default width for text inputs in this form */
     padding: 0.75rem 1rem;
     border: 1px solid #d1d1d1;
     border-radius: 4px;
@@ -525,14 +525,14 @@ footer p { margin: 0; font-size: 0.9rem; }
     line-height: 1.5;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-#rfp-question-tool input[type="text"]:focus { /* Added for RFP Title input */
+#rfp-question-tool input[type="text"]:focus { 
     border-color: #35ED54; 
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
 
 #rfp-question-tool input[type="file"] {
-    width: 100%; /* Changed from 50% to 100% for consistency */
+    width: 100%; 
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
     border-radius: 4px; 
@@ -541,7 +541,6 @@ footer p { margin: 0; font-size: 0.9rem; }
     line-height: 1.5; 
     box-sizing: border-box;
     background-color: #fff; 
-    /* margin-bottom: 1.5rem; -- This is handled by form-group margin */
 }
 
 #rfp-question-tool input[type="file"]:focus {
@@ -550,21 +549,16 @@ footer p { margin: 0; font-size: 0.9rem; }
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
 
-/* Ensure RFP button uses secondary styles and auto width */
-#rfp-question-tool #generate-analysis-button.btn-secondary { /* Updated ID */
-    width: auto; 
-    display: inline-block; 
-}
-#rfp-question-tool select.section-selector { /* Or a new class if you prefer */
-    width: 100%; /* Make it full width like other inputs */
+#rfp-question-tool select.section-selector { 
+    width: 100%; 
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
     border-radius: 4px; 
     font-family: 'Montserrat', sans-serif; 
     font-size: 0.95rem; 
-    line-height: 1.5; /* Adjusted line-height for select */
-    background-color: #fff; /* Ensure background color */
-    appearance: auto; /* Restore default appearance */
+    line-height: 1.5; 
+    background-color: #fff; 
+    appearance: auto; 
     -webkit-appearance: auto;
     -moz-appearance: auto;
 }
@@ -574,6 +568,22 @@ footer p { margin: 0; font-size: 0.9rem; }
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
 }
+
+/* RFP Form input sizing adjustment for specific fields */
+#rfp-question-tool #rfpTitle,
+#rfp-question-tool #rfpType,
+#rfp-question-tool #submittedBy,
+#rfp-question-tool #rfpFileUpload {
+    width: 50%;
+}
+
+
+/* Ensure RFP button uses secondary styles and auto width */
+#rfp-question-tool #generate-analysis-button.btn-secondary { 
+    width: auto; 
+    display: inline-block; 
+}
+
 .tabs-container {
     overflow: hidden; 
     border-bottom: 1px solid #ccc; 
@@ -645,7 +655,7 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 
 #questions-result-content ul,
-#questions-result-content ol, /* Added ol for questions specifically */
+#questions-result-content ol, 
 #summary-result-content ul,
 #deadlines-result-content ul,
 #requirements-result-content ul,
@@ -656,11 +666,11 @@ footer p { margin: 0; font-size: 0.9rem; }
     margin-top: 0.5rem;
     margin-bottom: 1rem;
 }
-#questions-result-content ol.numbered-list, /* For questions tab */
-#questions-result-content ul:not(.numbered-list) { /* For any other potential ul in questions */
-    list-style-type: decimal; /* Default to decimal for questions unless specified */
+#questions-result-content ol.numbered-list, 
+#questions-result-content ul:not(.numbered-list) { 
+    list-style-type: decimal; 
 }
-#summary-result-content ul, /* For other tabs, default to disc */
+#summary-result-content ul, 
 #deadlines-result-content ul,
 #requirements-result-content ul,
 #stakeholders-result-content ul,
@@ -733,6 +743,14 @@ footer p { margin: 0; font-size: 0.9rem; }
         padding: 8px 12px; /* Smaller padding */
         font-size: 0.9rem; /* Smaller font */
     }
+
+    /* RFP Form input sizing adjustment for smaller screens */
+    #rfp-question-tool #rfpTitle,
+    #rfp-question-tool #rfpType,
+    #rfp-question-tool #submittedBy,
+    #rfp-question-tool #rfpFileUpload {
+        width: 100%; /* Make them full width on smaller screens */
+    }
 }
 @media (max-width: 480px) {
     #hero-text-box h1 { font-size: 1.6rem; }
@@ -740,7 +758,7 @@ footer p { margin: 0; font-size: 0.9rem; }
     #ai-module-suggester h2 { font-size: 1.3rem; }
     
     #resume-generator-tool #generate-resume-button.btn-primary,
-    #rfp-question-tool #generate-analysis-button.btn-secondary { /* Updated ID */
+    #rfp-question-tool #generate-analysis-button.btn-secondary { 
         width: 100%;
         display: block; 
         margin-left: auto; 
@@ -752,20 +770,20 @@ footer p { margin: 0; font-size: 0.9rem; }
     
     /* Make tabs stack on very small screens if needed */
     .tabs-container .tab-link {
-        float: none; /* Remove float */
-        display: block; /* Stack them */
-        width: 100%; /* Full width */
-        text-align: left; /* Align text to left */
-        margin-right: 0; /* Remove right margin */
-        margin-bottom: 2px; /* Add bottom margin for separation */
-        border-radius: 4px; /* Adjust border radius if stacking */
-        border-bottom: 1px solid #ccc; /* Add bottom border back */
+        float: none; 
+        display: block; 
+        width: 100%; 
+        text-align: left; 
+        margin-right: 0; 
+        margin-bottom: 2px; 
+        border-radius: 4px; 
+        border-bottom: 1px solid #ccc; 
     }
     .tabs-container .tab-link.active {
-        top: 0; /* Reset top position */
-        border-bottom: 1px solid #005a9c; /* Active tab distinct bottom border */
+        top: 0; 
+        border-bottom: 1px solid #005a9c; 
     }
     .tabs-container {
-        border-bottom: none; /* Remove container's bottom border if tabs are stacked */
+        border-bottom: none; 
     }
 }
