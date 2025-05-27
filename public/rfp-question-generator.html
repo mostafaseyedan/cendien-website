@@ -42,7 +42,7 @@
 
                 <div class="form-group">
                     <label for="rfpType">RFP Type:</label>
-                    <select id="rfpType" name="rfpType" class="section-selector" style="min-width: 100%;"> {/* Reusing section-selector for now */}
+                    <select id="rfpType" name="rfpType" class="section-selector" style="min-width: 100%;">
                         <option value="IT Support">IT Support</option>
                         <option value="IT Staffing">IT Staffing</option>
                         <option value="ERP Managed Services">ERP Managed Services</option>
@@ -78,7 +78,6 @@
 
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
-                    {/* Make "Summary" the default active tab, or choose another */}
                     <button class="tab-link active" onclick="openTab(event, 'summary-tab')">Summary</button>
                     <button class="tab-link" onclick="openTab(event, 'questions-tab')">Questions</button>
                     <button class="tab-link" onclick="openTab(event, 'deadlines-tab')">Deadlines</button>
@@ -87,7 +86,7 @@
                     <button class="tab-link" onclick="openTab(event, 'risks-tab')">Risks</button>
                 </div>
 
-                <div id="summary-tab" class="tab-content" style="display: block;"> {/* Default active tab content */}
+                <div id="summary-tab" class="tab-content" style="display: block;">
                     <h3>RFP Summary:</h3>
                     <div id="summary-result-content">
 
