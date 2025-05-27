@@ -78,27 +78,54 @@
 
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
-                    <button class="tab-link active" onclick="openTab(event, 'questions-tab')">Questions</button>
-                    <button class="tab-link" onclick="openTab(event, 'summary-tab')">Summary</button>
-                    <button class="tab-link" onclick="openTab(event, 'insights-tab')">Key Insights</button>
+                    {/* Make "Summary" the default active tab, or choose another */}
+                    <button class="tab-link active" onclick="openTab(event, 'summary-tab')">Summary</button>
+                    <button class="tab-link" onclick="openTab(event, 'questions-tab')">Questions</button>
+                    <button class="tab-link" onclick="openTab(event, 'deadlines-tab')">Deadlines</button>
+                    <button class="tab-link" onclick="openTab(event, 'requirements-tab')">Key Requirements</button>
+                    <button class="tab-link" onclick="openTab(event, 'stakeholders-tab')">Stakeholders</button>
+                    <button class="tab-link" onclick="openTab(event, 'risks-tab')">Risks</button>
                 </div>
 
-                <div id="questions-tab" class="tab-content" style="display: block;">
-                    <h3>Generated Clarification Questions:</h3>
-                    <div id="questions-result-content">
-                    </div>
-                </div>
-
-                <div id="summary-tab" class="tab-content">
+                <div id="summary-tab" class="tab-content" style="display: block;"> {/* Default active tab content */}
                     <h3>RFP Summary:</h3>
                     <div id="summary-result-content">
+                        {/* AI generated summary will be displayed here */}
                     </div>
                 </div>
 
-                <div id="insights-tab" class="tab-content">
-                    <h3>Key Insights from RFP:</h3>
-                    <div id="insights-result-content">
-                        
+                <div id="questions-tab" class="tab-content">
+                    <h3>Generated Clarification Questions:</h3>
+                    <div id="questions-result-content">
+                        {/* AI generated questions will be displayed here */}
+                    </div>
+                </div>
+
+                <div id="deadlines-tab" class="tab-content">
+                    <h3>Key Deadlines:</h3>
+                    <div id="deadlines-result-content">
+                        {/* AI generated deadlines will be displayed here */}
+                    </div>
+                </div>
+
+                <div id="requirements-tab" class="tab-content">
+                    <h3>Key Requirements:</h3>
+                    <div id="requirements-result-content">
+                        {/* AI generated key requirements will be displayed here */}
+                    </div>
+                </div>
+
+                <div id="stakeholders-tab" class="tab-content">
+                    <h3>Mentioned Stakeholders:</h3>
+                    <div id="stakeholders-result-content">
+                        {/* AI generated stakeholders will be displayed here */}
+                    </div>
+                </div>
+
+                <div id="risks-tab" class="tab-content">
+                    <h3>Potential Risks/Red Flags:</h3>
+                    <div id="risks-result-content">
+                        {/* AI generated risks will be displayed here */}
                     </div>
                 </div>
             </div>
