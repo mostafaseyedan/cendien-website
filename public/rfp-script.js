@@ -131,22 +131,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dateSpan = document.createElement('span');
                     dateSpan.className = 'rfp-date';
                     let formattedDate = 'N/A';
-                    if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
-                        const date = new Date(analysis.analysisDate._seconds * 1000); 
-                        if (!isNaN(date.valueOf())) { 
-                            const datePart = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                            const timePart = `<span class="math-inline">\{String\(date\.getHours\(\)\)\.padStart\(2, '0'\)\}\:</span>{String(date.getMinutes()).padStart(2, '0')}`;
-                            formattedDate = `${datePart} ${timePart}`;
-                        }
-                    } else if (typeof analysis.analysisDate === 'string') { 
-                        try {
-                            const date = new Date(analysis.analysisDate);
-                            if (!isNaN(date.valueOf())) { 
-                                 formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                            }
-                        } catch(e) { /* N/A */ }
-                    }
-                    dateSpan.textContent = formattedDate;
+if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
+    const date = new Date(analysis.analysisDate._seconds * 1000); 
+    if (!isNaN(date.valueOf())) { 
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`; // Correct template literal
+    } else {
+        console.warn("Timestamp object with _seconds resulted in invalid Date:", analysis.analysisDate);
+        formattedDate = 'N/A'; // Ensure fallback if date is invalid
+    }
+} else if (typeof analysis.analysisDate === 'string') { 
+    try {
+        const date = new Date(analysis.analysisDate);
+        if (!isNaN(date.valueOf())) { 
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`; // Correct template literal
+        } else {
+            console.warn("Date string was unparsable or resulted in invalid Date:", analysis.analysisDate);
+            formattedDate = 'N/A'; // Ensure fallback
+        }
+    } catch(e) { 
+        console.error("Error parsing date string:", analysis.analysisDate, e);
+        formattedDate = 'N/A'; // Ensure fallback
+    }
+} else {
+    // This 'else if (analysis.analysisDate)' was from a previous version,
+    // ensure a final fallback to N/A if all conditions fail.
+    if (analysis.analysisDate) {
+        console.warn("analysisDate is in an unexpected format (not string or expected timestamp object):", analysis.analysisDate);
+    }
+    formattedDate = 'N/A';
+}
+dateSpan.textContent = formattedDate;
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'rfp-name';
@@ -247,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
 Provide the following distinct sections in your response, each clearly delimited:
 1. A concise summary of the RFP.
-2. A list of 10 to 20 critical and insightful clarification questions based on the RFP.
+2. A list of 5 to 15 critical and insightful clarification questions based on the RFP.
 3. Key Deadlines mentioned in the RFP.
 4. A list of Key Requirements (e.g., mandatory, highly desirable).
 5. Mentioned Stakeholders or Key Contacts.
