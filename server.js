@@ -164,7 +164,7 @@ app.get('/api/rfp-analysis/:id', async (req, res) => {
 
 // Fallback for SPA or direct GET requests to non-API routes
 app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'rfp-question-generator.html'));
 });
 
 app.listen(PORT, () => {
