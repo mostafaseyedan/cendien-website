@@ -145,8 +145,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 analyses.forEach(analysis => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'analyzed-rfp-item';
+
+                    // RFP Title
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = 'rfp-col-title';
+                    titleSpan.textContent = analysis.rfpTitle || 'N/A';
+                    titleSpan.title = analysis.rfpTitle || 'N/A'; // Tooltip for full title
+                    itemDiv.appendChild(titleSpan);
+
+                    // RFP Type
+                    const typeSpan = document.createElement('span');
+                    typeSpan.className = 'rfp-col-type';
+                    typeSpan.textContent = analysis.rfpType || 'N/A';
+                    itemDiv.appendChild(typeSpan);
+
+                    // Owner
+                    const ownerSpan = document.createElement('span');
+                    ownerSpan.className = 'rfp-col-owner';
+                    ownerSpan.textContent = analysis.submittedBy || 'N/A';
+                    itemDiv.appendChild(ownerSpan);
+                    
+                    // Date
                     const dateSpan = document.createElement('span');
-                    dateSpan.className = 'rfp-date';
+                    dateSpan.className = 'rfp-col-date';
                     let formattedDate = 'N/A';
                     if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
                         const date = new Date(analysis.analysisDate._seconds * 1000); 
@@ -158,17 +179,26 @@ document.addEventListener('DOMContentLoaded', () => {
                             const minutes = String(date.getMinutes()).padStart(2, '0');
                             formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`;
                         }
-                    } else if (typeof analysis.analysisDate === 'string') { /* ... date parsing ... */ }
+                    } else if (typeof analysis.analysisDate === 'string') { 
+                        // Basic fallback if date is already a string (less likely with Firestore Timestamps)
+                        formattedDate = analysis.analysisDate; 
+                    }
                     dateSpan.textContent = formattedDate;
+                    itemDiv.appendChild(dateSpan);
 
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'rfp-name';
-                    nameSpan.textContent = analysis.rfpTitle || analysis.rfpFileName || 'Unnamed RFP'; // Prefer rfpTitle
-                    nameSpan.title = analysis.rfpTitle || analysis.rfpFileName || 'Unnamed RFP';
+                    // Status
+                    const statusWrapperSpan = document.createElement('span');
+                    statusWrapperSpan.className = 'rfp-col-status';
                     const statusDotSpan = document.createElement('span');
                     statusDotSpan.className = 'rfp-status-dot';
                     const statusColor = analysis.status === 'analyzed' ? 'green' : analysis.status === 'new' ? 'orange' : 'red';
                     statusDotSpan.classList.add(statusColor);
+                    statusWrapperSpan.appendChild(statusDotSpan);
+                    itemDiv.appendChild(statusWrapperSpan);
+
+                    // Actions
+                    const actionsSpan = document.createElement('span');
+                    actionsSpan.className = 'rfp-col-actions';
                     const viewLink = document.createElement('a');
                     viewLink.href = '#'; 
                     viewLink.className = 'rfp-view-details';
@@ -179,11 +209,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
-                        showLoadingStateRFP(true, `Loading analysis for ${nameSpan.textContent}...`);
+                        const currentItemTitle = e.currentTarget.closest('.analyzed-rfp-item').querySelector('.rfp-col-title').textContent;
+                        showLoadingStateRFP(true, `Loading analysis for ${currentItemTitle}...`);
                         analysisResultsArea.style.display = 'none'; 
                         try {
                             const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
-                            if (!detailResponse.ok) { /* ... error handling ... */ throw new Error("Failed to fetch details");}
+                            if (!detailResponse.ok) { 
+                                const errDetailData = await detailResponse.json().catch(()=>({error: "Failed to fetch analysis details."}));
+                                throw new Error(errDetailData.error || `HTTP error! status: ${detailResponse.status}`);
+                            }
                             const detailedAnalysis = await detailResponse.json();
 
                             formatAndDisplayContent(summaryResultContentDiv, detailedAnalysis.rfpSummary || "Summary not available.");
@@ -194,19 +228,38 @@ document.addEventListener('DOMContentLoaded', () => {
                             formatAndDisplayContent(risksResultContentDiv, detailedAnalysis.rfpRisks || "Risks not extracted.");
                             
                             analysisResultsArea.style.display = 'block';
-                            document.querySelector('.tabs-container .tab-link.active').click(); // Re-click active or default to first
+                             // Attempt to find the currently active tab button or default to the first one
+                            let activeTabButton = document.querySelector('.tabs-container .tab-link.active');
+                            if (!activeTabButton) { // If no tab is active, pick the first one
+                                activeTabButton = document.querySelector('.tabs-container .tab-link');
+                            }
+                            if (activeTabButton) {
+                                activeTabButton.click(); // Click to ensure it's displayed
+                            }
 
-                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName}</p>`;
+
+                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${detailedAnalysis.rfpTitle || 'N/A'}</p>`;
                             analysisStatusArea.style.display = 'flex';
                             hideLoadingStateRFP(5000);
-                        } catch (loadError) { /* ... error handling ... */ } 
-                        finally { generateAnalysisButton.disabled = false; }
+                        } catch (loadError) { 
+                            console.error("Error loading analysis details:", loadError);
+                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error loading details: ${loadError.message}</p>`;
+                            analysisStatusArea.style.display = 'flex';
+                            hideLoadingStateRFP(5000);
+                        } 
+                        finally { 
+                            // generateAnalysisButton.disabled = false; // This should be re-enabled by hideLoadingStateRFP
+                        }
                     });
-                    itemDiv.appendChild(dateSpan); itemDiv.appendChild(nameSpan); itemDiv.appendChild(statusDotSpan); itemDiv.appendChild(viewLink);
+                    itemDiv.appendChild(actionsSpan); 
                     savedAnalysesListDiv.appendChild(itemDiv);
                 });
             }
-        } catch (error) { /* ... error handling ... */ }
+        } catch (error) { 
+            console.error("Error loading saved analyses:", error);
+            savedAnalysesListDiv.innerHTML = `<p class="loading-text" style="color:red; text-align:center;">Failed to load saved analyses: ${error.message}</p>`;
+            noSavedAnalysesP.style.display = 'none';
+        }
     }
 
     if (rfpForm) {
@@ -220,16 +273,35 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoadingStateRFP(true, "Starting analysis...");
             const file = rfpFileUpload.files[0];
             let rfpFileName = "UnknownRFP"; 
-            if (!file) { /* ... validation ... */ return; }
+            if (!file) { 
+                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Please upload an RFP document.</p>`;
+                analysisStatusArea.style.display = 'flex';
+                hideLoadingStateRFP(3000);
+                if(generateAnalysisButton) generateAnalysisButton.disabled = false;
+                return; 
+            }
             rfpFileName = file.name; 
-            if (file.type !== "application/pdf") { /* ... validation ... */ return; }
+            if (file.type !== "application/pdf") { 
+                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Invalid file type. Please upload a PDF.</p>`;
+                analysisStatusArea.style.display = 'flex';
+                hideLoadingStateRFP(3000);
+                if(generateAnalysisButton) generateAnalysisButton.disabled = false;
+                return;
+            }
 
             let rfpText = "";
-            try { /* ... PDF extraction ... */ 
-                 showLoadingStateRFP(true, "Extracting text from PDF...");
+            try { 
+                showLoadingStateRFP(true, "Extracting text from PDF...");
                 rfpText = await extractTextFromPdf(file);
-                if (!rfpText || rfpText.trim().length < 50) { throw new Error("Could not extract sufficient text from PDF.");}
-            } catch (error) { /* ... error handling ... */ return; }
+                if (!rfpText || rfpText.trim().length < 50) { throw new Error("Could not extract sufficient text from PDF. The PDF might be image-based or too short.");}
+            } catch (error) { 
+                console.error("Error extracting PDF text:", error);
+                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error extracting text: ${error.message}</p>`;
+                analysisStatusArea.style.display = 'flex';
+                hideLoadingStateRFP(5000);
+                if(generateAnalysisButton) generateAnalysisButton.disabled = false;
+                return; 
+            }
 
             const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
 Provide the following distinct sections in your response, each clearly delimited:
@@ -277,7 +349,7 @@ ${rfpText}
 
             try {
                 showLoadingStateRFP(true, "AI is analyzing and generating content...");
-                const response = await fetch('/api/generate', { /* ... AI call ... */ 
+                const response = await fetch('/api/generate', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: aiPrompt })
@@ -301,23 +373,30 @@ ${rfpText}
                 
                 // Display Content in Tabs
                 formatAndDisplayContent(summaryResultContentDiv, summaryText);
-                formatAndDisplayContent(questionsResultContentDiv, questionsText); // Will be wrapped in OL by helper if list-like
+                formatAndDisplayContent(questionsResultContentDiv, questionsText); 
                 formatAndDisplayContent(deadlinesResultContentDiv, deadlinesText);
                 formatAndDisplayContent(requirementsResultContentDiv, requirementsText);
                 formatAndDisplayContent(stakeholdersResultContentDiv, stakeholdersText);
                 formatAndDisplayContent(risksResultContentDiv, risksText);
                 
                 analysisResultsArea.style.display = 'block';
-                document.querySelector('.tabs-container .tab-link.active').click(); // Re-activate current or default tab
+                let activeTabButton = document.querySelector('.tabs-container .tab-link.active');
+                if (!activeTabButton) { 
+                    activeTabButton = document.querySelector('.tabs-container .tab-link');
+                }
+                if (activeTabButton) {
+                    activeTabButton.click(); 
+                }
+
 
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete! Saving results...</p>`;
                 analysisStatusArea.style.display = 'flex';
 
                 try {
                     const savePayload = { 
-                        rfpTitle: rfpTitle, // New field
-                        rfpType: rfpType,   // New field
-                        submittedBy: submittedBy, // New field
+                        rfpTitle: rfpTitle, 
+                        rfpType: rfpType,   
+                        submittedBy: submittedBy, 
                         rfpFileName: rfpFileName, 
                         rfpSummary: summaryText, 
                         generatedQuestions: questionsText,
@@ -343,25 +422,36 @@ ${rfpText}
                 }
                 hideLoadingStateRFP(5000);
 
-            } catch (error) { /* ... error handling for AI call ... */ 
+            } catch (error) {  
                  console.error("Error during AI analysis or saving:", error);
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
                 analysisStatusArea.style.display = 'flex';
                 hideLoadingStateRFP(5000);
             } finally {
-                generateAnalysisButton.disabled = false;
+                // generateAnalysisButton.disabled = false; // Re-enabled by hideLoadingStateRFP
             }
         });
-    } else { /* ... */ }
+    } else { console.warn("RFP Details Form not found."); }
+
+    // The openTab function is now defined globally in the HTML inline script.
+    // So, this reassignment is no longer needed and was causing issues if the body was empty.
+    // window.openTab = function(evt, tabName) { /* ... empty or problematic ... */ };
+    
+    // Initial tab setup
     const firstActiveTabButton = document.querySelector('.tabs-container .tab-link.active');
     if (firstActiveTabButton) {
+        // If a tab is marked active in HTML, ensure its content is displayed
         const tabNameToOpen = firstActiveTabButton.getAttribute('onclick').match(/'([^']*)'/)[1];
-        if(document.getElementById(tabNameToOpen)) {
-             document.getElementById(tabNameToOpen).style.display = "block";
+        const tabContentToOpen = document.getElementById(tabNameToOpen);
+        if(tabContentToOpen) {
+             tabContentToOpen.style.display = "block";
         }
-    } else { // Fallback if no tab is initially active in HTML
+    } else { 
+        // Fallback if no tab is initially active in HTML, click the first one
         const firstTabLink = document.querySelector('.tabs-container .tab-link');
-        if (firstTabLink) firstTabLink.click();
+        if (firstTabLink) {
+            firstTabLink.click(); // This will call the global openTab
+        }
     }
     loadSavedAnalyses(); 
 });
