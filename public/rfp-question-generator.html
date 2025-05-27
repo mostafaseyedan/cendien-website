@@ -32,7 +32,7 @@
                     </div>
                 <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses saved yet.</p>
             </div>
-            <p></p>
+            <p style="margin-bottom: 1.5rem;"></p>
             
             <form id="rfp-details-form">
                 <div class="form-group">
@@ -44,22 +44,38 @@
             </form>
 
             <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
+
             </div>
+
 
             <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
                 <div class="tabs-container">
                     <button class="tab-link active" onclick="openTab(event, 'questions-tab')">Questions</button>
                     <button class="tab-link" onclick="openTab(event, 'summary-tab')">Summary</button>
+                    <button class="tab-link" onclick="openTab(event, 'insights-tab')">Key Insights</button>
                 </div>
+
                 <div id="questions-tab" class="tab-content" style="display: block;">
                     <h3>Generated Clarification Questions:</h3>
-                    <div id="questions-result-content"></div>
+                    <div id="questions-result-content">
+                    </div>
                 </div>
+
                 <div id="summary-tab" class="tab-content">
                     <h3>RFP Summary:</h3>
-                    <div id="summary-result-content"></div>
+                    <div id="summary-result-content">
+                    </div>
+                </div>
+
+                <div id="insights-tab" class="tab-content">
+                    <h3>Key Insights from RFP:</h3>
+                    <div id="insights-result-content">
+                        
+                    </div>
                 </div>
             </div>
+            {/* End Tabbed Interface for Results */}
+
         </section>
     </main>
 
@@ -75,6 +91,7 @@
         if (yearSpanRFP) {
             yearSpanRFP.textContent = new Date().getFullYear();
         }
+
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -86,8 +103,12 @@
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
             const targetTab = document.getElementById(tabName);
-            if (targetTab) targetTab.style.display = "block";
-            if (evt && evt.currentTarget) evt.currentTarget.className += " active";
+            if (targetTab) {
+                targetTab.style.display = "block";
+            }
+            if (evt && evt.currentTarget) { // Check if evt and currentTarget exist
+                evt.currentTarget.className += " active";
+            }
         }
     </script>
 </body>
