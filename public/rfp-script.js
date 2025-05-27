@@ -146,11 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'analyzed-rfp-item';
 
-                    // RFP Title
+                    // RFP Title (with fallback to rfpFileName)
                     const titleSpan = document.createElement('span');
                     titleSpan.className = 'rfp-col-title';
-                    titleSpan.textContent = analysis.rfpTitle || 'N/A';
-                    titleSpan.title = analysis.rfpTitle || 'N/A'; // Tooltip for full title
+                    const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
+                    titleSpan.textContent = displayTitle;
+                    titleSpan.title = displayTitle; // Tooltip for full title
                     itemDiv.appendChild(titleSpan);
 
                     // RFP Type
@@ -180,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`;
                         }
                     } else if (typeof analysis.analysisDate === 'string') { 
-                        // Basic fallback if date is already a string (less likely with Firestore Timestamps)
                         formattedDate = analysis.analysisDate; 
                     }
                     dateSpan.textContent = formattedDate;
@@ -203,14 +203,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewLink.href = '#'; 
                     viewLink.className = 'rfp-view-details';
                     viewLink.dataset.id = analysis.id; 
-                    viewLink.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    // Added aria-hidden for icon and visually hidden text for accessibility
+                    viewLink.innerHTML = '<i class="fas fa-chevron-right" aria-hidden="true"></i><span class="visually-hidden">View Details</span>';
                     viewLink.title = "View Analysis Details";
 
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
-                        const currentItemTitle = e.currentTarget.closest('.analyzed-rfp-item').querySelector('.rfp-col-title').textContent;
-                        showLoadingStateRFP(true, `Loading analysis for ${currentItemTitle}...`);
+                        const currentItemTitleElement = e.currentTarget.closest('.analyzed-rfp-item').querySelector('.rfp-col-title');
+                        const currentItemTitleText = currentItemTitleElement ? currentItemTitleElement.textContent : 'Selected RFP';
+                        
+                        showLoadingStateRFP(true, `Loading analysis for ${currentItemTitleText}...`);
                         analysisResultsArea.style.display = 'none'; 
                         try {
                             const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
@@ -228,17 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             formatAndDisplayContent(risksResultContentDiv, detailedAnalysis.rfpRisks || "Risks not extracted.");
                             
                             analysisResultsArea.style.display = 'block';
-                             // Attempt to find the currently active tab button or default to the first one
                             let activeTabButton = document.querySelector('.tabs-container .tab-link.active');
-                            if (!activeTabButton) { // If no tab is active, pick the first one
+                            if (!activeTabButton) { 
                                 activeTabButton = document.querySelector('.tabs-container .tab-link');
                             }
                             if (activeTabButton) {
-                                activeTabButton.click(); // Click to ensure it's displayed
+                                activeTabButton.click(); 
                             }
 
-
-                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${detailedAnalysis.rfpTitle || 'N/A'}</p>`;
+                            const displayedTitle = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
+                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${displayedTitle}</p>`;
                             analysisStatusArea.style.display = 'flex';
                             hideLoadingStateRFP(5000);
                         } catch (loadError) { 
@@ -247,10 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             analysisStatusArea.style.display = 'flex';
                             hideLoadingStateRFP(5000);
                         } 
-                        finally { 
-                            // generateAnalysisButton.disabled = false; // This should be re-enabled by hideLoadingStateRFP
-                        }
                     });
+                    actionsSpan.appendChild(viewLink); 
                     itemDiv.appendChild(actionsSpan); 
                     savedAnalysesListDiv.appendChild(itemDiv);
                 });
@@ -265,8 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rfpForm) {
         rfpForm.addEventListener('submit', async function(event) {
             event.preventDefault();
-            // Get values from new form fields
-            const rfpTitle = document.getElementById('rfpTitle').value.trim() || "Untitled RFP Analysis";
+            const rfpTitle = document.getElementById('rfpTitle').value.trim(); // Use non-defaulted title for saving
             const rfpType = document.getElementById('rfpType').value;
             const submittedBy = document.getElementById('submittedBy').value;
 
@@ -343,7 +342,6 @@ RFP Text:
 ${rfpText}
 ---
 `;
-            // Initialize variables for all sections
             let summaryText, questionsText, deadlinesText, requirementsText, stakeholdersText, risksText;
             const defaultErrorMsg = (section) => `${section.replace(/_/g, ' ')} not extracted.`;
 
@@ -371,7 +369,6 @@ ${rfpText}
                 stakeholdersText = parseSection(rawAiOutput, "STAKEHOLDERS");
                 risksText = parseSection(rawAiOutput, "RISKS");
                 
-                // Display Content in Tabs
                 formatAndDisplayContent(summaryResultContentDiv, summaryText);
                 formatAndDisplayContent(questionsResultContentDiv, questionsText); 
                 formatAndDisplayContent(deadlinesResultContentDiv, deadlinesText);
@@ -388,13 +385,12 @@ ${rfpText}
                     activeTabButton.click(); 
                 }
 
-
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete! Saving results...</p>`;
                 analysisStatusArea.style.display = 'flex';
 
                 try {
                     const savePayload = { 
-                        rfpTitle: rfpTitle, 
+                        rfpTitle: rfpTitle || "", // Save user-inputted title, even if empty (fallback handled on display)
                         rfpType: rfpType,   
                         submittedBy: submittedBy, 
                         rfpFileName: rfpFileName, 
@@ -415,6 +411,8 @@ ${rfpText}
                     const saveData = await saveResponse.json();
                     console.log("Save response:", saveData);
                     analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Analysis complete and results saved!</p>`;
+                    document.getElementById('rfpTitle').value = ''; // Clear the title field after successful submission
+                    rfpFileUpload.value = ''; // Clear the file input
                     await loadSavedAnalyses(); 
                 } catch (saveError) {
                     console.error("Error saving RFP analysis:", saveError);
@@ -427,30 +425,21 @@ ${rfpText}
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
                 analysisStatusArea.style.display = 'flex';
                 hideLoadingStateRFP(5000);
-            } finally {
-                // generateAnalysisButton.disabled = false; // Re-enabled by hideLoadingStateRFP
             }
         });
     } else { console.warn("RFP Details Form not found."); }
-
-    // The openTab function is now defined globally in the HTML inline script.
-    // So, this reassignment is no longer needed and was causing issues if the body was empty.
-    // window.openTab = function(evt, tabName) { /* ... empty or problematic ... */ };
     
-    // Initial tab setup
     const firstActiveTabButton = document.querySelector('.tabs-container .tab-link.active');
     if (firstActiveTabButton) {
-        // If a tab is marked active in HTML, ensure its content is displayed
         const tabNameToOpen = firstActiveTabButton.getAttribute('onclick').match(/'([^']*)'/)[1];
         const tabContentToOpen = document.getElementById(tabNameToOpen);
         if(tabContentToOpen) {
              tabContentToOpen.style.display = "block";
         }
     } else { 
-        // Fallback if no tab is initially active in HTML, click the first one
         const firstTabLink = document.querySelector('.tabs-container .tab-link');
         if (firstTabLink) {
-            firstTabLink.click(); // This will call the global openTab
+            firstTabLink.click(); 
         }
     }
     loadSavedAnalyses(); 
