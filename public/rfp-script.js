@@ -315,6 +315,215 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function updateRfpTitle(rfpId, currentTitle) {
+        const newTitle = window.prompt("Enter the new title for the RFP:", currentTitle);
+
+        if (newTitle === null) { // User cancelled the prompt
+            return;
+        }
+        if (newTitle.trim() === "") {
+            window.alert("RFP Title cannot be empty.");
+            return;
+        }
+        if (newTitle.trim() === currentTitle) {
+            return; // No change
+        }
+
+        showLoadingStateRFP(true, `Updating title for "${currentTitle}"...`);
+        try {
+            const response = await fetch(`/api/rfp-analysis/${rfpId}/title`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rfpTitle: newTitle.trim() }),
+            });
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ error: `Failed to update title.` }));
+                throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+            }
+            const updatedAnalysis = allFetchedAnalyses.find(a => a.id === rfpId);
+            if (updatedAnalysis) {
+                updatedAnalysis.rfpTitle = newTitle.trim();
+            }
+            renderAnalysesList(); // Re-render to show the updated title
+            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Title updated successfully!</p>`;
+            analysisStatusArea.style.display = 'flex';
+        } catch (error) {
+            console.error('Error updating RFP title:', error);
+            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error updating title: ${error.message}</p>`;
+            analysisStatusArea.style.display = 'flex';
+        } finally {
+            hideLoadingStateRFP(3000);
+        }
+    }
+
+    function renderAnalysesList() {
+        if (!savedAnalysesListDiv || !noSavedAnalysesP) return;
+        savedAnalysesListDiv.innerHTML = '';
+        let filteredAnalyses = [...allFetchedAnalyses];
+
+        // Apply status filter (existing logic)
+        if (currentStatusFilter === 'active') {
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'active');
+        } else if (currentStatusFilter === 'not_pursuing') {
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'not_pursuing');
+        } else if (currentStatusFilter === 'all') { 
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new');
+        }
+
+        // Apply sorting (existing logic)
+        filteredAnalyses.sort((a, b) => {
+            let valA = a[currentSortKey];
+            let valB = b[currentSortKey];
+            if (currentSortKey === 'analysisDate') {
+                valA = a.analysisDate && a.analysisDate._seconds ? Number(a.analysisDate._seconds) : 0;
+                valB = b.analysisDate && b.analysisDate._seconds ? Number(b.analysisDate._seconds) : 0;
+            } else {
+                valA = (typeof valA === 'string' ? valA.toLowerCase() : (valA || '')).toString();
+                valB = (typeof valB === 'string' ? valB.toLowerCase() : (valB || '')).toString();
+            }
+            if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        if (filteredAnalyses.length === 0) {
+            noSavedAnalysesP.style.display = 'block';
+            noSavedAnalysesP.textContent = `No analyses found for "${currentStatusFilter}" category.`;
+        } else {
+            noSavedAnalysesP.style.display = 'none';
+            filteredAnalyses.forEach(analysis => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'analyzed-rfp-item';
+                const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
+                
+                let formattedDateTime = 'N/A';
+                if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
+                    const date = new Date(analysis.analysisDate._seconds * 1000); 
+                    if (!isNaN(date.valueOf())) { 
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        formattedDateTime = `${year}/${month}/${day} ${hours}:${minutes}`;
+                    }
+                }
+
+                const statusDotClass = analysis.status === 'active' ? 'green' :
+                                       analysis.status === 'not_pursuing' ? 'red' :
+                                       'orange'; 
+
+                itemDiv.innerHTML = `
+                    <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
+                    <span class="rfp-col-type">${analysis.rfpType || 'N/A'}</span>
+                    <span class="rfp-col-owner">${analysis.submittedBy || 'N/A'}</span>
+                    <span class="rfp-col-date">${formattedDateTime}</span>
+                    <span class="rfp-col-status"><span class="rfp-status-dot ${statusDotClass}" title="${analysis.status || 'analyzed'}"></span></span>
+                    <span class="rfp-col-actions"></span>`; 
+
+                const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
+                
+                // View Details Link (existing)
+                const viewLink = document.createElement('a');
+                // ... (viewLink setup and event listener as before) ...
+                viewLink.href = '#'; 
+                viewLink.className = 'rfp-view-details action-icon';
+                viewLink.dataset.id = analysis.id; 
+                viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i><span class="visually-hidden">View Details</span>';
+                viewLink.title = "View Analysis Details";
+                viewLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const analysisId = e.currentTarget.dataset.id;
+                    const currentItemTitleElement = e.currentTarget.closest('.analyzed-rfp-item').querySelector('.rfp-col-title');
+                    const loadingMessageTitle = currentItemTitleElement ? currentItemTitleElement.textContent : 'Selected RFP';
+                    
+                    showLoadingStateRFP(true, `Loading analysis for ${loadingMessageTitle}...`);
+                    analysisResultsArea.style.display = 'none';
+                    try {
+                        const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
+                        if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch details.');
+                        const detailedAnalysis = await detailResponse.json();
+                        
+                        formatAndDisplayContent(summaryResultContentDiv, detailedAnalysis.rfpSummary || "Summary not available.");
+                        formatAndDisplayContent(questionsResultContentDiv, detailedAnalysis.generatedQuestions || "Questions not available.");
+                        formatAndDisplayContent(deadlinesResultContentDiv, detailedAnalysis.rfpDeadlines || "Deadlines not extracted.");
+                        formatAndDisplayContent(requirementsResultContentDiv, detailedAnalysis.rfpKeyRequirements || "Key Requirements not extracted.");
+                        formatAndDisplayContent(stakeholdersResultContentDiv, detailedAnalysis.rfpStakeholders || "Stakeholders not extracted.");
+                        formatAndDisplayContent(risksResultContentDiv, detailedAnalysis.rfpRisks || "Risks not extracted.");
+                        
+                        analysisResultsArea.style.display = 'block';
+                        const activeResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active') || document.querySelector('#analysis-results-area .tabs-container .tab-link');
+                        if (activeResultTab) {
+                            const tabNameToOpen = activeResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
+                            if (window.openTab) window.openTab(null, tabNameToOpen); 
+                        }
+                        const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
+                        analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${titleForStatus}</p>`;
+                        analysisStatusArea.style.display = 'flex';
+                    } catch (loadError) {
+                        analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${loadError.message}</p>`;
+                        analysisStatusArea.style.display = 'flex';
+                    } finally {
+                        hideLoadingStateRFP(5000); 
+                    }
+                });
+                actionsSpan.appendChild(viewLink);
+
+                // ADDED: Edit Title Button
+                const editTitleButton = document.createElement('button');
+                editTitleButton.className = 'action-icon';
+                editTitleButton.innerHTML = '<i class="fas fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit Title</span>';
+                editTitleButton.title = "Edit RFP Title";
+                editTitleButton.onclick = () => updateRfpTitle(analysis.id, displayTitle); // Pass current displayTitle for the prompt
+                actionsSpan.appendChild(editTitleButton);
+
+
+                // Move to Active Button (existing)
+                if (analysis.status !== 'active') {
+                    // ... (code for setActiveButton as before) ...
+                    const setActiveButton = document.createElement('button');
+                    setActiveButton.className = 'action-icon';
+                    setActiveButton.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i>';
+                    setActiveButton.title = "Move to Active";
+                    setActiveButton.onclick = () => updateRfpStatus(analysis.id, 'active');
+                    actionsSpan.appendChild(setActiveButton);
+                }
+                // Move to Not Pursuing Button (existing)
+                if (analysis.status !== 'not_pursuing') {
+                    // ... (code for setNotPursuingButton as before) ...
+                    const setNotPursuingButton = document.createElement('button');
+                    setNotPursuingButton.className = 'action-icon';
+                    setNotPursuingButton.innerHTML = '<i class="fas fa-times-circle" aria-hidden="true"></i>';
+                    setNotPursuingButton.title = "Move to Not Pursuing";
+                    setNotPursuingButton.onclick = () => updateRfpStatus(analysis.id, 'not_pursuing');
+                    actionsSpan.appendChild(setNotPursuingButton);
+                }
+                // Move to Analyzed/Unactuated Button (existing)
+                if (analysis.status === 'active' || analysis.status === 'not_pursuing') {
+                    // ... (code for setAnalyzedButton as before) ...
+                    const setAnalyzedButton = document.createElement('button');
+                    setAnalyzedButton.className = 'action-icon';
+                    setAnalyzedButton.innerHTML = '<i class="fas fa-inbox" aria-hidden="true"></i>';
+                    setAnalyzedButton.title = "Move to Analyzed/Unactuated";
+                    setAnalyzedButton.onclick = () => updateRfpStatus(analysis.id, 'analyzed');
+                    actionsSpan.appendChild(setAnalyzedButton);
+                }
+
+                // Delete Button (existing)
+                const deleteButton = document.createElement('button');
+                // ... (code for deleteButton as before) ...
+                deleteButton.className = 'action-icon delete';
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i>';
+                deleteButton.title = "Delete RFP";
+                deleteButton.onclick = () => deleteRfp(analysis.id, displayTitle);
+                actionsSpan.appendChild(deleteButton);
+                
+                // itemDiv.appendChild(actionsSpan); // actionsSpan is already part of itemDiv.innerHTML setup
+                savedAnalysesListDiv.appendChild(itemDiv);
+            });
+        }
+    }
+
     async function loadSavedAnalysesInitial() {
         showLoadingStateRFP(true, "Loading saved analyses...");
         try {
