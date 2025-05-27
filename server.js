@@ -1,3 +1,5 @@
+// mostafaseyedan/cendien-website/cendien-website-Test/server.js
+
 const express = require('express');
 const path = require('path');
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
@@ -68,30 +70,36 @@ app.post('/api/generate', async (req, res) => {
 // RFP Analysis Endpoints
 app.post('/api/rfp-analysis', async (req, res) => {
     try {
-        // Destructure new fields from request body
-        const { 
+        // Destructure ALL fields from request body, including rfpTitle, rfpType, and submittedBy
+        const {
             rfpFileName, rfpSummary, generatedQuestions, status,
-            rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks 
+            rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
+            rfpTitle, rfpType, submittedBy // Ensure these are destructured
         } = req.body;
 
-        if (!rfpFileName || !rfpSummary || !generatedQuestions) { // Basic validation
-            return res.status(400).json({ error: 'Missing required fields: rfpFileName, rfpSummary, generatedQuestions' });
+        // Basic validation (you might want to expand this if these new fields become mandatory)
+        if (!rfpFileName || !rfpSummary || !generatedQuestions) {
+            return res.status(400).json({ error: 'Missing required fields for basic analysis: rfpFileName, rfpSummary, generatedQuestions' });
         }
 
         const analysisData = {
             rfpFileName,
             rfpSummary,
             generatedQuestions,
-            rfpDeadlines: rfpDeadlines || "Not specified", // Provide defaults if not present
+            rfpDeadlines: rfpDeadlines || "Not specified",
             rfpKeyRequirements: rfpKeyRequirements || "Not specified",
             rfpStakeholders: rfpStakeholders || "Not specified",
             rfpRisks: rfpRisks || "Not specified",
             analysisDate: Timestamp.now(),
             status: status || 'new',
+            // Add the new fields to the object being saved to Firestore
+            rfpTitle: rfpTitle || "", // Store the provided title, or an empty string if none was given
+            rfpType: rfpType || "N/A",   // Store the type, or "N/A" as a fallback
+            submittedBy: submittedBy || "N/A" // Store the submitter, or "N/A" as a fallback
         };
 
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
-        console.log('RFP Analysis saved with ID:', docRef.id, 'Data:', analysisData); // Log saved data
+        console.log('RFP Analysis saved with ID:', docRef.id, 'Data:', analysisData); // This log will now show the new fields
         res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.' });
     } catch (error) {
         console.error('Error saving RFP analysis:', error);
@@ -99,7 +107,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
     }
 });
 
-app.get('/api/rfp-analyses', async (req, res) => { /* ... same as before ... */ 
+app.get('/api/rfp-analyses', async (req, res) => {
     try {
         const analysesSnapshot = await db.collection('rfpAnalyses')
                                         .orderBy('analysisDate', 'desc')
@@ -118,7 +126,7 @@ app.get('/api/rfp-analyses', async (req, res) => { /* ... same as before ... */
     }
 });
 
-app.get('/api/rfp-analysis/:id', async (req, res) => { /* ... same as before ... */ 
+app.get('/api/rfp-analysis/:id', async (req, res) => {
     try {
         const analysisId = req.params.id;
         if (!analysisId) {
