@@ -134,7 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
                         const date = new Date(analysis.analysisDate._seconds * 1000); 
                         if (!isNaN(date.valueOf())) { 
-                            formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                            const datePart = `<span class="math-inline">\{date\.getFullYear\(\)\}/</span>{String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                            const timePart = `<span class="math-inline">\{String\(date\.getHours\(\)\)\.padStart\(2, '0'\)\}\:</span>{String(date.getMinutes()).padStart(2, '0')}`;
+                            formattedDate = `${datePart} ${timePart}`;
                         }
                     } else if (typeof analysis.analysisDate === 'string') { 
                         try {
