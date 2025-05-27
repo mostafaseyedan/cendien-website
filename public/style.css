@@ -8,8 +8,8 @@
 body {
     font-family: 'Montserrat', sans-serif; /* Primary font */
     line-height: 1;
-    color: #373F41; /* Dark grey/charcoal for body text */
-    background-color: #f8f9fa; /* Very light grey background */
+    color: #373F41; /* Dark grey/charcoal for body text - Remains */
+    background-color: #f8f9fa; /* Very light grey background - Remains */
     font-weight: 400; /* Montserrat Regular */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -56,53 +56,48 @@ header {
     max-height: 48px;
     width: auto;
 }
-header nav { /* Container for dropdown and link */
+header nav { 
     display: flex;
     align-items: center;
-    gap: 1.5rem; /* Space between dropdown and new link(s) */
+    gap: 1.5rem; 
 }
 #section-selector {
     padding: 0.6rem 1.2rem;
     border: 1px solid #ced4da;
-    border-radius: 25px; /* Rounded */
+    border-radius: 25px; 
     font-size: 0.9rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     background-color: #fff;
     color: #373F41;
     cursor: pointer;
-    min-width: 200px; /* Adjusted min-width */
+    min-width: 200px; 
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 #section-selector:focus {
     outline: none;
-    border-color: #35ED54; /* Green accent from greenit */
-    box-shadow: 0 0 0 0.15rem rgba(53, 237, 84, 0.25);
+    border-color: #005a9c; /* Cendien primary blue for focus */
+    box-shadow: 0 0 0 0.15rem rgba(0, 90, 156, 0.25); /* Shadow with Cendien blue */
 }
-/* Styles for navigation links (Resume Gen on homepage, Home on resume page) */
 .nav-link {
     color: #373F41;
     text-decoration: none;
-    font-weight: 500; /* Montserrat Medium */
+    font-weight: 500; 
     padding: 0.5rem 1rem;
     border-radius: 20px;
     transition: background-color 0.2s ease, color 0.2s ease;
     white-space: nowrap;
 }
 .nav-link:hover {
-    background-color: #e9f1f7; /* Light hover background */
+    background-color: #e9f1f7; 
     color: #005a9c; /* Cendien primary blue on hover */
 }
-.resume-nav-link { /* Specific class for homepage Resume Gen link if needed */
-    /* Add any distinct styling here if it shouldn't just be .nav-link */
-}
-header nav .nav-current-page { /* For "AI Resume Generator" text on resume-generator.html */
+header nav .nav-current-page { 
     font-weight: 700;
-    color: #005a9c;
+    color: #005a9c; /* Cendien primary blue */
     padding: 0.5rem 1rem;
     white-space: nowrap;
 }
-
 
 /* Hero Section - Cover Photo */
 #hero {
@@ -113,8 +108,7 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
     min-height: 380px; 
 }
 
-/* Hero Text Box */
-#hero-text-box {
+#hero-text-box { /* Added from previous context, ensure it's here */
     text-align: center;
     margin-top: -70px; 
     position: relative; 
@@ -123,11 +117,13 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
 }
 #hero-text-box.text-center-override { text-align: center; } 
 
+
+/* Hero Text Box */
 #hero-text-box h1 {
     font-size: 2.5rem; 
     margin-bottom: 0.8rem;
     font-weight: 700; 
-    color: #184e51; 
+    color: #003366; /* Dark Navy Blue for heading */
 }
 #hero-text-box p {
     font-size: 1.15rem; 
@@ -140,7 +136,7 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
 }
 #hero-location-city {
     font-weight: 700; 
-    color: #005a9c; 
+    color: #005a9c; /* Cendien primary blue */
 }
 
 /* Content Card Styling */
@@ -159,25 +155,27 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
 main h2 { 
     font-size: 2rem; 
     font-weight: 700; 
-    color: #184e51; 
+    color: #003366; /* Dark Navy Blue for main headings */
     margin-bottom: 1.5rem;
     text-align: center;
 } 
 main h3 { 
     font-size: 1.5rem; 
     font-weight: 500; 
-    color: #2c3e50; 
+    color: #004c80; /* Darker Cendien Blue for sub-headings */
     margin-bottom: 1.2rem;
     text-align: center; 
 } 
 
-/* Dynamic Content Area (AI Populated Service Details) */
+/* Dynamic Content Area */
 #dynamic-content-area #content-title {
      text-align: center;
      font-weight: 700;
+     color: #003366; /* Dark Navy Blue for dynamic title */
 }
-#ai-generated-content p { margin-bottom: 1.1rem; color: #4a4a4a; }
+#ai-generated-content p { margin-bottom: 1.1rem; color: #373F41; } /* Adjusted text color to be consistent */
 #ai-generated-content p:last-child { margin-bottom: 0; }
+
 
 /* Two Column Layout */
 .two-column-layout {
@@ -198,12 +196,6 @@ main h3 {
 #services-overview-static.column { 
     flex-basis: calc(55% - 1.25rem); 
 }
-#services-overview-static.column h3,
-#contact-details.column h3 { /* Assuming contact-details could also be a column */
-    text-align: left; 
-    font-size: 1.4rem; 
-    font-weight: 500;
-}
 
 
 /* AI Module Suggester Section Specifics */
@@ -212,6 +204,7 @@ main h3 {
 .suggester-icon { max-height: 35px; margin-bottom: 0.5rem; }
 #ai-module-suggester h2 { 
     font-size: 1.8rem; 
+    color: #003366; /* Dark Navy Blue */
 }
 #ai-module-suggester .suggester-header p {
     font-size: 0.95rem; color: #555; max-width: 100%; margin: 0 auto 1rem auto;
@@ -223,13 +216,14 @@ main h3 {
     line-height: 1.5; margin-bottom: 0.4rem; resize: vertical;
 }
 #needs-form textarea:focus {
-    border-color: #35ED54; 
+    border-color: #005a9c; /* Cendien primary blue for focus */
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); /* Shadow with Cendien blue */
 }
 .char-count { font-size: 0.8rem; color: #777; margin-bottom: 1rem; text-align: right;}
 
-/* BUTTON STYLING - Inspired by greenit-solution.de */
+
+/* BUTTON STYLING */
 .btn {
     display: inline-block;
     padding: 12px 30px; 
@@ -237,7 +231,7 @@ main h3 {
     font-weight: 500;  
     text-align: center;
     text-decoration: none;
-    border-radius: 48px; /* Pill shape */
+    border-radius: 48px; 
     cursor: pointer;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
     border: 2px solid transparent; 
@@ -245,73 +239,103 @@ main h3 {
 }
 .btn:active { transform: translateY(1px); }
 
+/* Primary Button - Using Cendien Blue */
 .btn-primary { 
-    background-color: #35ED54; 
-    color: #184e51; 
-    border-color: #35ED54; 
-    width: 100%; /* Primary buttons are full width by default */
+    background-color: #005a9c; /* Cendien primary blue */
+    color: #ffffff; 
+    border-color: #005a9c; 
+    width: 100%; 
 }
 .btn-primary:hover {
-    background-color: #D9FFE5; 
-    color: #184e51; 
-    border-color: #184e51; 
+    background-color: #003f6e; /* Darker Cendien blue */
+    color: #ffffff; 
+    border-color: #003355; /* Even darker for border */
 }
-.btn-secondary { /* Secondary buttons (like DOCX and RFP Generate) will be auto width unless specified */
-    background-color: #184e51; 
-    color: #fff;
-    border-color: #184e51;
-    width: auto; /* Default to auto width for secondary */
-    display: inline-block; /* Needed for auto width to work well */
+
+/* Secondary Button - Using a lighter outline style or different blue */
+.btn-secondary { 
+    background-color: #f0f4f8; /* Light grey/blue background */
+    color: #005a9c; /* Cendien primary blue text */
+    border-color: #005a9c; /* Cendien primary blue border */
+    width: auto; 
+    display: inline-block; 
 }
 .btn-secondary:hover {
-    background-color: #D9FFE5; 
-    color: #184e51;
-    border-color: #184e51; 
+    background-color: #d9e6f2; /* Slightly darker light blue */
+    color: #003f6e; /* Darker Cendien blue text */
+    border-color: #003f6e; 
 }
 
-/* Ensure resume page's primary PDF button remains full width if desired, or auto if preferred */
-#resume-generator-tool #generate-resume-button.btn-primary {
-     width: 100%; /* Or 'auto' if you prefer it to size to content like secondary */
-     /* display: inline-block; Remove if width: 100% */
-     margin-top: 1rem; /* Retained from previous */
+/* Analyze RFP Button Specific Styling */
+#rfp-question-tool #generate-analysis-button.btn-secondary {
+    background-color: #212529; /* Black background */
+    color: #ffffff; /* White text */
+    border-color: #212529; /* Black border */
+    width: auto; 
+    display: inline-block; 
 }
-
+#rfp-question-tool #generate-analysis-button.btn-secondary:hover {
+    background-color: #343a40; /* Darker grey/black */
+    color: #ffffff;
+    border-color: #343a40; 
+}
 
 #suggest-modules-button:disabled,
-#generate-resume-button:disabled, /* Updated ID */
-#generate-analysis-button:disabled { /* Updated for RFP page button */
-    background-color: #d1e7dd; 
-    border-color: #d1e7dd;
-    color: #799988;
+#generate-resume-button:disabled,
+#generate-analysis-button:disabled { 
+    background-color: #adb5bd; /* Grey for disabled */
+    border-color: #adb5bd;
+    color: #6c757d;
     cursor: not-allowed;
 }
 
-
 #suggested-modules-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
 #suggested-modules-area h3 { 
-    text-align: left; font-size: 1.4rem; 
+    text-align: left; 
+    font-size: 1.4rem; 
+    color: #004c80; /* Darker Cendien Blue */
 }
-#modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #4a4a4a; }
+#modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #373F41; } /* Adjusted text color */
 
 /* Loading Indicator */
 .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; text-align: center; width: 100%; }
-.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #005a9c; animation: spin 1s ease infinite; margin-bottom: 12px; }
+.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #005a9c; /* Cendien primary blue */ animation: spin 1s ease infinite; margin-bottom: 12px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .loading-text { font-style: italic; color: #555; font-size: 0.95rem; }
 
 /* Contact Details Section */
-#contact-details h2 {} 
+#contact-details.column h3, /* For two-column layout */
+#contact-details h3:not(.column h3) { /* For standalone section */
+    text-align: left; 
+    font-size: 1.4rem; 
+    font-weight: 500;
+    color: #004c80; /* Darker Cendien Blue */
+}
 .contact-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; }
 .address-block, .phone-block { padding: 0; } 
-.address-block h3, .phone-block h3 { font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem; text-align: left; font-weight: 500; }
+.address-block h3, .phone-block h3 { 
+    font-size: 1.2rem; 
+    color: #005a9c; /* Cendien primary blue */
+    margin-bottom: 0.6rem; 
+    text-align: left; 
+    font-weight: 500; 
+}
 .address-block address, .phone-block p { font-style: normal; line-height: 1.7; color: #555; font-size: 0.95rem; }
-.phone-block a { color: #005a9c; text-decoration: none; }
+.phone-block a { 
+    color: #005a9c; /* Cendien primary blue */
+    text-decoration: none; 
+}
 .phone-block a:hover { text-decoration: underline; }
 .contact-info-simple p { margin-bottom: 0.8rem; }
 
 
 /* Services Overview (static) & General Contact Message */
-#services-overview-static h3 {} 
+#services-overview-static.column h3 {
+    text-align: left; 
+    font-size: 1.4rem; 
+    font-weight: 500;
+    color: #004c80; /* Darker Cendien Blue */
+}
 #general-contact-message h2 {} 
 #general-contact-message .btn { margin-top: 1rem; } 
 
@@ -321,14 +345,14 @@ main h3 {
     border-radius: 4px; 
     text-align: center; 
     font-weight: 500; 
-    color: #004c80;
+    color: #004c80; /* Darker Cendien Blue */
     font-size: 0.9rem;
 }
 .centered-text { text-align: center; margin-top: 1rem; font-style: italic; color: #666; font-size: 0.95rem; }
 
 /* Footer */
 footer {
-    background: #2c3e50; 
+    background: #003366; /* Dark Navy Blue background */
     color: #bdc3c7; 
     text-align: center;
     padding: 2.5rem 0;
@@ -360,17 +384,26 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 #resume-generator-tool input[type="text"]:focus,
 #resume-generator-tool textarea:focus {
-    border-color: #35ED54; 
+    border-color: #005a9c; /* Cendien primary blue for focus */
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); /* Shadow with Cendien blue */
 }
-/* Specific styling for the select dropdown on resume page if needed */
 #resume-generator-tool #outputFormat.section-selector { 
-    /* Inherits #section-selector styles, can override here if needed */
-    margin-bottom: 1rem; /* Ensures space before the button */
+    margin-bottom: 1rem; 
+}
+#resume-generator-tool #generate-resume-button.btn-secondary { 
+    background-color: #212529; 
+    color: #ffffff; 
+    border-color: #212529; 
+}
+#resume-generator-tool #generate-resume-button.btn-secondary:hover {
+    background-color: #343a40; 
+    color: #ffffff;
+    border-color: #343a40; 
 }
 
-#generated-resume-area, #resume-generation-status { /* Apply to both for consistency */
+
+#generated-resume-area, #resume-generation-status { 
     background-color: #f0f4f8; 
     padding: 1.5rem;
     border-radius: 6px;
@@ -380,7 +413,7 @@ footer p { margin: 0; font-size: 0.9rem; }
 #generated-resume-area h3 { 
     text-align: left;
     font-size: 1.4rem;
-    color: #184e51;
+    color: #003366; /* Dark Navy Blue */
     margin-bottom: 1rem;
 }
 #resume-result p, 
@@ -400,23 +433,16 @@ footer p { margin: 0; font-size: 0.9rem; }
 
 
 /* Styles for RFP Question Generator Page (rfp-question-generator.html) */
-/* Styles for Saved Analyses List */
 #saved-analyses-section h3 {
-    font-size: 1.6rem; /* Slightly smaller than main h2 */
-    color: #184e51;
+    font-size: 1.6rem; 
+    color: #003366; /* Dark Navy Blue */
     margin-bottom: 1rem;
-    text-align: left; /* Align to left, not center */
-    border-bottom: 1px solid #e0e0e0; /* Separator line */
+    text-align: left; 
+    border-bottom: 1px solid #e0e0e0; 
     padding-bottom: 0.5rem;
 }
 
-.analyzed-rfp-list-container {
-    border: 1px solid #e0e0e0; /* Border around the list container */
-    border-radius: 6px;
-    max-height: 300px; /* Example max height, make it scrollable if too long */
-    overflow-y: auto;   /* Add scroll if content exceeds max-height */
-    margin-bottom: 1.5rem; /* Space below the list */
-}
+/* Styles for RFP List Tabs */
 .rfp-list-tabs {
     margin-bottom: 1rem;
     display: flex;
@@ -442,63 +468,23 @@ footer p { margin: 0; font-size: 0.9rem; }
     border-color: #005a9c;
 }
 
-/* New Sortable Header Styling (added here) */
+/* Sortable Header Styling */
 .sortable-header {
     cursor: pointer;
-    user-select: none; /* Prevent text selection on click */
+    user-select: none; 
 }
 .sortable-header:hover {
-    color: #005a9c;
-}
-
-/* New Styles for action buttons in RFP list items (added here) */
-.rfp-col-actions button, .rfp-col-actions .action-icon {
-    background: none;
-    border: none;
-    color: #005a9c;
-    cursor: pointer;
-    padding: 0.25rem 0.4rem;
-    font-size: 0.9rem; /* Adjust icon size if needed */
-    margin-left: 0.3rem;
-    border-radius: 3px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    vertical-align: middle; /* Align icons nicely if text is also present */
-}
-.rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover {
-    background-color: #e9f1f7;
-    color: #003f6e;
-}
-.rfp-col-actions .action-icon.delete:hover {
-    color: #dc3545; /* Red for delete hover */
-    background-color: #f8d7da;
-}
-.rfp-view-details { /* Ensure this is styled to look like part of the actions */
-    color: #005a9c;
-    text-decoration: none;
-    font-size: 1rem; 
-    padding: 0.25rem 0.4rem; /* Consistent padding */
-    margin-left: 0.3rem;
-    border-radius: 3px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    display: inline-block; /* To allow padding and alignment */
-    vertical-align: middle;
-}
-.rfp-view-details:hover {
-    background-color: #e9f1f7;
-    color: #003f6e;
+    color: #005a9c; /* Cendien primary blue */
 }
 
 
-/* Adjustments to RFP list columns for new action buttons if needed */
-.rfp-col-actions {
-    flex: 0 0 150px; /* Increased width to accommodate more action buttons */
-    text-align: right;
-    display: flex; 
-    justify-content: flex-end;
-    align-items: center;
+.analyzed-rfp-list-container {
+    border: 1px solid #e0e0e0; 
+    border-radius: 6px;
+    max-height: 300px; 
+    overflow-y: auto;   
+    margin-bottom: 1.5rem; 
 }
-
-/* This class is for the header row and each data row */
 .analyzed-rfp-item {
     display: flex;
     align-items: center;
@@ -509,144 +495,93 @@ footer p { margin: 0; font-size: 0.9rem; }
 .analyzed-rfp-item:last-child {
     border-bottom: none;
 }
-
-/* Header specific styling (if any, e.g., font-weight is done inline in HTML) */
 #saved-analyses-header {
-    background-color: #f8f9fa; /* Light background for header */
+    background-color: #f8f9fa; 
 }
 
-
-/* Column definitions */
 .rfp-col-title { 
-    flex: 3 1 0%; 
-    min-width: 150px; 
-    padding-right: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 3 1 0%; min-width: 150px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rfp-col-type {
-    flex: 2 1 0%;
-    min-width: 100px;
-    padding-right: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 2 1 0%; min-width: 100px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rfp-col-owner {
-    flex: 1.5 1 0%;
-    min-width: 80px;
-    padding-right: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 1.5 1 0%; min-width: 80px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rfp-col-date { 
-    flex: 1.5 1 0;
-    min-width: 120px; 
-    color: #555;
-    font-size: 0.9rem;
-    padding-right: 10px;
+    flex: 1.5 1 0; min-width: 120px; color: #555;
+    font-size: 0.9rem; padding-right: 10px;
 }
 .rfp-col-status {
-    flex: 0 0 60px; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex: 0 0 60px; display: flex;
+    justify-content: center; align-items: center;
 }
 .rfp-col-actions {
-    flex: 0 0 50px; 
+    flex: 0 0 150px; /* Increased width */
     text-align: right;
+    display: flex; 
+    justify-content: flex-end;
+    align-items: center;
 }
-
-/* Keep rfp-status-dot and rfp-view-details as they are, they will be nested */
 .rfp-status-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
 }
-.rfp-view-details {
-    color: #005a9c;
+.rfp-status-dot.green { background-color: #28a745; } /* Kept for status distinction */
+.rfp-status-dot.red { background-color: #dc3545; }   /* Kept for status distinction */
+.rfp-status-dot.orange { background-color: #fd7e14; } /* Kept for status distinction */
+.rfp-status-dot.grey { background-color: #adb5bd; } /* Added for other statuses if needed */
+
+
+.rfp-view-details, .rfp-col-actions button, .rfp-col-actions .action-icon {
+    color: #005a9c; /* Cendien primary blue */
     text-decoration: none;
-    font-size: 1rem; /* Ensure icon is visible */
+    font-size: 1rem;
+    padding: 0.25rem 0.4rem;
+    margin-left: 0.3rem;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-block; 
+    vertical-align: middle;
+    background: none; /* Ensure buttons have no default bg */
+    border: none; /* Ensure buttons have no default border */
+    cursor: pointer;
 }
-.rfp-view-details:hover {
-    color: #003f6e;
+.rfp-view-details:hover, .rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover {
+    background-color: #e9f1f7;
+    color: #003f6e; /* Darker Cendien blue */
+}
+.rfp-col-actions .action-icon.delete:hover {
+    color: #dc3545; 
+    background-color: #f8d7da;
 }
 
 
-
-.rfp-status-dot.green { background-color: #28a745; }
-.rfp-status-dot.red { background-color: #dc3545; }
-.rfp-status-dot.orange { background-color: #fd7e14; }
-
-
-
-#rfp-question-tool .form-group {
-    margin-bottom: 1.5rem; 
-}
-
+#rfp-question-tool .form-group { margin-bottom: 1.5rem; }
 #rfp-question-tool label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 0.95rem; 
+    display: block; font-weight: 500; margin-bottom: 0.5rem;
+    color: #333; font-size: 0.95rem; 
 }
-
 #rfp-question-tool input[type="text"] { 
-    width: 100%; /* Default width for text inputs in this form */
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    /* width: 100%; Default, will be overridden by specific ID rule below */
+    padding: 0.75rem 1rem; border: 1px solid #d1d1d1; border-radius: 4px;
+    font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.5;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-#rfp-question-tool input[type="text"]:focus { 
-    border-color: #35ED54; 
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
-}
-
 #rfp-question-tool input[type="file"] {
-    width: 100%; 
-    padding: 0.75rem 1rem; 
-    border: 1px solid #d1d1d1; 
-    border-radius: 4px; 
-    font-family: 'Montserrat', sans-serif; 
-    font-size: 0.95rem; 
-    line-height: 1.5; 
-    box-sizing: border-box;
-    background-color: #fff; 
+    /* width: 100%; Default, will be overridden by specific ID rule below */
+    padding: 0.75rem 1rem; border: 1px solid #d1d1d1; border-radius: 4px; 
+    font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.5; 
+    box-sizing: border-box; background-color: #fff; 
 }
-
-#rfp-question-tool input[type="file"]:focus {
-    border-color: #35ED54; 
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
-}
-
 #rfp-question-tool select.section-selector { 
-    width: 100%; 
-    padding: 0.75rem 1rem; 
-    border: 1px solid #d1d1d1; 
-    border-radius: 4px; 
-    font-family: 'Montserrat', sans-serif; 
-    font-size: 0.95rem; 
-    line-height: 1.5; 
-    background-color: #fff; 
-    appearance: auto; 
-    -webkit-appearance: auto;
-    -moz-appearance: auto;
-}
-
-#rfp-question-tool select.section-selector:focus {
-    border-color: #35ED54; 
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+    /* width: 100%; Default, will be overridden by specific ID rule below */
+    padding: 0.75rem 1rem; border: 1px solid #d1d1d1; border-radius: 4px; 
+    font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.5; 
+    background-color: #fff; appearance: auto; 
+    -webkit-appearance: auto; -moz-appearance: auto;
 }
 
 /* RFP Form input sizing adjustment for specific fields */
@@ -657,155 +592,83 @@ footer p { margin: 0; font-size: 0.9rem; }
     width: 50%;
 }
 
-
-/* Ensure RFP button uses secondary styles and auto width */
-#rfp-question-tool #generate-analysis-button.btn-secondary { 
-    width: auto; 
-    display: inline-block; 
+#rfp-question-tool input[type="text"]:focus,
+#rfp-question-tool input[type="file"]:focus,
+#rfp-question-tool select.section-selector:focus {
+    border-color: #005a9c; /* Cendien primary blue for focus */
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); /* Shadow with Cendien blue */
 }
 
 .tabs-container {
-    overflow: hidden; 
-    border-bottom: 1px solid #ccc; 
-    margin-bottom: 1.5rem; 
+    overflow: hidden; border-bottom: 1px solid #ccc; margin-bottom: 1.5rem; 
 }
-
-/* Individual Tab Button Styles */
 .tabs-container .tab-link {
-    background-color: #f1f1f1; 
-    float: left; 
-    border: 1px solid #ccc;
-    border-bottom: none; 
-    outline: none;
-    cursor: pointer;
-    padding: 10px 20px;
-    transition: background-color 0.3s;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #333;
-    border-radius: 6px 6px 0 0; 
-    margin-right: 4px; 
+    background-color: #f1f1f1; float: left; border: 1px solid #ccc;
+    border-bottom: none; outline: none; cursor: pointer;
+    padding: 10px 20px; transition: background-color 0.3s;
+    font-size: 1rem; font-weight: 500; color: #333;
+    border-radius: 6px 6px 0 0; margin-right: 4px; 
 }
-
-/* Tab Button Hover Style */
-.tabs-container .tab-link:hover {
-    background-color: #ddd; 
-}
-
-/* Active Tab Button Style */
+.tabs-container .tab-link:hover { background-color: #ddd; }
 .tabs-container .tab-link.active {
-    background-color: #fff; 
-    color: #005a9c; 
-    border-color: #ccc;
-    border-bottom: 1px solid #fff; 
-    position: relative;
-    top: 1px; 
+    background-color: #fff; color: #005a9c; /* Cendien primary blue */ border-color: #ccc;
+    border-bottom: 1px solid #fff; position: relative; top: 1px; 
 }
-
-/* Tab Content Panes */
-.tab-content {
-    display: none; 
-    padding: 1rem 0; 
-}
-
-/* Styles for the area where generated questions/summary will be shown */
+.tab-content { display: none; padding: 1rem 0; }
 #analysis-results-area .tab-content h3 { 
-    text-align: left;
-    font-size: 1.4rem;
-    color: #184e51; 
-    margin-bottom: 1rem; 
+    text-align: left; font-size: 1.4rem;
+    color: #003366; /* Dark Navy Blue */ margin-bottom: 1rem; 
 }
 
-#questions-result-content p, 
-#questions-result-content li,
-#summary-result-content p,
-#summary-result-content li,
-#deadlines-result-content p,
-#deadlines-result-content li,
-#requirements-result-content p,
-#requirements-result-content li,
-#stakeholders-result-content p,
-#stakeholders-result-content li,
-#risks-result-content p,
-#risks-result-content li { 
-    color: #373F41; 
-    font-size: 0.95rem; 
-    margin-bottom: 0.75rem; 
-    line-height: 1.7; 
+#questions-result-content p, #questions-result-content li,
+#summary-result-content p, #summary-result-content li,
+#deadlines-result-content p, #deadlines-result-content li,
+#requirements-result-content p, #requirements-result-content li,
+#stakeholders-result-content p, #stakeholders-result-content li,
+#risks-result-content p, #risks-result-content li { 
+    color: #373F41; font-size: 0.95rem; 
+    margin-bottom: 0.75rem; line-height: 1.7; 
 }
-
-#questions-result-content ul,
-#questions-result-content ol, 
-#summary-result-content ul,
-#deadlines-result-content ul,
-#requirements-result-content ul,
-#stakeholders-result-content ul,
+#questions-result-content ul, #questions-result-content ol, 
+#summary-result-content ul, #deadlines-result-content ul,
+#requirements-result-content ul, #stakeholders-result-content ul,
 #risks-result-content ul { 
-    list-style-position: outside;
-    padding-left: 20px;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
+    list-style-position: outside; padding-left: 20px;
+    margin-top: 0.5rem; margin-bottom: 1rem;
 }
 #questions-result-content ol.numbered-list, 
-#questions-result-content ul:not(.numbered-list) { 
-    list-style-type: decimal; 
-}
-#summary-result-content ul, 
-#deadlines-result-content ul,
-#requirements-result-content ul,
-#stakeholders-result-content ul,
-#risks-result-content ul {
-    list-style-type: disc; 
-}
-
-
-#questions-result-content ul li,
-#questions-result-content ol li,
-#summary-result-content ul li,
-#deadlines-result-content ul li,
-#requirements-result-content ul li,
-#stakeholders-result-content ul li,
-#risks-result-content ul li {
-    margin-bottom: 0.5rem;
-}
+#questions-result-content ul:not(.numbered-list) { list-style-type: decimal; }
+#summary-result-content ul, #deadlines-result-content ul,
+#requirements-result-content ul, #stakeholders-result-content ul,
+#risks-result-content ul { list-style-type: disc; }
+#questions-result-content ul li, #questions-result-content ol li,
+#summary-result-content ul li, #deadlines-result-content ul li,
+#requirements-result-content ul li, #stakeholders-result-content ul li,
+#risks-result-content ul li { margin-bottom: 0.5rem; }
 
 
 /* Responsive Adjustments */
 @media (max-width: 992px) { 
     .two-column-layout { flex-direction: column; }
     .two-column-layout > .column { 
-        flex-basis: 100%; 
-        margin-bottom: 2.5rem;
+        flex-basis: 100%; margin-bottom: 2.5rem;
     }
-    .two-column-layout > .column:last-child {
-        margin-bottom: 0;
-    }
-     .two-column-layout {
-        margin-bottom: 0; 
-    }
+    .two-column-layout > .column:last-child { margin-bottom: 0; }
+    .two-column-layout { margin-bottom: 0; }
 }
 @media (max-width: 768px) {
     body { font-size: 15px; }
     header nav { 
-        width: 100%; 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 0.75rem; 
+        width: 100%; flex-direction: column; 
+        align-items: stretch; gap: 0.75rem; 
     }
-    
     header .nav-container nav:not(:has(#section-selector)) {
-        flex-direction: row; 
-        flex-wrap: wrap; 
-        justify-content: center; 
-        gap: 0.5rem; 
+        flex-direction: row; flex-wrap: wrap; 
+        justify-content: center; gap: 0.5rem; 
     }
-
     #company-logo { max-height: 40px; }
     #section-selector { width: 100%; font-size: 0.9rem; }
-    
-    header nav .nav-link { 
-    }
-
     #hero { min-height: 280px; }
     #hero-text-box { margin-top: -50px; padding: 1.5rem; }
     #hero-text-box h1 { font-size: 1.8rem; }
@@ -817,13 +680,8 @@ footer p { margin: 0; font-size: 0.9rem; }
     .content-card, .two-column-layout > .column { padding: 1.5rem; }
     .contact-info-grid { grid-template-columns: 1fr; gap: 1rem; }
     .btn { padding: 10px 24px; font-size: 0.95rem; }
-
-    /* Tab adjustments for smaller screens */
-    .tabs-container .tab-link {
-        padding: 8px 12px; /* Smaller padding */
-        font-size: 0.9rem; /* Smaller font */
-    }
-
+    .tabs-container .tab-link { padding: 8px 12px; font-size: 0.9rem; }
+    
     /* RFP Form input sizing adjustment for smaller screens */
     #rfp-question-tool #rfpTitle,
     #rfp-question-tool #rfpType,
@@ -836,34 +694,41 @@ footer p { margin: 0; font-size: 0.9rem; }
     #hero-text-box h1 { font-size: 1.6rem; }
     #hero-text-box p { font-size: 0.9rem; }
     #ai-module-suggester h2 { font-size: 1.3rem; }
-    
     #resume-generator-tool #generate-resume-button.btn-primary,
     #rfp-question-tool #generate-analysis-button.btn-secondary { 
-        width: 100%;
-        display: block; 
-        margin-left: auto; 
-        margin-right: auto; 
+        width: 100%; display: block; 
+        margin-left: auto; margin-right: auto; 
     }
-    #resume-generator-tool #outputFormat.section-selector {
-         margin-bottom: 1rem; 
-    }
-    
-    /* Make tabs stack on very small screens if needed */
+    #resume-generator-tool #outputFormat.section-selector { margin-bottom: 1rem; }
     .tabs-container .tab-link {
-        float: none; 
-        display: block; 
-        width: 100%; 
-        text-align: left; 
-        margin-right: 0; 
-        margin-bottom: 2px; 
-        border-radius: 4px; 
+        float: none; display: block; width: 100%; text-align: left; 
+        margin-right: 0; margin-bottom: 2px; border-radius: 4px; 
         border-bottom: 1px solid #ccc; 
     }
     .tabs-container .tab-link.active {
-        top: 0; 
-        border-bottom: 1px solid #005a9c; 
+        top: 0; border-bottom: 1px solid #005a9c; 
     }
-    .tabs-container {
-        border-bottom: none; 
+    .tabs-container { border-bottom: none; }
+
+    /* Adjust RFP list display for very small screens */
+    .analyzed-rfp-item {
+        flex-direction: column; /* Stack columns */
+        align-items: flex-start; /* Align items to the start */
+        padding: 0.5rem;
+    }
+    .analyzed-rfp-item > span { /* Ensure all columns take full width and have some bottom margin */
+        width: 100% !important; /* Override flex-basis */
+        padding-right: 0 !important;
+        margin-bottom: 0.3rem;
+        white-space: normal; /* Allow text to wrap */
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .rfp-col-actions {
+        justify-content: flex-start; /* Align action buttons to the start */
+        margin-top: 0.5rem;
+    }
+    #saved-analyses-header { /* Hide header on very small screens to save space, or simplify */
+        display: none;
     }
 }
