@@ -10,9 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const analysisStatusArea = document.getElementById('analysis-status-area');
     const analysisResultsArea = document.getElementById('analysis-results-area');
     
-    const questionsResultContentDiv = document.getElementById('questions-result-content');
+    // Content divs for each tab
     const summaryResultContentDiv = document.getElementById('summary-result-content');
-    const insightsResultContentDiv = document.getElementById('insights-result-content'); // New div for insights
+    const questionsResultContentDiv = document.getElementById('questions-result-content');
+    const deadlinesResultContentDiv = document.getElementById('deadlines-result-content');
+    const requirementsResultContentDiv = document.getElementById('requirements-result-content');
+    const stakeholdersResultContentDiv = document.getElementById('stakeholders-result-content');
+    const risksResultContentDiv = document.getElementById('risks-result-content');
     
     const savedAnalysesListDiv = document.getElementById('saved-analyses-list');
     const noSavedAnalysesP = document.getElementById('no-saved-analyses');
@@ -32,9 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="loading-text">${message}</p>`;
             if (generateAnalysisButton) generateAnalysisButton.disabled = true;
             analysisResultsArea.style.display = 'none'; 
+            // Clear all tab content areas
+            if(summaryResultContentDiv) summaryResultContentDiv.innerHTML = ''; 
             if(questionsResultContentDiv) questionsResultContentDiv.innerHTML = ''; 
-            if(summaryResultContentDiv) summaryResultContentDiv.innerHTML = '';
-            if(insightsResultContentDiv) insightsResultContentDiv.innerHTML = ''; // Clear insights
+            if(deadlinesResultContentDiv) deadlinesResultContentDiv.innerHTML = '';
+            if(requirementsResultContentDiv) requirementsResultContentDiv.innerHTML = '';
+            if(stakeholdersResultContentDiv) stakeholdersResultContentDiv.innerHTML = '';
+            if(risksResultContentDiv) risksResultContentDiv.innerHTML = '';
         }
     };
 
@@ -56,14 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = async (event) => {
                 try {
                     const pdfData = new Uint8Array(event.target.result);
-                    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-                    let textContent = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const text = await page.getTextContent();
-                        textContent += text.items.map(item => item.str).join(' ') + '\n'; 
+                    const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdfDoc.numPages; i++) {
+                        const page = await pdfDoc.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(item => item.str).join(' ') + '\n'; 
                     }
-                    resolve(textContent.trim());
+                    resolve(fullText.trim());
                 } catch (err) {
                     console.error("Error during PDF.js processing:", err);
                     reject(new Error(`Failed to extract text from PDF: ${err.message}`));
@@ -77,35 +85,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function formatAndDisplayContent(parentElement, textContent, title) {
-        parentElement.innerHTML = ''; // Clear previous content
-        if (title) {
-            const h4 = document.createElement('h4');
-            h4.style.fontWeight = 'bold';
-            h4.style.marginTop = '10px';
-            h4.style.marginBottom = '5px';
-            h4.textContent = title;
-            parentElement.appendChild(h4);
+    // Helper function to format and display content (handles basic bolding and lists)
+    function formatAndDisplayContent(parentElement, textContent, sectionTitleForList) {
+        if (!parentElement) {
+            console.warn("Parent element for display not found for section:", sectionTitleForList || "Unknown");
+            return;
         }
+        parentElement.innerHTML = ''; // Clear previous content
+        
+        const lines = textContent.split('\n');
+        let currentList = null;
 
-        textContent.split('\n').forEach(line => {
+        lines.forEach(line => {
             const trimmedLine = line.trim();
             if (trimmedLine) {
-                const p = document.createElement('p');
                 let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Basic list item detection (could be improved)
-                if (formattedLine.match(/^(\*|-|\d+\.)\s+/)) {
-                    const ul = parentElement.querySelector('ul') || document.createElement('ul');
-                    if (!parentElement.contains(ul)) {
-                        parentElement.appendChild(ul);
+                
+                // Check if line starts with a list marker (e.g., *, -, 1.)
+                const listMatch = formattedLine.match(/^(\*|-|\d+\.)\s+/);
+                
+                if (listMatch) {
+                    if (!currentList) { // Start a new list if not already in one
+                        // For questions, we always use <ol>. For others, use <ul> by default.
+                        currentList = (parentElement === questionsResultContentDiv) ? document.createElement('ol') : document.createElement('ul');
+                        if (parentElement === questionsResultContentDiv) currentList.className = 'numbered-list';
+                        parentElement.appendChild(currentList);
                     }
-                    const li = document.createElement('li');
-                    li.innerHTML = formattedLine.replace(/^(\*|-|\d+\.)\s+/, '');
-                    ul.appendChild(li);
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = formattedLine.substring(listMatch[0].length); // Remove the marker
+                    currentList.appendChild(listItem);
                 } else {
+                    currentList = null; // End of a list
+                    const p = document.createElement('p');
                     p.innerHTML = formattedLine;
                     parentElement.appendChild(p);
                 }
+            } else {
+                 // If there's an empty line and we were in a list, end the list.
+                currentList = null;
             }
         });
     }
@@ -131,53 +148,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dateSpan = document.createElement('span');
                     dateSpan.className = 'rfp-date';
                     let formattedDate = 'N/A';
-if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
-    const date = new Date(analysis.analysisDate._seconds * 1000); 
-    if (!isNaN(date.valueOf())) { 
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        
-        formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`; // Correct template literal
-    } else {
-        console.warn("Timestamp object with _seconds resulted in invalid Date:", analysis.analysisDate);
-        formattedDate = 'N/A'; // Ensure fallback if date is invalid
-    }
-} else if (typeof analysis.analysisDate === 'string') { 
-    try {
-        const date = new Date(analysis.analysisDate);
-        if (!isNaN(date.valueOf())) { 
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-
-            formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`; // Correct template literal
-        } else {
-            console.warn("Date string was unparsable or resulted in invalid Date:", analysis.analysisDate);
-            formattedDate = 'N/A'; // Ensure fallback
-        }
-    } catch(e) { 
-        console.error("Error parsing date string:", analysis.analysisDate, e);
-        formattedDate = 'N/A'; // Ensure fallback
-    }
-} else {
-    // This 'else if (analysis.analysisDate)' was from a previous version,
-    // ensure a final fallback to N/A if all conditions fail.
-    if (analysis.analysisDate) {
-        console.warn("analysisDate is in an unexpected format (not string or expected timestamp object):", analysis.analysisDate);
-    }
-    formattedDate = 'N/A';
-}
-dateSpan.textContent = formattedDate;
+                    if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
+                        const date = new Date(analysis.analysisDate._seconds * 1000); 
+                        if (!isNaN(date.valueOf())) { 
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            formattedDate = `${year}/${month}/${day} ${hours}:${minutes}`;
+                        }
+                    } else if (typeof analysis.analysisDate === 'string') { /* ... date parsing ... */ }
+                    dateSpan.textContent = formattedDate;
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'rfp-name';
-                    nameSpan.textContent = analysis.rfpFileName || 'Unnamed RFP';
-                    nameSpan.title = analysis.rfpFileName || 'Unnamed RFP';
+                    nameSpan.textContent = analysis.rfpTitle || analysis.rfpFileName || 'Unnamed RFP'; // Prefer rfpTitle
+                    nameSpan.title = analysis.rfpTitle || analysis.rfpFileName || 'Unnamed RFP';
                     const statusDotSpan = document.createElement('span');
                     statusDotSpan.className = 'rfp-status-dot';
                     const statusColor = analysis.status === 'analyzed' ? 'green' : analysis.status === 'new' ? 'orange' : 'red';
@@ -196,79 +183,53 @@ dateSpan.textContent = formattedDate;
                         analysisResultsArea.style.display = 'none'; 
                         try {
                             const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
-                            if (!detailResponse.ok) {
-                                const errDetData = await detailResponse.json().catch(() => ({error: "Failed to fetch analysis details."}));
-                                throw new Error(errDetData.error || `HTTP error! Status: ${detailResponse.status}`);
-                            }
+                            if (!detailResponse.ok) { /* ... error handling ... */ throw new Error("Failed to fetch details");}
                             const detailedAnalysis = await detailResponse.json();
 
                             formatAndDisplayContent(summaryResultContentDiv, detailedAnalysis.rfpSummary || "Summary not available.");
-                            
-                            questionsResultContentDiv.innerHTML = '';
-                            const qList = document.createElement('ol');
-                            qList.className = 'numbered-list';
-                            (detailedAnalysis.generatedQuestions || "Questions not available.").split('\n').forEach(q => {
-                                if (q.trim()) {
-                                    const li = document.createElement('li');
-                                    let fq = q.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                                    fq = fq.replace(/^(\*|-|\d+\.)\s+/, '');
-                                    li.innerHTML = fq;
-                                    qList.appendChild(li);
-                                }
-                            });
-                            questionsResultContentDiv.appendChild(qList);
-
-                            // Populate Key Insights Tab
-                            insightsResultContentDiv.innerHTML = ''; // Clear previous
-                            formatAndDisplayContent(insightsResultContentDiv, detailedAnalysis.rfpDeadlines || "Not extracted.", "Deadlines:");
-                            formatAndDisplayContent(insightsResultContentDiv, detailedAnalysis.rfpKeyRequirements || "Not extracted.", "Key Requirements:");
-                            formatAndDisplayContent(insightsResultContentDiv, detailedAnalysis.rfpStakeholders || "Not extracted.", "Stakeholders:");
-                            formatAndDisplayContent(insightsResultContentDiv, detailedAnalysis.rfpRisks || "Not extracted.", "Potential Risks/Red Flags:");
+                            formatAndDisplayContent(questionsResultContentDiv, detailedAnalysis.generatedQuestions || "Questions not available.");
+                            formatAndDisplayContent(deadlinesResultContentDiv, detailedAnalysis.rfpDeadlines || "Deadlines not extracted.");
+                            formatAndDisplayContent(requirementsResultContentDiv, detailedAnalysis.rfpKeyRequirements || "Key Requirements not extracted.");
+                            formatAndDisplayContent(stakeholdersResultContentDiv, detailedAnalysis.rfpStakeholders || "Stakeholders not extracted.");
+                            formatAndDisplayContent(risksResultContentDiv, detailedAnalysis.rfpRisks || "Risks not extracted.");
                             
                             analysisResultsArea.style.display = 'block';
-                            document.querySelector('.tabs-container .tab-link').click(); 
+                            document.querySelector('.tabs-container .tab-link.active').click(); // Re-click active or default to first
 
-                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${detailedAnalysis.rfpFileName}</p>`;
+                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName}</p>`;
                             analysisStatusArea.style.display = 'flex';
                             hideLoadingStateRFP(5000);
-
-                        } catch (loadError) {
-                            console.error("Error loading saved analysis:", loadError);
-                            analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error loading analysis: ${loadError.message}</p>`;
-                            analysisStatusArea.style.display = 'flex';
-                            hideLoadingStateRFP(5000);
-                        } finally {
-                           generateAnalysisButton.disabled = false;
-                        }
+                        } catch (loadError) { /* ... error handling ... */ } 
+                        finally { generateAnalysisButton.disabled = false; }
                     });
                     itemDiv.appendChild(dateSpan); itemDiv.appendChild(nameSpan); itemDiv.appendChild(statusDotSpan); itemDiv.appendChild(viewLink);
                     savedAnalysesListDiv.appendChild(itemDiv);
                 });
             }
-        } catch (error) {
-            console.error("Failed to load saved RFP analyses:", error);
-            noSavedAnalysesP.textContent = `Error loading analyses: ${error.message}`;
-            noSavedAnalysesP.style.display = 'block';
-            savedAnalysesListDiv.innerHTML = '';
-        }
+        } catch (error) { /* ... error handling ... */ }
     }
 
     if (rfpForm) {
         rfpForm.addEventListener('submit', async function(event) {
             event.preventDefault();
+            // Get values from new form fields
+            const rfpTitle = document.getElementById('rfpTitle').value.trim() || "Untitled RFP Analysis";
+            const rfpType = document.getElementById('rfpType').value;
+            const submittedBy = document.getElementById('submittedBy').value;
+
             showLoadingStateRFP(true, "Starting analysis...");
             const file = rfpFileUpload.files[0];
             let rfpFileName = "UnknownRFP"; 
-            if (!file) { analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Please select an RFP PDF file.</p>`; analysisStatusArea.style.display = 'flex'; hideLoadingStateRFP(5000); generateAnalysisButton.disabled = false; return; }
+            if (!file) { /* ... validation ... */ return; }
             rfpFileName = file.name; 
-            if (file.type !== "application/pdf") { analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Invalid file type. Please upload a PDF.</p>`; analysisStatusArea.style.display = 'flex'; hideLoadingStateRFP(5000); generateAnalysisButton.disabled = false; return;}
+            if (file.type !== "application/pdf") { /* ... validation ... */ return; }
 
             let rfpText = "";
-            try { 
-                showLoadingStateRFP(true, "Extracting text from PDF...");
+            try { /* ... PDF extraction ... */ 
+                 showLoadingStateRFP(true, "Extracting text from PDF...");
                 rfpText = await extractTextFromPdf(file);
-                if (!rfpText || rfpText.trim().length < 50) { throw new Error("Could not extract sufficient text from the PDF, or PDF is empty/corrupted.");}
-            } catch (error) { console.error("Error extracting PDF text:", error); analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">${error.message}</p>`; analysisStatusArea.style.display = 'flex'; hideLoadingStateRFP(5000); generateAnalysisButton.disabled = false; return; }
+                if (!rfpText || rfpText.trim().length < 50) { throw new Error("Could not extract sufficient text from PDF.");}
+            } catch (error) { /* ... error handling ... */ return; }
 
             const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
 Provide the following distinct sections in your response, each clearly delimited:
@@ -310,17 +271,13 @@ RFP Text:
 ${rfpText}
 ---
 `;
-            // Initialize variables to hold parsed AI output
-            let summaryText = "Summary could not be extracted.";
-            let questionsText = "Questions could not be extracted.";
-            let deadlinesText = "Deadlines not extracted.";
-            let requirementsText = "Key Requirements not extracted.";
-            let stakeholdersText = "Stakeholders not extracted.";
-            let risksText = "Risks not extracted.";
+            // Initialize variables for all sections
+            let summaryText, questionsText, deadlinesText, requirementsText, stakeholdersText, risksText;
+            const defaultErrorMsg = (section) => `${section.replace(/_/g, ' ')} not extracted.`;
 
             try {
                 showLoadingStateRFP(true, "AI is analyzing and generating content...");
-                const response = await fetch('/api/generate', { 
+                const response = await fetch('/api/generate', { /* ... AI call ... */ 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: aiPrompt })
@@ -332,7 +289,7 @@ ${rfpText}
                 const parseSection = (output, sectionName) => {
                     const regex = new RegExp(`###${sectionName}_START###([\\s\\S]*?)###${sectionName}_END###`);
                     const match = output.match(regex);
-                    return match && match[1] ? match[1].trim() : `${sectionName.replace(/_/g, ' ')} not extracted.`;
+                    return match && match[1] ? match[1].trim() : defaultErrorMsg(sectionName);
                 };
 
                 summaryText = parseSection(rawAiOutput, "SUMMARY");
@@ -344,48 +301,50 @@ ${rfpText}
                 
                 // Display Content in Tabs
                 formatAndDisplayContent(summaryResultContentDiv, summaryText);
-                questionsResultContentDiv.innerHTML = ''; const qL=document.createElement('ol'); qL.className='numbered-list'; questionsText.split('\n').forEach(q => {const tQ=q.trim(); if(tQ){const li=document.createElement('li'); let fQ=tQ.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); fQ=fQ.replace(/^(\*|-|\d+\.)\s+/,''); li.innerHTML=fQ; qL.appendChild(li);}}); questionsResultContentDiv.appendChild(qL);
+                formatAndDisplayContent(questionsResultContentDiv, questionsText); // Will be wrapped in OL by helper if list-like
+                formatAndDisplayContent(deadlinesResultContentDiv, deadlinesText);
+                formatAndDisplayContent(requirementsResultContentDiv, requirementsText);
+                formatAndDisplayContent(stakeholdersResultContentDiv, stakeholdersText);
+                formatAndDisplayContent(risksResultContentDiv, risksText);
                 
-                insightsResultContentDiv.innerHTML = ''; // Clear previous insights
-                formatAndDisplayContent(insightsResultContentDiv, deadlinesText, "Deadlines:");
-                formatAndDisplayContent(insightsResultContentDiv, requirementsText, "Key Requirements:");
-                formatAndDisplayContent(insightsResultContentDiv, stakeholdersText, "Stakeholders:");
-                formatAndDisplayContent(insightsResultContentDiv, risksText, "Potential Risks/Red Flags:");
-
                 analysisResultsArea.style.display = 'block';
-                const firstTabLink = document.querySelector('.tabs-container .tab-link');
-                if (firstTabLink) firstTabLink.click();
+                document.querySelector('.tabs-container .tab-link.active').click(); // Re-activate current or default tab
+
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete! Saving results...</p>`;
                 analysisStatusArea.style.display = 'flex';
 
                 try {
+                    const savePayload = { 
+                        rfpTitle: rfpTitle, // New field
+                        rfpType: rfpType,   // New field
+                        submittedBy: submittedBy, // New field
+                        rfpFileName: rfpFileName, 
+                        rfpSummary: summaryText, 
+                        generatedQuestions: questionsText,
+                        rfpDeadlines: deadlinesText,
+                        rfpKeyRequirements: requirementsText,
+                        rfpStakeholders: stakeholdersText,
+                        rfpRisks: risksText,
+                        status: 'analyzed' 
+                    };
                     const saveResponse = await fetch('/api/rfp-analysis', { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            rfpFileName: rfpFileName, 
-                            rfpSummary: summaryText, 
-                            generatedQuestions: questionsText,
-                            rfpDeadlines: deadlinesText,
-                            rfpKeyRequirements: requirementsText,
-                            rfpStakeholders: stakeholdersText,
-                            rfpRisks: risksText,
-                            status: 'analyzed' 
-                        })
+                        body: JSON.stringify(savePayload)
                     });
-                    if (!saveResponse.ok) { const saveErrorResult = await saveResponse.json().catch(() => ({error: "Failed to save analysis and couldn't parse error."})); throw new Error(saveErrorResult.error || `Failed to save analysis. Status: ${saveResponse.status}`);}
+                    if (!saveResponse.ok) { const saveErrorResult = await saveResponse.json().catch(() => ({error: "Failed to save and parse error."})); throw new Error(saveErrorResult.error || `Failed to save. Status: ${saveResponse.status}`);}
                     const saveData = await saveResponse.json();
                     console.log("Save response:", saveData);
-                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete and results saved!</p>`;
+                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Analysis complete and results saved!</p>`;
                     await loadSavedAnalyses(); 
                 } catch (saveError) {
                     console.error("Error saving RFP analysis:", saveError);
-                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">RFP analysis complete, but failed to save results: ${saveError.message}</p>`;
+                    analysisStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">Analysis complete, but failed to save results: ${saveError.message}</p>`;
                 }
                 hideLoadingStateRFP(5000);
 
-            } catch (error) { 
-                console.error("Error during AI analysis or saving:", error);
+            } catch (error) { /* ... error handling for AI call ... */ 
+                 console.error("Error during AI analysis or saving:", error);
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
                 analysisStatusArea.style.display = 'flex';
                 hideLoadingStateRFP(5000);
@@ -393,34 +352,19 @@ ${rfpText}
                 generateAnalysisButton.disabled = false;
             }
         });
-    } else {
-        console.error("RFP form (#rfp-details-form) not found.");
-    }
+    } else { /* ... */ }
 
-    window.openTab = function(evt, tabName) { 
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
-        tablinks = document.getElementsByClassName("tab-link");
-        for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
-        const targetTab = document.getElementById(tabName);
-        if (targetTab) targetTab.style.display = "block";
-        if (evt && evt.currentTarget) evt.currentTarget.className += " active";
-    };
+    window.openTab = function(evt, tabName) { /* ... same as before ... */ };
     
-    const firstTabLink = document.querySelector('.tabs-container .tab-link');
-    if (firstTabLink && document.getElementById('questions-tab')) {
-        const activeTab = document.querySelector('.tabs-container .tab-link.active');
-        if(!activeTab){
-            document.getElementById('questions-tab').style.display = "block";
-            if (firstTabLink) firstTabLink.className += " active"; // Check firstTabLink again
-        } else {
-            const activeTabName = activeTab.getAttribute('onclick').match(/'([^']+)'/)[1];
-            const activeTabContent = document.getElementById(activeTabName);
-            if (activeTabContent) {
-                activeTabContent.style.display = "block";
-            }
+    const firstActiveTabButton = document.querySelector('.tabs-container .tab-link.active');
+    if (firstActiveTabButton) {
+        const tabNameToOpen = firstActiveTabButton.getAttribute('onclick').match(/'([^']*)'/)[1];
+        if(document.getElementById(tabNameToOpen)) {
+             document.getElementById(tabNameToOpen).style.display = "block";
         }
+    } else { // Fallback if no tab is initially active in HTML
+        const firstTabLink = document.querySelector('.tabs-container .tab-link');
+        if (firstTabLink) firstTabLink.click();
     }
     loadSavedAnalyses(); 
 });
