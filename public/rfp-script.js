@@ -1,4 +1,3 @@
-// At the top of rfp-script.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
@@ -294,12 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     setNotPursuingButton.onclick = () => updateRfpStatus(analysis.id, 'not_pursuing');
                     actionsSpan.appendChild(setNotPursuingButton);
                 }
-                // Add a button to move back to 'analyzed' (unactuated) if it's 'active' or 'not_pursuing'
+
                 if (analysis.status === 'active' || analysis.status === 'not_pursuing') {
                     const setAnalyzedButton = document.createElement('button');
                     setAnalyzedButton.className = 'action-icon';
                     setAnalyzedButton.innerHTML = '<i class="fas fa-inbox" aria-hidden="true"></i>'; // Example icon
-                    setAnalyzedButton.title = "Move to Analyzed/Unactuated";
+                    setAnalyzedButton.title = "Move to All Analyzed";
                     setAnalyzedButton.onclick = () => updateRfpStatus(analysis.id, 'analyzed');
                     actionsSpan.appendChild(setAnalyzedButton);
                 }
