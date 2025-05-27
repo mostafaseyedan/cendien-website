@@ -417,6 +417,86 @@ footer p { margin: 0; font-size: 0.9rem; }
     overflow-y: auto;   /* Add scroll if content exceeds max-height */
     margin-bottom: 1.5rem; /* Space below the list */
 }
+.rfp-list-tabs {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+.rfp-list-tab-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.rfp-list-tab-button:hover {
+    background-color: #e0e0e0;
+}
+.rfp-list-tab-button.active {
+    background-color: #005a9c; /* Cendien primary blue */
+    color: #fff;
+    border-color: #005a9c;
+}
+
+/* New Sortable Header Styling (added here) */
+.sortable-header {
+    cursor: pointer;
+    user-select: none; /* Prevent text selection on click */
+}
+.sortable-header:hover {
+    color: #005a9c;
+}
+
+/* New Styles for action buttons in RFP list items (added here) */
+.rfp-col-actions button, .rfp-col-actions .action-icon {
+    background: none;
+    border: none;
+    color: #005a9c;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.9rem; /* Adjust icon size if needed */
+    margin-left: 0.3rem;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    vertical-align: middle; /* Align icons nicely if text is also present */
+}
+.rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover {
+    background-color: #e9f1f7;
+    color: #003f6e;
+}
+.rfp-col-actions .action-icon.delete:hover {
+    color: #dc3545; /* Red for delete hover */
+    background-color: #f8d7da;
+}
+.rfp-view-details { /* Ensure this is styled to look like part of the actions */
+    color: #005a9c;
+    text-decoration: none;
+    font-size: 1rem; 
+    padding: 0.25rem 0.4rem; /* Consistent padding */
+    margin-left: 0.3rem;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-block; /* To allow padding and alignment */
+    vertical-align: middle;
+}
+.rfp-view-details:hover {
+    background-color: #e9f1f7;
+    color: #003f6e;
+}
+
+
+/* Adjustments to RFP list columns for new action buttons if needed */
+.rfp-col-actions {
+    flex: 0 0 150px; /* Increased width to accommodate more action buttons */
+    text-align: right;
+    display: flex; 
+    justify-content: flex-end;
+    align-items: center;
+}
 
 /* This class is for the header row and each data row */
 .analyzed-rfp-item {
