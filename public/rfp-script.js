@@ -1,3 +1,4 @@
+// At the top of rfp-script.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
@@ -39,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="loading-text">${message}</p>`;
             if (generateAnalysisButton) generateAnalysisButton.disabled = true;
         }
-        // Note: Not hiding analysisResultsArea here, only clearing tabs if it's a new analysis submission.
     };
 
     const hideLoadingStateRFP = (delay = 0) => {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             allFetchedAnalyses = allFetchedAnalyses.filter(a => a.id !== rfpId);
             renderAnalysesList();
-            analysisResultsArea.style.display = 'none'; // Hide details if the deleted one was shown
+            analysisResultsArea.style.display = 'none'; 
             analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">"${rfpTitleForConfirm}" deleted successfully!</p>`;
             analysisStatusArea.style.display = 'flex';
         } catch (error) {
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (currentStatusFilter === 'not_pursuing') {
             filteredAnalyses = filteredAnalyses.filter(a => a.status === 'not_pursuing');
         } else if (currentStatusFilter === 'all') { 
-            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new'); // Include 'new' if applicable
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new');
         }
 
         filteredAnalyses.sort((a, b) => {
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="rfp-col-owner">${analysis.submittedBy || 'N/A'}</span>
                     <span class="rfp-col-date">${analysis.analysisDate && analysis.analysisDate._seconds ? new Date(analysis.analysisDate._seconds * 1000).toLocaleDateString() : 'N/A'}</span>
                     <span class="rfp-col-status"><span class="rfp-status-dot ${analysis.status === 'active' ? 'green' : analysis.status === 'not_pursuing' ? 'red' : 'orange'}" title="${analysis.status || 'analyzed'}"></span></span>
-                    <span class="rfp-col-actions"></span>`; // Actions will be appended
+                    <span class="rfp-col-actions"></span>`; 
 
                 const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
                 
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const activeResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active') || document.querySelector('#analysis-results-area .tabs-container .tab-link');
                         if (activeResultTab) {
                             const tabNameToOpen = activeResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-                            if (window.openTab) window.openTab(null, tabNameToOpen); // Call global openTab for analysis results
+                            if (window.openTab) window.openTab(null, tabNameToOpen); 
                         }
                         const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
                         analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${titleForStatus}</p>`;
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${loadError.message}</p>`;
                         analysisStatusArea.style.display = 'flex';
                     } finally {
-                        hideLoadingStateRFP(5000); // Hide after showing details or error
+                        hideLoadingStateRFP(5000); 
                     }
                 });
                 actionsSpan.appendChild(viewLink);
@@ -337,8 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const submittedByValue = document.getElementById('submittedBy').value;
             const file = rfpFileUpload.files[0];
             
-            showLoadingStateRFP(true, "Starting analysis..."); // Placed before file checks
-            analysisResultsArea.style.display = 'none'; // Hide old results area
+            showLoadingStateRFP(true, "Starting analysis..."); 
+            analysisResultsArea.style.display = 'none'; 
 
             if (!file) {
                 analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Please upload an RFP document.</p>`;
@@ -368,10 +368,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const aiPrompt = `Please analyze the following Request for Proposal (RFP) text.
 Provide the following distinct sections in your response, each clearly delimited:
-1. A concise summary of the RFP. 2. A list of 5 to 15 critical clarification questions.
-3. Key Deadlines. 4. A list of Key Requirements. 5. Mentioned Stakeholders. 6. Potential Risks.
-Use format: ###SECTION_NAME_START### [Content] ###SECTION_NAME_END###
-RFP Text: --- ${rfpText} ---`;
+1. A concise summary of the RFP.
+2. A list of 5 to 15 critical and insightful clarification questions based on the RFP.
+3. Key Deadlines mentioned in the RFP.
+4. A list of Key Requirements (e.g., mandatory, highly desirable).
+5. Mentioned Stakeholders or Key Contacts.
+6. Potential Risks or Red Flags identified in the RFP.
+
+Use the following format strictly for each section:
+
+###SUMMARY_START###
+[Your generated summary of the RFP here. Aim for 5-8 key bullet points or a paragraph.]
+###SUMMARY_END###
+
+###QUESTIONS_START###
+[Your list of generated questions here. Each question should ideally be on a new line. You can use natural numbering.]
+###QUESTIONS_END###
+
+###DEADLINES_START###
+[List any key deadlines, e.g., Submission Deadline: YYYY-MM-DD, Q&A Period Ends: YYYY-MM-DD.]
+###DEADLINES_END###
+
+###KEY_REQUIREMENTS_START###
+[List key requirements. You can use bullet points. Categorize if possible, e.g., **Mandatory:**, **Desirable:**.]
+###KEY_REQUIREMENTS_END###
+
+###STAKEHOLDERS_START###
+[List any mentioned stakeholders, roles, or key contacts.]
+###STAKEHOLDERS_END###
+
+###RISKS_START###
+[List any potential risks, ambiguities, or red flags identified.]
+###RISKS_END###
+
+RFP Text:
+---
+${rfpText}
+---
+`;
             
             let summaryText, questionsText, deadlinesText, requirementsText, stakeholdersText, risksText;
             const defaultErrorMsg = (section) => `${section.replace(/_/g, ' ')} not extracted.`;
@@ -385,14 +419,19 @@ RFP Text: --- ${rfpText} ---`;
                 });
                 if (!response.ok) throw new Error((await response.json()).error || 'AI API error.');
                 const data = await response.json();
+                
                 let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
+                // **** IMPORTANT: Log the raw AI output for debugging ****
+                console.log("Raw AI Output from Gemini:\n", rawAiOutput);
+                // **** END OF LOGGING ****
+
                 const parseSection = (output, sectionName) => {
                     const regex = new RegExp(`###${sectionName}_START###([\\s\\S]*?)###${sectionName}_END###`);
                     const match = output.match(regex);
                     return match && match[1] ? match[1].trim() : defaultErrorMsg(sectionName);
                 };
                 summaryText = parseSection(rawAiOutput, "SUMMARY");
-                questionsText = parseSection(rawAiOutput, "QUESTIONS");
+                questionsText = parseSection(rawAiOutput, "QUESTIONS"); 
                 deadlinesText = parseSection(rawAiOutput, "DEADLINES");
                 requirementsText = parseSection(rawAiOutput, "KEY_REQUIREMENTS");
                 stakeholdersText = parseSection(rawAiOutput, "STAKEHOLDERS");
@@ -427,7 +466,7 @@ RFP Text: --- ${rfpText} ---`;
                         rfpKeyRequirements: requirementsText,
                         rfpStakeholders: stakeholdersText,
                         rfpRisks: risksText,
-                        status: 'analyzed' // New RFPs are 'analyzed' by default
+                        status: 'analyzed' 
                     };
                     const saveResponse = await fetch('/api/rfp-analysis', { 
                         method: 'POST',
@@ -439,7 +478,7 @@ RFP Text: --- ${rfpText} ---`;
                     analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Analysis complete and results saved!</p>`;
                     document.getElementById('rfpTitle').value = ''; 
                     rfpFileUpload.value = ''; 
-                    await loadSavedAnalysesInitial(); // Reload to show new entry in the list
+                    await loadSavedAnalysesInitial(); 
                 } catch (saveError) {
                     analysisStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">Analysis complete, but failed to save: ${saveError.message}</p>`;
                 }
@@ -455,8 +494,8 @@ RFP Text: --- ${rfpText} ---`;
     const firstActiveResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active') || document.querySelector('#analysis-results-area .tabs-container .tab-link');
     if (firstActiveResultTab) {
         const tabNameToOpen = firstActiveResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-        if (window.openTab && document.getElementById(tabNameToOpen)) { // Check if openTab and element exist
-            window.openTab(null, tabNameToOpen); // Initialize the result tab display
+        if (window.openTab && document.getElementById(tabNameToOpen)) { 
+            window.openTab(null, tabNameToOpen); 
         }
     }
     
