@@ -1,5 +1,3 @@
-// mostafaseyedan/cendien-website/cendien-website-Test/server.js
-
 const express = require('express');
 const path = require('path');
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
@@ -15,7 +13,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API Endpoint to communicate with Gemini
+// API Endpoint to communicate with Gemini (no changes needed here for this feature)
 app.post('/api/generate', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
@@ -25,7 +23,6 @@ app.post('/api/generate', async (req, res) => {
         console.error('Error: GEMINI_API_KEY environment variable is not set.');
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
-    // Ensure this model name is correct for your usage
     const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
@@ -70,14 +67,12 @@ app.post('/api/generate', async (req, res) => {
 // RFP Analysis Endpoints
 app.post('/api/rfp-analysis', async (req, res) => {
     try {
-        // Destructure ALL fields from request body, including rfpTitle, rfpType, and submittedBy
         const {
-            rfpFileName, rfpSummary, generatedQuestions, status,
+            rfpFileName, rfpSummary, generatedQuestions, status, // status will be 'analyzed' from client
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
-            rfpTitle, rfpType, submittedBy // Ensure these are destructured
+            rfpTitle, rfpType, submittedBy
         } = req.body;
 
-        // Basic validation (you might want to expand this if these new fields become mandatory)
         if (!rfpFileName || !rfpSummary || !generatedQuestions) {
             return res.status(400).json({ error: 'Missing required fields for basic analysis: rfpFileName, rfpSummary, generatedQuestions' });
         }
@@ -91,24 +86,74 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpStakeholders: rfpStakeholders || "Not specified",
             rfpRisks: rfpRisks || "Not specified",
             analysisDate: Timestamp.now(),
-            status: status || 'new',
-            // Add the new fields to the object being saved to Firestore
-            rfpTitle: rfpTitle || "", // Store the provided title, or an empty string if none was given
-            rfpType: rfpType || "N/A",   // Store the type, or "N/A" as a fallback
-            submittedBy: submittedBy || "N/A" // Store the submitter, or "N/A" as a fallback
+            status: status || 'analyzed', // Default to 'analyzed' if not provided by client
+            rfpTitle: rfpTitle || "",
+            rfpType: rfpType || "N/A",
+            submittedBy: submittedBy || "N/A"
         };
 
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
-        console.log('RFP Analysis saved with ID:', docRef.id, 'Data:', analysisData); // This log will now show the new fields
-        res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.' });
+        console.log('RFP Analysis saved with ID:', docRef.id, 'Data:', analysisData);
+        res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.', ...analysisData }); // Send back the created object
     } catch (error) {
         console.error('Error saving RFP analysis:', error);
         res.status(500).json({ error: 'Failed to save RFP analysis.', details: error.message });
     }
 });
 
+// Endpoint to update RFP status
+app.put('/api/rfp-analysis/:id/status', async (req, res) => {
+    try {
+        const analysisId = req.params.id;
+        const { status } = req.body; // Expected new status: 'active', 'not_pursuing', 'analyzed'
+
+        if (!status) {
+            return res.status(400).json({ error: 'New status is required.' });
+        }
+        if (!['active', 'not_pursuing', 'analyzed'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status value.' });
+        }
+
+        const docRef = db.collection('rfpAnalyses').doc(analysisId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'RFP analysis not found.' });
+        }
+
+        await docRef.update({ status: status });
+        console.log('RFP Analysis status updated for ID:', analysisId, 'New Status:', status);
+        res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', status: status });
+    } catch (error) {
+        console.error('Error updating RFP status:', error);
+        res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
+    }
+});
+
+// Endpoint to delete an RFP analysis
+app.delete('/api/rfp-analysis/:id', async (req, res) => {
+    try {
+        const analysisId = req.params.id;
+        const docRef = db.collection('rfpAnalyses').doc(analysisId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'RFP analysis not found.' });
+        }
+
+        await docRef.delete();
+        console.log('RFP Analysis deleted with ID:', analysisId);
+        res.status(200).json({ id: analysisId, message: 'RFP analysis deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting RFP analysis:', error);
+        res.status(500).json({ error: 'Failed to delete RFP analysis.', details: error.message });
+    }
+});
+
+
 app.get('/api/rfp-analyses', async (req, res) => {
     try {
+        // Default sort by analysisDate descending. Client-side will handle other sorting for now.
         const analysesSnapshot = await db.collection('rfpAnalyses')
                                         .orderBy('analysisDate', 'desc')
                                         .get();
@@ -144,8 +189,7 @@ app.get('/api/rfp-analysis/:id', async (req, res) => {
     }
 });
 
-
-// Fallback for SPA or direct GET requests to non-API routes
+// Fallback for SPA
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
