@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Montserrat', sans-serif; /* Primary font */
-    line-height: 1.65;
+    line-height: 1;
     color: #373F41; /* Dark grey/charcoal for body text */
     background-color: #f8f9fa; /* Very light grey background */
     font-weight: 400; /* Montserrat Regular */
@@ -457,7 +457,7 @@ footer p { margin: 0; font-size: 0.9rem; }
 .rfp-status-dot.green { background-color: #28a745; }
 .rfp-status-dot.red { background-color: #dc3545; }
 .rfp-status-dot.orange { background-color: #fd7e14; }
-/* Add more colors as needed for your statuses */
+
 
 .rfp-view-details {
     color: #005a9c; /* Cendien blue */
@@ -482,7 +482,7 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 
 #rfp-question-tool input[type="file"] {
-    width: 100%;
+    width: 50%;
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
     border-radius: 4px; 
@@ -507,13 +507,13 @@ footer p { margin: 0; font-size: 0.9rem; }
     /* margin-top is handled by margin-bottom of file input or general .form-group margin */
 }
 #rfp-question-tool select.section-selector { /* Or a new class if you prefer */
-    width: 100%; /* Make it full width like other inputs */
+    width: 50%; /* Make it full width like other inputs */
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
     border-radius: 4px; 
     font-family: 'Montserrat', sans-serif; 
     font-size: 0.95rem; 
-    line-height: 1.5; 
+    line-height: 1; 
     background-color: #fff; /* Ensure background color */
     appearance: none; /* Optional: to remove default system appearance for more custom styling */
     -webkit-appearance: none;
