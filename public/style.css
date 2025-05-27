@@ -506,6 +506,26 @@ footer p { margin: 0; font-size: 0.9rem; }
     display: inline-block; 
     /* margin-top is handled by margin-bottom of file input or general .form-group margin */
 }
+#rfp-question-tool select.section-selector { /* Or a new class if you prefer */
+    width: 100%; /* Make it full width like other inputs */
+    padding: 0.75rem 1rem; 
+    border: 1px solid #d1d1d1; 
+    border-radius: 4px; 
+    font-family: 'Montserrat', sans-serif; 
+    font-size: 0.95rem; 
+    line-height: 1.5; 
+    background-color: #fff; /* Ensure background color */
+    appearance: none; /* Optional: to remove default system appearance for more custom styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Add a custom arrow if you remove default appearance, or style it as is */
+}
+
+#rfp-question-tool select.section-selector:focus {
+    border-color: #35ED54; 
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+}
 .tabs-container {
     overflow: hidden; /* Clears floats or ensures border containment */
     border-bottom: 1px solid #ccc; /* Line below the tabs */
