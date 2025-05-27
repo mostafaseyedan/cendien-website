@@ -24,7 +24,7 @@ app.post('/api/generate', async (req, res) => {
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
     // Ensure this model name is correct for your usage
-    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         console.log(`Received prompt for Gemini. Sending... (Prompt length: ${prompt.length})`);
