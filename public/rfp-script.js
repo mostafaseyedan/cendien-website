@@ -353,9 +353,6 @@ ${rfpText}
             }
         });
     } else { /* ... */ }
-
-    window.openTab = function(evt, tabName) { /* ... same as before ... */ };
-    
     const firstActiveTabButton = document.querySelector('.tabs-container .tab-link.active');
     if (firstActiveTabButton) {
         const tabNameToOpen = firstActiveTabButton.getAttribute('onclick').match(/'([^']*)'/)[1];
