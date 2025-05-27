@@ -129,6 +129,31 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
     }
 });
+// Endpoint to update RFP title
+app.put('/api/rfp-analysis/:id/title', async (req, res) => {
+    try {
+        const analysisId = req.params.id;
+        const { rfpTitle } = req.body;
+
+        if (typeof rfpTitle !== 'string') { // Title can be an empty string
+            return res.status(400).json({ error: 'New rfpTitle is required and must be a string.' });
+        }
+
+        const docRef = db.collection('rfpAnalyses').doc(analysisId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'RFP analysis not found.' });
+        }
+
+        await docRef.update({ rfpTitle: rfpTitle });
+        console.log('RFP Analysis title updated for ID:', analysisId, 'New Title:', rfpTitle);
+        res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', rfpTitle: rfpTitle });
+    } catch (error) {
+        console.error('Error updating RFP title:', error);
+        res.status(500).json({ error: 'Failed to update RFP title.', details: error.message });
+    }
+});
 
 // Endpoint to delete an RFP analysis
 app.delete('/api/rfp-analysis/:id', async (req, res) => {
