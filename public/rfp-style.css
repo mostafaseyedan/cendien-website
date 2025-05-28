@@ -1,4 +1,22 @@
+header .settings-icon-container {
+    margin-left: auto; /* Pushes it to the right of nav items */
+    padding-left: 1rem; /* Space from the last nav item */
+}
 
+header .settings-icon-container .action-icon {
+    background: none;
+    border: none;
+    color: #373F41; /* Match nav link color */
+    font-size: 1.5rem; /* Adjust size as needed */
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+header .settings-icon-container .action-icon:hover {
+    background-color: #e9f1f7; /* Match nav link hover */
+    color: #005a9c; /* Match nav link hover */
+}
 #rfp-analyzer-main-content > div:first-of-type { /* Flex container for heading and button */
     display: flex;
     justify-content: space-between;
@@ -66,6 +84,34 @@
     font-size: 1.8rem; /* Slightly smaller than main page H2 if desired */
 }
 
+/* Prompt Settings Modal */
+#prompt-settings-modal .modal-content {
+    max-width: 700px; /* Adjust as needed */
+}
+
+#prompt-settings-modal textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Monospace for prompts */
+    font-size: 0.9rem; /* Adjust as needed */
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    resize: vertical;
+    min-height: 200px;
+}
+#prompt-settings-modal textarea:focus {
+    border-color: #005a9c;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25);
+}
+#prompt-settings-modal small {
+    display: block;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
 
 /* RFP Form (inside modal) specific styling */
 #new-rfp-modal #rfp-details-form {
@@ -87,7 +133,8 @@
 #new-rfp-modal #rfp-details-form #rfpTitle,
 #new-rfp-modal #rfp-details-form #rfpType,
 #new-rfp-modal #rfp-details-form #submittedBy,
-#new-rfp-modal #rfp-details-form #rfpFileUpload {
+#new-rfp-modal #rfp-details-form #rfpFileUpload
+#new-rfp-modal #rfp-details-form #rfpAddendumUpload {
     width: 50%; /* All specified inputs are 50% width within the modal */
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
@@ -104,6 +151,11 @@
     appearance: auto; 
     -webkit-appearance: auto;
     -moz-appearance: auto;
+}
+#new-rfp-modal #rfp-details-form .form-group input[type="file"] {
+    padding: 0.5rem; /* Adjust padding for file inputs for better appearance */
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 #new-rfp-modal #rfp-details-form input[type="file"] {
     background-color: #fff; 
@@ -200,9 +252,11 @@
     font-size: 0.9rem; padding-right: 10px;
 }
 .rfp-col-status { 
-    flex: 0 0 70px; 
-    display: flex; /* Keep as flex for aligning content */
-    align-items: center;
+    flex: 0 0 70px; /* Or your existing flex basis */
+    display: flex;
+    justify-content: center; /* Add or ensure this is set */
+    align-items: center;    /* Add or ensure this is set */
+    text-align: center;
 }
 .rfp-col-actions { 
     flex: 0 0 150px; 
@@ -433,6 +487,10 @@
     #saved-analyses-section .rfp-col-actions {
         justify-content: flex-start; margin-top: 0.5rem;
         width: 100% !important; 
+        justify-content: center; 
     }
+    #saved-analyses-list .analyzed-rfp-item .rfp-col-actions {
+    justify-content: flex-end; /* Align icons to the right in data rows */
+}
     #saved-analyses-header { display: none; }
 }
