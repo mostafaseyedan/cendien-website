@@ -179,13 +179,14 @@
 #saved-analyses-header { /* Styles for the header row of the RFP list */
     background-color: #f8f9fa; font-weight: bold; 
     border-bottom: 2px solid #ccc; 
-    align-items: center; /* Ensure vertical alignment of header text */
+    align-items: center; 
 }
 
 /* Column definitions for RFP List */
 .rfp-col-title { 
     flex: 3 1 0%; min-width: 150px; padding-right: 10px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: left;
 }
 .rfp-col-type {
     flex: 2 1 0%; min-width: 100px; padding-right: 10px;
@@ -194,7 +195,6 @@
 .rfp-col-owner {
     flex: 1.5 1 0%; min-width: 80px; padding-right: 10px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    text-align: left; /* Explicitly left align owner data */
 }
 .rfp-col-date { 
     flex: 2 1 0; min-width: 130px; color: #555;
@@ -203,7 +203,6 @@
 .rfp-col-status { /* Column container for status dot/text */
     flex: 0 0 70px; 
     display: flex;
-    justify-content: center; 
     align-items: center;
 }
 .rfp-col-actions { /* Column container for action icons */
@@ -212,23 +211,46 @@
     align-items: center;
 }
 
-/* Header Text Alignment */
-#saved-analyses-header .rfp-col-owner { text-align: left; } /* Ensure header text is left aligned */
-#saved-analyses-header .rfp-col-status { text-align: center; } /* Center "Status" text */
-#rfp-actions-header-text { /* This is the span for "Actions" header */
-    display: flex; /* Make it a flex container to use justify-content */
-    justify-content: center; 
-    text-align: center; 
-    width: 100%; /* Fill its column for centering */
+#saved-analyses-header .rfp-col-title,
+#saved-analyses-header .rfp-col-date {
+    text-align: left; 
 }
-/* Data Row Actions Alignment */
+
+#saved-analyses-header .rfp-col-type,
+#saved-analyses-header .rfp-col-owner {
+    text-align: left; /* Headers for Type and Owner remain left-aligned */
+}
+
+.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-type,
+.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-owner {
+    text-align: center; /* Center-align data items for RFP Type and Owner */
+}
+
+#saved-analyses-header .rfp-col-status {
+    justify-content: flex-start; /* MODIFIED: Align "Status" header text to the left */
+    text-align: left;            /* MODIFIED: Ensure text aligns left */
+    padding-left: 5px;           /* Optional: Add a little padding if it's too close to edge */
+}
+.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-status {
+    justify-content: center; /* Data row status dot remains centered */
+}
+
+
+#rfp-actions-header-text { /* This is the span for "Actions" header */
+    display: flex; 
+    justify-content: center; /* MODIFIED: Ensure "Actions" text is centered */
+    text-align: center;      
+    width: 100%;             
+}
+/* Data Row Actions Alignment (remains flex-end) */
 .analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-actions {
-    justify-content: flex-end; /* Align icons to the right in data rows */
+    justify-content: flex-end; 
 }
 
 .rfp-status-dot {
     width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
 }
+
 .rfp-status-dot.green { background-color: #28a745; } 
 .rfp-status-dot.red { background-color: #dc3545; }   
 .rfp-status-dot.orange { background-color: #fd7e14; } 
@@ -248,7 +270,6 @@
 .rfp-col-actions .action-icon.delete:hover {
     color: #dc3545; background-color: #f8d7da;
 }
-
 /* Styling for the main page's "View Saved RFP Details" section */
 #view-saved-rfp-details-section {
     border-top: 2px solid #005a9c; 
