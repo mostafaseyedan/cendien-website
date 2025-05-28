@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 // when running on Google Cloud. For local development, you might need to
 // set up authentication (e.g., gcloud auth application-default login).
 const db = new Firestore({
-    projectId: 'temporal-grin-460413-q9', // Replace with the actual Project ID
+    projectId: 'cendien-sales-support-ai', // Replace with the actual Project ID
 });
 
 // Middleware
