@@ -1,43 +1,59 @@
-// mostafaseyedan/cendien-website/cendien-website-Test/public/rfp-script.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // RFP Form and general elements
-    const rfpForm = document.getElementById('rfp-details-form');
-    const rfpFileUpload = document.getElementById('rfpFileUpload');
-    const generateAnalysisButton = document.getElementById('generate-analysis-button');
-    const analysisStatusArea = document.getElementById('analysis-status-area'); // Inside modal now
-    const analysisResultsArea = document.getElementById('analysis-results-area'); // Inside modal now
-    
-    // Analysis results tab content divs (ensure all are selected)
-    const summaryResultContentDiv = document.getElementById('summary-result-content');
-    const questionsResultContentDiv = document.getElementById('questions-result-content');
-    // For Deadlines & Submission Format
-    const deadlinesOnlyContentDiv = document.getElementById('deadlines-only-content');
-    const submissionFormatContentDiv = document.getElementById('submission-format-content');
-    // Renamed tab
-    const requirementsResultContentDiv = document.getElementById('requirements-result-content');
-    const stakeholdersResultContentDiv = document.getElementById('stakeholders-result-content');
-    const risksResultContentDiv = document.getElementById('risks-result-content');
-    // New tabs
-    const registrationResultContentDiv = document.getElementById('registration-result-content');
-    const licensesResultContentDiv = document.getElementById('licenses-result-content');
-    const budgetResultContentDiv = document.getElementById('budget-result-content');
-    
-    // Saved RFP List elements
-    const savedAnalysesListDiv = document.getElementById('saved-analyses-list');
-    const noSavedAnalysesP = document.getElementById('no-saved-analyses');
-    const rfpListTabsContainer = document.querySelector('.rfp-list-tabs');
-    const yearSpanRFP = document.getElementById('current-year-rfp');
-
-    // Modal elements
+    // --- MODAL Elements (for New RFP Analysis) ---
     const newRfpModal = document.getElementById('new-rfp-modal');
     const openNewRfpModalButton = document.getElementById('open-new-rfp-modal-button');
     const modalCloseButton = document.getElementById('modal-close-button');
-    const modalTitle = document.getElementById('modal-title'); // To change title if needed
+    const modalFormTitle = document.getElementById('modal-title'); 
+    
+    const rfpForm = document.getElementById('rfp-details-form'); // Inside modal
+    const rfpFileUpload = document.getElementById('rfpFileUpload'); // Inside modal
+    const generateAnalysisButton = document.getElementById('generate-analysis-button'); // Inside modal
+    const modalAnalysisStatusArea = document.getElementById('modal-analysis-status-area'); 
+    const modalAnalysisResultsArea = document.getElementById('modal-analysis-results-area');
 
+    // Modal's result tab content divs
+    const modalSummaryResultContentDiv = document.getElementById('modal-summary-result-content');
+    const modalQuestionsResultContentDiv = document.getElementById('modal-questions-result-content');
+    const modalDeadlinesOnlyContentDiv = document.getElementById('modal-deadlines-only-content');
+    const modalSubmissionFormatContentDiv = document.getElementById('modal-submission-format-content');
+    const modalRequirementsResultContentDiv = document.getElementById('modal-requirements-result-content');
+    const modalStakeholdersResultContentDiv = document.getElementById('modal-stakeholders-result-content');
+    const modalRisksResultContentDiv = document.getElementById('modal-risks-result-content');
+    const modalRegistrationResultContentDiv = document.getElementById('modal-registration-result-content');
+    const modalLicensesResultContentDiv = document.getElementById('modal-licenses-result-content');
+    const modalBudgetResultContentDiv = document.getElementById('modal-budget-result-content');
+
+    // --- MAIN PAGE Elements (for Viewing Saved RFP Details) ---
+    const viewSavedRfpDetailsSection = document.getElementById('view-saved-rfp-details-section');
+    const viewRfpMainTitleHeading = document.getElementById('view-rfp-main-title-heading');
+    const closeViewRfpDetailsButton = document.getElementById('close-view-rfp-details-button');
+    const viewRfpStatusArea = document.getElementById('view-rfp-status-area');
+    const viewAnalysisResultsArea = document.getElementById('view-analysis-results-area');
+
+    // Main page's view result tab content divs
+    const viewSummaryResultContentDiv = document.getElementById('view-summary-result-content');
+    const viewQuestionsResultContentDiv = document.getElementById('view-questions-result-content');
+    const viewDeadlinesOnlyContentDiv = document.getElementById('view-deadlines-only-content');
+    const viewSubmissionFormatContentDiv = document.getElementById('view-submission-format-content');
+    const viewRequirementsResultContentDiv = document.getElementById('view-requirements-result-content');
+    const viewStakeholdersResultContentDiv = document.getElementById('view-stakeholders-result-content');
+    const viewRisksResultContentDiv = document.getElementById('view-risks-result-content');
+    const viewRegistrationResultContentDiv = document.getElementById('view-registration-result-content');
+    const viewLicensesResultContentDiv = document.getElementById('view-licenses-result-content');
+    const viewBudgetResultContentDiv = document.getElementById('view-budget-result-content');
+    
+    // --- SAVED RFP LIST Elements (on main page) ---
+    const savedAnalysesListDiv = document.getElementById('saved-analyses-list');
+    const noSavedAnalysesP = document.getElementById('no-saved-analyses');
+    const rfpListTabsContainer = document.querySelector('.rfp-list-tabs');
+    const rfpListStatusArea = document.getElementById('rfp-list-status-area'); // For list operations like delete/status change
+    const yearSpanRFP = document.getElementById('current-year-rfp');
+
+    // --- State Variables ---
     let allFetchedAnalyses = []; 
     let currentSortKey = 'analysisDate'; 
     let currentSortOrder = 'desc'; 
@@ -51,12 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openNewRfpModalButton) {
         openNewRfpModalButton.addEventListener('click', () => {
             if (newRfpModal) {
-                // Reset form and results for a new entry
                 if (rfpForm) rfpForm.reset();
-                if (analysisResultsArea) analysisResultsArea.style.display = 'none';
-                if (analysisStatusArea) analysisStatusArea.style.display = 'none';
-                clearAnalysisResultTabs();
-                if (modalTitle) modalTitle.textContent = "Analyze New RFP";
+                if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'none';
+                if (modalAnalysisStatusArea) modalAnalysisStatusArea.style.display = 'none';
+                clearModalAnalysisResultTabs(); 
+                if (modalFormTitle) modalFormTitle.textContent = "Analyze New RFP";
+                if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'none'; // Hide main page view section
                 newRfpModal.style.display = 'block';
             }
         });
@@ -67,50 +83,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (newRfpModal) {
-        newRfpModal.addEventListener('click', (event) => { // Close if clicked outside content
+        newRfpModal.addEventListener('click', (event) => { 
             if (event.target === newRfpModal) {
                 newRfpModal.style.display = 'none';
             }
         });
     }
-
-    function clearAnalysisResultTabs() {
-        const contentDivs = [
-            summaryResultContentDiv, questionsResultContentDiv,
-            deadlinesOnlyContentDiv, submissionFormatContentDiv,
-            requirementsResultContentDiv, stakeholdersResultContentDiv,
-            risksResultContentDiv, registrationResultContentDiv,
-            licensesResultContentDiv, budgetResultContentDiv
-        ];
-        contentDivs.forEach(div => {
-            if (div) div.innerHTML = '';
+    if (closeViewRfpDetailsButton) {
+        closeViewRfpDetailsButton.addEventListener('click', () => {
+            if(viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'none';
         });
     }
 
-    const showLoadingStateRFP = (isLoading, message = "Processing...") => {
-        if (!analysisStatusArea) return;
-        if (isLoading) {
-            analysisStatusArea.style.display = 'flex';
-            analysisStatusArea.innerHTML = `
-                <div class="spinner"></div>
-                <p class="loading-text">${message}</p>`;
-            if (generateAnalysisButton) generateAnalysisButton.disabled = true;
+    // --- Helper: Clear Tab Content ---
+    function clearModalAnalysisResultTabs() {
+        const contentDivs = [
+            modalSummaryResultContentDiv, modalQuestionsResultContentDiv,
+            modalDeadlinesOnlyContentDiv, modalSubmissionFormatContentDiv,
+            modalRequirementsResultContentDiv, modalStakeholdersResultContentDiv,
+            modalRisksResultContentDiv, modalRegistrationResultContentDiv,
+            modalLicensesResultContentDiv, modalBudgetResultContentDiv
+        ];
+        contentDivs.forEach(div => { if (div) div.innerHTML = ''; });
+    }
+    function clearViewAnalysisResultTabs() {
+         const contentDivs = [
+            viewSummaryResultContentDiv, viewQuestionsResultContentDiv,
+            viewDeadlinesOnlyContentDiv, viewSubmissionFormatContentDiv,
+            viewRequirementsResultContentDiv, viewStakeholdersResultContentDiv,
+            viewRisksResultContentDiv, viewRegistrationResultContentDiv,
+            viewLicensesResultContentDiv, viewBudgetResultContentDiv
+        ];
+        contentDivs.forEach(div => { if (div) div.innerHTML = ''; });
+    }
+
+    // --- Helper: Show/Hide Loading/Status Messages ---
+    function showLoadingMessage(areaElement, message = "Processing...", showSpinner = true) {
+        if (!areaElement) return;
+        areaElement.style.display = 'flex'; // Make it visible
+        areaElement.innerHTML = `
+            ${showSpinner ? '<div class="spinner"></div>' : ''}
+            <p class="loading-text">${message}</p>`;
+        // Disable analysis button only if it's the modal's status area for a new analysis
+        if (areaElement === modalAnalysisStatusArea && generateAnalysisButton && showSpinner) {
+            generateAnalysisButton.disabled = true;
         }
-    };
-
-    const hideLoadingStateRFP = (delay = 0) => {
-         setTimeout(() => {
-            if (analysisStatusArea) {
-                 if (analysisStatusArea.innerHTML.includes('<div class="spinner">')) { 
-                    analysisStatusArea.style.display = 'none';
-                    analysisStatusArea.innerHTML = '';
-                }
+    }
+    function hideLoadingMessage(areaElement, delay = 0) {
+        setTimeout(() => {
+            if (areaElement && (areaElement.innerHTML.includes('loading-text') || areaElement.innerHTML.includes('spinner'))) {
+                areaElement.style.display = 'none';
+                areaElement.innerHTML = '';
             }
-            if (generateAnalysisButton) generateAnalysisButton.disabled = false;
+             // Re-enable analysis button only if it's the modal's status area
+            if (areaElement === modalAnalysisStatusArea && generateAnalysisButton) {
+                 generateAnalysisButton.disabled = false;
+            }
         }, delay);
-    };
-
-    async function extractTextFromPdf(file) {
+    }
+    
+    // --- PDF Extraction & Content Formatting ---
+    async function extractTextFromPdf(file) { /* ... (same as your uploaded version) ... */ 
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async (event) => {
@@ -132,8 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsArrayBuffer(file);
         });
     }
-
-    function formatAndDisplayContent(parentElement, textContent) {
+    function formatAndDisplayContent(parentElement, textContent) { /* ... (same as your uploaded version) ... */
         if (!parentElement) return;
         parentElement.innerHTML = ''; 
         const lines = textContent.split('\n');
@@ -142,11 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const trimmedLine = line.trim();
             if (trimmedLine) {
                 let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Using modalQuestionsResultContentDiv as a reference for `ol` isn't ideal if this function is generic.
+                // For now, this will work if only modal's questions tab uses <ol>.
+                // A better way would be to pass a flag or check parentElement's ID more specifically.
+                const isQuestionsList = parentElement.id && parentElement.id.includes('questions-result-content');
                 const listMatch = formattedLine.match(/^(\*|-|\d+\.)\s+/);
+
                 if (listMatch) {
                     if (!currentList) {
-                        currentList = (parentElement === questionsResultContentDiv) ? document.createElement('ol') : document.createElement('ul');
-                        if (parentElement === questionsResultContentDiv) currentList.className = 'numbered-list';
+                        currentList = isQuestionsList ? document.createElement('ol') : document.createElement('ul');
+                        if (isQuestionsList) currentList.className = 'numbered-list';
                         parentElement.appendChild(currentList);
                     }
                     const listItem = document.createElement('li');
@@ -162,119 +199,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentList = null;
             }
         });
-    }
+     }
 
+    // --- API Call Functions for List Item Actions ---
     async function updateRfpStatus(rfpId, newStatus) {
         const rfpToUpdate = allFetchedAnalyses.find(a => a.id === rfpId);
         const rfpTitleForMessage = rfpToUpdate ? (rfpToUpdate.rfpTitle || rfpToUpdate.rfpFileName || 'this RFP') : 'this RFP';
-
-        // For this operation, status messages can appear on the main page, not in modal
-        const mainPageStatusArea = document.getElementById('analysis-status-area'); // A bit ambiguous if there are two
-                                                                               // Let's assume there's one outside modal for list operations
-                                                                               // For now, we'll use the modal's status area.
-                                                                               // This might need a dedicated status area on the main page.
-
-        showLoadingStateRFP(true, `Updating "${rfpTitleForMessage}" to ${newStatus}...`); // Uses modal's status area
+        showLoadingMessage(rfpListStatusArea, `Updating "${rfpTitleForMessage}" to ${newStatus}...`);
         try {
             const response = await fetch(`/api/rfp-analysis/${rfpId}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
             });
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({ error: `Failed to update status for ${rfpTitleForMessage}.` }));
-                throw new Error(errData.error || `HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error((await response.json()).error || 'Failed to update status.');
             const updatedAnalysis = allFetchedAnalyses.find(a => a.id === rfpId);
             if (updatedAnalysis) updatedAnalysis.status = newStatus;
-            renderAnalysesList(); // Re-render main page list
-            if(analysisStatusArea) { // Check if modal's status area is relevant here
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">"${rfpTitleForMessage}" status updated to ${newStatus}!</p>`;
-                analysisStatusArea.style.display = 'flex';
-            }
-        } catch (error) {
-             if(analysisStatusArea) {
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
-                analysisStatusArea.style.display = 'flex';
-             } else {
-                alert(`Error: ${error.message}`);
-             }
-        } finally {
-            hideLoadingStateRFP(3000);
-        }
+            renderAnalysesList();
+            showLoadingMessage(rfpListStatusArea, `"${rfpTitleForMessage}" status updated to ${newStatus}!`, false);
+        } catch (error) { showLoadingMessage(rfpListStatusArea, `Error: ${error.message}`, false);
+        } finally { hideLoadingMessage(rfpListStatusArea, 3000); }
     }
-    
     async function updateRfpTitle(rfpId, currentTitle) {
         const newTitle = window.prompt("Enter the new title for the RFP:", currentTitle);
-
-        if (newTitle === null) return;
-        if (newTitle.trim() === "") {
-            window.alert("RFP Title cannot be empty.");
-            return;
-        }
-        if (newTitle.trim() === currentTitle) return;
-
-        showLoadingStateRFP(true, `Updating title for "${currentTitle}"...`);
+        if (newTitle === null || newTitle.trim() === "" || newTitle.trim() === currentTitle) return;
+        showLoadingMessage(rfpListStatusArea, `Updating title for "${currentTitle}"...`);
         try {
             const response = await fetch(`/api/rfp-analysis/${rfpId}/title`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rfpTitle: newTitle.trim() }),
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rfpTitle: newTitle.trim() }),
             });
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({ error: `Failed to update title.` }));
-                throw new Error(errData.error || `HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error((await response.json()).error || `Failed to update title.`);
             const updatedRfp = allFetchedAnalyses.find(a => a.id === rfpId);
             if (updatedRfp) updatedRfp.rfpTitle = newTitle.trim();
             renderAnalysesList();
-             if(analysisStatusArea) {
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Title updated successfully!</p>`;
-                analysisStatusArea.style.display = 'flex';
-            }
-        } catch (error) {
-            if(analysisStatusArea) {
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error updating title: ${error.message}</p>`;
-                analysisStatusArea.style.display = 'flex';
-            } else {
-                alert(`Error updating title: ${error.message}`);
-            }
-        } finally {
-            hideLoadingStateRFP(3000);
-        }
+            showLoadingMessage(rfpListStatusArea, `Title updated successfully!`, false);
+        } catch (error) { showLoadingMessage(rfpListStatusArea, `Error updating title: ${error.message}`, false);
+        } finally { hideLoadingMessage(rfpListStatusArea, 3000); }
     }
-
-
     async function deleteRfp(rfpId, rfpTitleForConfirm) {
-        if (!window.confirm(`Are you sure you want to delete RFP: "${rfpTitleForConfirm}"? This action cannot be undone.`)) {
-            return;
-        }
-        showLoadingStateRFP(true, `Deleting "${rfpTitleForConfirm}"...`);
+        if (!window.confirm(`Are you sure you want to delete RFP: "${rfpTitleForConfirm}"? This action cannot be undone.`)) return;
+        showLoadingMessage(rfpListStatusArea, `Deleting "${rfpTitleForConfirm}"...`);
         try {
             const response = await fetch(`/api/rfp-analysis/${rfpId}`, { method: 'DELETE' });
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({ error: `Failed to delete ${rfpTitleForConfirm}.` }));
-                throw new Error(errData.error || `HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error((await response.json()).error || `Failed to delete ${rfpTitleForConfirm}.`);
             allFetchedAnalyses = allFetchedAnalyses.filter(a => a.id !== rfpId);
             renderAnalysesList();
-            if (analysisResultsArea) analysisResultsArea.style.display = 'none'; 
-            if(analysisStatusArea) {
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">"${rfpTitleForConfirm}" deleted successfully!</p>`;
-                analysisStatusArea.style.display = 'flex';
-            }
-        } catch (error) {
-            if(analysisStatusArea) {
-                analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${error.message}</p>`;
-                analysisStatusArea.style.display = 'flex';
-            } else {
-                alert(`Error: ${error.message}`);
-            }
-        } finally {
-            hideLoadingStateRFP(3000);
-        }
+            if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'none'; 
+            showLoadingMessage(rfpListStatusArea, `"${rfpTitleForConfirm}" deleted successfully!`, false);
+        } catch (error) { showLoadingMessage(rfpListStatusArea, `Error deleting: ${error.message}`, false);
+        } finally { hideLoadingMessage(rfpListStatusArea, 3000); }
     }
     
+    // --- Render Saved Analyses List (Main Page) ---
     function renderAnalysesList() {
         if (!savedAnalysesListDiv || !noSavedAnalysesP) return;
         savedAnalysesListDiv.innerHTML = '';
@@ -289,8 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filteredAnalyses.sort((a, b) => {
-            let valA = a[currentSortKey];
-            let valB = b[currentSortKey];
+            let valA = a[currentSortKey]; let valB = b[currentSortKey];
             if (currentSortKey === 'analysisDate') {
                 valA = a.analysisDate && a.analysisDate._seconds ? Number(a.analysisDate._seconds) : 0;
                 valB = b.analysisDate && b.analysisDate._seconds ? Number(b.analysisDate._seconds) : 0;
@@ -312,23 +285,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'analyzed-rfp-item';
                 const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
-                
                 let formattedDateTime = 'N/A';
                 if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') { 
                     const date = new Date(analysis.analysisDate._seconds * 1000); 
                     if (!isNaN(date.valueOf())) { 
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const hours = String(date.getHours()).padStart(2, '0');
+                        const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0'); const hours = String(date.getHours()).padStart(2, '0');
                         const minutes = String(date.getMinutes()).padStart(2, '0');
                         formattedDateTime = `${year}/${month}/${day} ${hours}:${minutes}`;
                     }
                 }
-
                 const statusDotClass = analysis.status === 'active' ? 'green' :
-                                       analysis.status === 'not_pursuing' ? 'red' :
-                                       'orange'; 
+                                       analysis.status === 'not_pursuing' ? 'red' : 'orange'; 
 
                 itemDiv.innerHTML = `
                     <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
@@ -341,64 +309,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
                 
                 const viewLink = document.createElement('a');
-                viewLink.href = '#'; 
-                viewLink.className = 'rfp-view-details action-icon';
+                viewLink.href = '#'; viewLink.className = 'rfp-view-details action-icon';
                 viewLink.dataset.id = analysis.id; 
                 viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i><span class="visually-hidden">View Details</span>';
                 viewLink.title = "View Analysis Details";
                 viewLink.addEventListener('click', async (e) => {
                     e.preventDefault();
                     const analysisId = e.currentTarget.dataset.id;
-                    const currentItemTitleElement = e.currentTarget.closest('.analyzed-rfp-item').querySelector('.rfp-col-title');
-                    const loadingMessageTitle = currentItemTitleElement ? currentItemTitleElement.textContent : 'Selected RFP';
+                    const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
+                    const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
+                    const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected RFP';
                     
-                    // For viewing details, use the modal's status and results area
-                    const modalAnalysisStatusArea = document.getElementById('analysis-status-area');
-                    const modalAnalysisResultsArea = document.getElementById('analysis-results-area');
-
-                    if(modalAnalysisStatusArea) modalAnalysisStatusArea.style.display = 'flex';
-                    if(modalAnalysisStatusArea) modalAnalysisStatusArea.innerHTML = `<div class="spinner"></div><p class="loading-text">Loading analysis for ${loadingMessageTitle}...</p>`;
-                    if(modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'none';
-                    if(newRfpModal) newRfpModal.style.display = 'block'; // Show modal for viewing
-                    if(modalTitle) modalTitle.textContent = `Details for: ${loadingMessageTitle}`;
-
+                    if (newRfpModal) newRfpModal.style.display = 'none';
+                    if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'block';
+                    if (viewRfpMainTitleHeading) viewRfpMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
+                    
+                    showLoadingMessage(viewRfpStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
+                    if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'none';
+                    clearViewAnalysisResultTabs();
 
                     try {
                         const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
                         if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch details.');
                         const detailedAnalysis = await detailResponse.json();
                         
-                        clearAnalysisResultTabs(); // Clear before populating
-
-                        formatAndDisplayContent(summaryResultContentDiv, detailedAnalysis.rfpSummary || "Summary not available.");
-                        formatAndDisplayContent(questionsResultContentDiv, detailedAnalysis.generatedQuestions || "Questions not available.");
+                        formatAndDisplayContent(viewSummaryResultContentDiv, detailedAnalysis.rfpSummary || "N/A");
+                        formatAndDisplayContent(viewQuestionsResultContentDiv, detailedAnalysis.generatedQuestions || "N/A");
+                        formatAndDisplayContent(viewDeadlinesOnlyContentDiv, detailedAnalysis.rfpDeadlines || "N/A");
+                        formatAndDisplayContent(viewSubmissionFormatContentDiv, detailedAnalysis.rfpSubmissionFormat || "N/A");
+                        formatAndDisplayContent(viewRequirementsResultContentDiv, detailedAnalysis.rfpKeyRequirements || "N/A");
+                        formatAndDisplayContent(viewStakeholdersResultContentDiv, detailedAnalysis.rfpStakeholders || "N/A");
+                        formatAndDisplayContent(viewRisksResultContentDiv, detailedAnalysis.rfpRisks || "N/A");
+                        formatAndDisplayContent(viewRegistrationResultContentDiv, detailedAnalysis.rfpRegistration || "N/A");
+                        formatAndDisplayContent(viewLicensesResultContentDiv, detailedAnalysis.rfpLicenses || "N/A");
+                        formatAndDisplayContent(viewBudgetResultContentDiv, detailedAnalysis.rfpBudget || "N/A");
                         
-                        // Populate Deadlines and Submission Format
-                        formatAndDisplayContent(deadlinesOnlyContentDiv, detailedAnalysis.rfpDeadlines || "Deadlines not extracted.");
-                        formatAndDisplayContent(submissionFormatContentDiv, detailedAnalysis.rfpSubmissionFormat || "Submission format not specified.");
-                        
-                        formatAndDisplayContent(requirementsResultContentDiv, detailedAnalysis.rfpKeyRequirements || "Requirements not extracted.");
-                        formatAndDisplayContent(stakeholdersResultContentDiv, detailedAnalysis.rfpStakeholders || "Stakeholders not extracted.");
-                        formatAndDisplayContent(risksResultContentDiv, detailedAnalysis.rfpRisks || "Risks not extracted.");
-
-                        // Populate new tabs
-                        formatAndDisplayContent(registrationResultContentDiv, detailedAnalysis.rfpRegistration || "Registration details not extracted.");
-                        formatAndDisplayContent(licensesResultContentDiv, detailedAnalysis.rfpLicenses || "License information not extracted.");
-                        formatAndDisplayContent(budgetResultContentDiv, detailedAnalysis.rfpBudget || "Budget information not extracted.");
-                        
-                        if(modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'block';
-                        const activeResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active') || document.querySelector('#analysis-results-area .tabs-container .tab-link');
-                        if (activeResultTab) {
-                            const tabNameToOpen = activeResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-                            if (window.openTab) window.openTab(null, tabNameToOpen); 
+                        if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'block';
+                        const firstViewTabLink = document.querySelector('#view-analysis-results-area .tabs-container .tab-link');
+                        if (firstViewTabLink) {
+                            document.querySelectorAll('#view-analysis-results-area .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
+                            firstViewTabLink.classList.add('active'); // Make first tab active
+                            const tabNameToOpen = firstViewTabLink.getAttribute('onclick').match(/'([^']*)'/)[1];
+                            if (window.openViewTab) window.openViewTab(null, tabNameToOpen); 
                         }
+                        
                         const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
-                        if(modalAnalysisStatusArea) modalAnalysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Displaying saved analysis: ${titleForStatus}</p>`;
+                        showLoadingMessage(viewRfpStatusArea, `Displaying: ${titleForStatus}`, false);
                     } catch (loadError) {
-                        if(modalAnalysisStatusArea) modalAnalysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Error: ${loadError.message}</p>`;
+                         showLoadingMessage(viewRfpStatusArea, `Error: ${loadError.message}`, false);
                     } finally {
-                        // Don't auto-hide status if it's showing details
-                        // hideLoadingStateRFP(5000); 
+                        hideLoadingMessage(viewRfpStatusArea, 5000); 
                     }
                 });
                 actionsSpan.appendChild(viewLink);
@@ -434,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setAnalyzedButton.onclick = () => updateRfpStatus(analysis.id, 'analyzed');
                     actionsSpan.appendChild(setAnalyzedButton);
                 }
-
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'action-icon delete';
                 deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i>';
@@ -448,16 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadSavedAnalysesInitial() {
-        // For initial load, use a generic status area or handle display carefully
-        const initialLoadStatusP = document.createElement('p');
-        initialLoadStatusP.className = 'loading-text';
-        initialLoadStatusP.textContent = "Loading saved analyses...";
-        if(savedAnalysesListDiv.parentElement.contains(noSavedAnalysesP)){ // Insert before noSavedAnalysesP
-             savedAnalysesListDiv.parentElement.insertBefore(initialLoadStatusP, noSavedAnalysesP);
-        } else {
-            savedAnalysesListDiv.parentElement.appendChild(initialLoadStatusP);
-        }
-
+        showLoadingMessage(rfpListStatusArea, "Loading saved analyses...", true); // Use rfpListStatusArea
         try {
             const response = await fetch('/api/rfp-analyses');
             if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch analyses.');
@@ -468,13 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(noSavedAnalysesP) noSavedAnalysesP.style.display = 'block';
             if(noSavedAnalysesP) noSavedAnalysesP.textContent = `Failed to load analyses.`;
         } finally {
-            if (initialLoadStatusP.parentElement) { // Remove the temporary loading message
-                initialLoadStatusP.remove();
-            }
+            hideLoadingMessage(rfpListStatusArea); // Use rfpListStatusArea
         }
     }
     
-    if (rfpListTabsContainer) {
+    // --- Event Listeners for Main Page List Tabs & Sorting ---
+    if (rfpListTabsContainer) { /* ... (same as your uploaded version) ... */ 
         rfpListTabsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('rfp-list-tab-button')) {
                 rfpListTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
@@ -484,8 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    document.querySelectorAll('#saved-analyses-header .sortable-header').forEach(header => {
+    document.querySelectorAll('#saved-analyses-header .sortable-header').forEach(header => { /* ... (same as your uploaded version) ... */ 
         header.addEventListener('click', () => {
             const sortKey = header.dataset.sortKey;
             if (currentSortKey === sortKey) {
@@ -507,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- RFP Form Submission (Inside Modal) ---
     if (rfpForm) {
         rfpForm.addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -515,32 +464,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const submittedByValue = document.getElementById('submittedBy').value;
             const file = rfpFileUpload.files[0];
             
-            showLoadingStateRFP(true, "Starting analysis..."); 
-            if (analysisResultsArea) analysisResultsArea.style.display = 'none'; 
+            showLoadingMessage(modalAnalysisStatusArea, "Starting analysis..."); 
+            if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'none'; 
 
-            if (!file) {
-                if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Please upload an RFP document.</p>`;
-                if(analysisStatusArea) analysisStatusArea.style.display = 'flex';
-                hideLoadingStateRFP(3000);
+            if (!file) { 
+                showLoadingMessage(modalAnalysisStatusArea, "Please upload an RFP document.", false);
+                hideLoadingMessage(modalAnalysisStatusArea, 3000);
                 return; 
             }
             const rfpFileNameValue = file.name; 
             if (file.type !== "application/pdf") { 
-                if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Invalid file type. Please upload a PDF.</p>`;
-                if(analysisStatusArea) analysisStatusArea.style.display = 'flex';
-                hideLoadingStateRFP(3000);
+                showLoadingMessage(modalAnalysisStatusArea, "Invalid file type. Please upload a PDF.", false);
+                hideLoadingMessage(modalAnalysisStatusArea, 3000);
                 return;
             }
 
             let rfpText = "";
             try { 
-                showLoadingStateRFP(true, "Extracting text from PDF...");
+                showLoadingMessage(modalAnalysisStatusArea, "Extracting text from PDF...");
                 rfpText = await extractTextFromPdf(file);
                 if (!rfpText || rfpText.trim().length < 50) throw new Error("Insufficient text from PDF.");
             } catch (error) { 
-                if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">PDF Error: ${error.message}</p>`;
-                if(analysisStatusArea) analysisStatusArea.style.display = 'flex';
-                hideLoadingStateRFP(5000);
+                showLoadingMessage(modalAnalysisStatusArea, `PDF Error: ${error.message}`, false);
+                hideLoadingMessage(modalAnalysisStatusArea, 5000);
                 return; 
             }
 
@@ -611,7 +557,7 @@ ${rfpText}
             const defaultErrorMsg = (section) => `${section.replace(/_/g, ' ')} not extracted.`;
 
             try {
-                showLoadingStateRFP(true, "AI is analyzing and generating content...");
+                showLoadingMessage(modalAnalysisStatusArea, "AI is analyzing and generating content...");
                 const response = await fetch('/api/generate', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -621,7 +567,7 @@ ${rfpText}
                 const data = await response.json();
                 
                 let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
-                console.log("Raw AI Output from Gemini:\n", rawAiOutput);
+                console.log("Raw AI Output from Gemini (New RFP):\n", rawAiOutput);
 
                 const parseSection = (output, sectionName) => {
                     const regex = new RegExp(`###${sectionName}_START###([\\s\\S]*?)###${sectionName}_END###`);
@@ -633,88 +579,74 @@ ${rfpText}
                 questionsText = parseSection(rawAiOutput, "QUESTIONS"); 
                 deadlinesText = parseSection(rawAiOutput, "DEADLINES");
                 submissionFormatText = parseSection(rawAiOutput, "SUBMISSION_FORMAT");
-                requirementsText = parseSection(rawAiOutput, "REQUIREMENTS"); // Renamed from KEY_REQUIREMENTS
+                requirementsText = parseSection(rawAiOutput, "REQUIREMENTS"); 
                 stakeholdersText = parseSection(rawAiOutput, "STAKEHOLDERS");
                 risksText = parseSection(rawAiOutput, "RISKS");
                 registrationText = parseSection(rawAiOutput, "REGISTRATION");
                 licensesText = parseSection(rawAiOutput, "LICENSES");
                 budgetText = parseSection(rawAiOutput, "BUDGET");
                 
-                clearAnalysisResultTabs(); // Clear before populating
+                clearModalAnalysisResultTabs(); 
 
-                formatAndDisplayContent(summaryResultContentDiv, summaryText);
-                formatAndDisplayContent(questionsResultContentDiv, questionsText); 
-                formatAndDisplayContent(deadlinesOnlyContentDiv, deadlinesText); // Populate specific div
-                formatAndDisplayContent(submissionFormatContentDiv, submissionFormatText); // Populate specific div
-                formatAndDisplayContent(requirementsResultContentDiv, requirementsText);
-                formatAndDisplayContent(stakeholdersResultContentDiv, stakeholdersText);
-                formatAndDisplayContent(risksResultContentDiv, risksText);
-                formatAndDisplayContent(registrationResultContentDiv, registrationText);
-                formatAndDisplayContent(licensesResultContentDiv, licensesText);
-                formatAndDisplayContent(budgetResultContentDiv, budgetText);
+                formatAndDisplayContent(modalSummaryResultContentDiv, summaryText);
+                formatAndDisplayContent(modalQuestionsResultContentDiv, questionsText); 
+                formatAndDisplayContent(modalDeadlinesOnlyContentDiv, deadlinesText); 
+                formatAndDisplayContent(modalSubmissionFormatContentDiv, submissionFormatText); 
+                formatAndDisplayContent(modalRequirementsResultContentDiv, requirementsText);
+                formatAndDisplayContent(modalStakeholdersResultContentDiv, stakeholdersText);
+                formatAndDisplayContent(modalRisksResultContentDiv, risksText);
+                formatAndDisplayContent(modalRegistrationResultContentDiv, registrationText);
+                formatAndDisplayContent(modalLicensesResultContentDiv, licensesText);
+                formatAndDisplayContent(modalBudgetResultContentDiv, budgetText);
                 
-                if(analysisResultsArea) analysisResultsArea.style.display = 'block';
-                const activeResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active') || document.querySelector('#analysis-results-area .tabs-container .tab-link');
-                if (activeResultTab) {
-                    const tabNameToOpen = activeResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-                    if(window.openTab) window.openTab(null, tabNameToOpen); // Use global openTab from HTML
+                if(modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'block';
+                const activeModalResultTab = document.querySelector('#modal-analysis-results-area .tabs-container .tab-link'); // Get first tab
+                if (activeModalResultTab) {
+                     // Ensure all tabs are inactive first, then activate the first one
+                    document.querySelectorAll('#modal-analysis-results-area .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
+                    activeModalResultTab.classList.add('active');
+                    const tabNameToOpen = activeModalResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
+                    if(window.openModalTab) window.openModalTab(null, tabNameToOpen); 
                 }
-
-                if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">RFP analysis complete! Saving results...</p>`;
-                if(analysisStatusArea) analysisStatusArea.style.display = 'flex';
+                showLoadingMessage(modalAnalysisStatusArea, "RFP analysis complete! Saving results...", false);
 
                 try {
                     const savePayload = { 
-                        rfpTitle: rfpTitleValue || "", 
-                        rfpType: rfpTypeValue,   
-                        submittedBy: submittedByValue, 
-                        rfpFileName: rfpFileNameValue, 
-                        rfpSummary: summaryText, 
-                        generatedQuestions: questionsText,
-                        rfpDeadlines: deadlinesText, // Original deadlines
-                        rfpSubmissionFormat: submissionFormatText, // New field
-                        rfpKeyRequirements: requirementsText, // Field name in DB is still rfpKeyRequirements for now
-                        rfpStakeholders: stakeholdersText,
-                        rfpRisks: risksText,
-                        rfpRegistration: registrationText, // New field
-                        rfpLicenses: licensesText,       // New field
-                        rfpBudget: budgetText,           // New field
-                        status: 'analyzed' 
+                        rfpTitle: rfpTitleValue || "", rfpType: rfpTypeValue, submittedBy: submittedByValue, 
+                        rfpFileName: rfpFileNameValue, rfpSummary: summaryText, generatedQuestions: questionsText,
+                        rfpDeadlines: deadlinesText, rfpSubmissionFormat: submissionFormatText, 
+                        rfpKeyRequirements: requirementsText, rfpStakeholders: stakeholdersText,
+                        rfpRisks: risksText, rfpRegistration: registrationText, 
+                        rfpLicenses: licensesText, rfpBudget: budgetText, status: 'analyzed' 
                     };
                     const saveResponse = await fetch('/api/rfp-analysis', { 
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(savePayload)
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(savePayload)
                     });
                     if (!saveResponse.ok) throw new Error((await saveResponse.json()).error || 'Failed to save analysis.');
                     
-                    if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:green;">Analysis complete and results saved!</p>`;
-                    if (rfpForm) rfpForm.reset(); // Reset form inside modal
-                    // Optionally close modal after successful save or keep it open to show results
-                    // if (newRfpModal) newRfpModal.style.display = 'none'; 
+                    showLoadingMessage(modalAnalysisStatusArea, "Analysis complete and results saved!", false);
+                    // Form reset is handled when modal is re-opened for a new entry.
                     await loadSavedAnalysesInitial(); 
                 } catch (saveError) {
-                    if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:orange;">Analysis complete, but failed to save: ${saveError.message}</p>`;
+                    showLoadingMessage(modalAnalysisStatusArea, `Analysis complete, but failed to save: ${saveError.message}`, false);
                 }
             } catch (error) {  
-                if(analysisStatusArea) analysisStatusArea.innerHTML = `<p class="loading-text" style="color:red;">Processing Error: ${error.message}</p>`;
-                if(analysisStatusArea) analysisStatusArea.style.display = 'flex';
+                showLoadingMessage(modalAnalysisStatusArea, `Processing Error: ${error.message}`, false);
             } finally {
-                 hideLoadingStateRFP(5000);
+                 hideLoadingMessage(modalAnalysisStatusArea, 7000); 
+                 if (generateAnalysisButton) generateAnalysisButton.disabled = false; 
             }
         });
     }
     
-    // Initial setup for analysis results tabs (if any is active by default in HTML)
-    const firstActiveResultTab = document.querySelector('#analysis-results-area .tabs-container .tab-link.active');
-    if (firstActiveResultTab) {
-        const tabNameToOpen = firstActiveResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
+    // --- Initial Page Load ---
+    // Activate the first tab in the main page view section if it's somehow visible initially (though it defaults to hidden)
+    const firstActiveViewTab = document.querySelector('#view-analysis-results-area .tabs-container .tab-link');
+    if (firstActiveViewTab && viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.style.display === 'block') {
+        const tabNameToOpen = firstActiveViewTab.getAttribute('onclick').match(/'([^']*)'/)[1];
         const tabElement = document.getElementById(tabNameToOpen);
-        if (window.openTab && tabElement) { 
-             // Only call if tab element exists to prevent error if ID is wrong or element removed
-            if (tabElement.style.display !== 'block') { // Avoid redundant call if already visible
-                 window.openTab(null, tabNameToOpen); 
-            }
+        if (window.openViewTab && tabElement && tabElement.style.display !== 'block') {
+            window.openViewTab(null, tabNameToOpen);
         }
     }
     
