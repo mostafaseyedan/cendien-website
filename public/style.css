@@ -433,6 +433,10 @@ footer p { margin: 0; font-size: 0.9rem; }
 
 
 /* Styles for RFP Question Generator Page (rfp-question-generator.html) */
+
+
+
+
 #saved-analyses-section h3 {
     font-size: 1.6rem; 
     color: #003366; /* Dark Navy Blue */
@@ -731,4 +735,77 @@ footer p { margin: 0; font-size: 0.9rem; }
     #saved-analyses-header { /* Hide header on very small screens to save space, or simplify */
         display: none;
     }
+    .modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 2000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 900px; /* Max width */
+    border-radius: 8px;
+    position: relative;
+    max-height: 90vh; /* Max height to allow for scrolling within modal */
+    overflow-y: auto; /* Scroll modal content if it overflows */
+}
+
+.modal-close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute; /* Position relative to modal-content */
+    top: 10px;
+    right: 20px;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Specific styling for #rfp-actions-header-text to center it */
+#rfp-actions-header-text {
+    justify-content: center !important; /* Override flex-end from .rfp-col-actions */
+    text-align: center !important; /* Ensure text is centered */
+}
+
+/* Ensure form inside modal takes appropriate width */
+#new-rfp-modal #rfp-details-form {
+    padding-top: 0; /* Remove extra padding if not needed */
+    border-top: none; /* Remove border if not needed */
+}
+#new-rfp-modal #rfp-details-form .form-group input[type="text"],
+#new-rfp-modal #rfp-details-form .form-group select,
+#new-rfp-modal #rfp-details-form .form-group input[type="file"] {
+    width: 100%; /* Make form elements full width inside modal */
+}
+
+
+/* Adjust main content card if it's just for the list now */
+#rfp-analyzer-main-content h2 {
+    text-align: left; /* Align "Previously Analyzed RFPs" to the left */
+    margin-bottom: 0; /* Remove bottom margin if button is on the same line */
+}
+
+/* Styles for RFP Question Generator Page (rfp-question-generator.html) */
+/* ... (existing styles for this section) ... */
+
+/* Ensure the .rfp-col-actions in data rows still aligns icons to the end */
+.analyzed-rfp-item .rfp-col-actions {
+    justify-content: flex-end; /* This is for data rows */
+}
 }
