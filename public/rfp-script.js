@@ -58,9 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const promptSettingsModal = document.getElementById('prompt-settings-modal');
     const openPromptSettingsButton = document.getElementById('open-prompt-settings-modal-button');
     const promptModalCloseButton = document.getElementById('prompt-modal-close-button');
-    const rfpAnalysisPromptTextarea = document.getElementById('rfpAnalysisPromptTextarea');
-    const savePromptsButton = document.getElementById('save-prompts-button');
-    const resetPromptsButton = document.getElementById('reset-prompts-button');
+    const promptSectionSelector = document.getElementById('promptSectionSelector');
+    const rfpIndividualPromptTextarea = document.getElementById('rfpIndividualPromptTextarea');
+    const saveCurrentPromptButton = document.getElementById('save-current-prompt-button');
+    const resetCurrentPromptButton = document.getElementById('reset-current-prompt-button');
+    const resetAllPromptsButton = document.getElementById('reset-all-prompts-button');
     const promptSaveStatus = document.getElementById('prompt-save-status');
 
     // --- State Variables ---
@@ -69,68 +71,38 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSortOrder = 'desc';
     let currentStatusFilter = 'all';
 
-    // --- Default AI Prompt ---
-    const DEFAULT_RFP_ANALYSIS_PROMPT = `Please analyze the following Request for Proposal (RFP) text.
-Provide the following distinct sections in your response, each clearly delimited:
-1. A concise summary of the RFP.
-2. A list of 5 to 15 critical and insightful clarification questions based on the RFP.
-3. Key Deadlines.
-4. Submission Format (Mail, Email, Portal, site address, etc.).
-5. A list of Requirements (e.g., mandatory, highly desirable).
-6. Mentioned Stakeholders or Key Contacts.
-7. Potential Risks or Red Flags identified in the RFP.
-8. Registration requirements or details for bidders.
-9. Required Licenses or Certifications for bidders.
-10. Any mentioned Budget constraints or financial information.
+    // --- AI Prompt Configuration ---
+    const RFP_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Request for Proposal (RFP) text.\nProvide the following distinct sections in your response, each clearly delimited:";
+    const RFP_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
+    const RFP_PROMPT_TEXT_SUFFIX = "\n\nRFP Text (including any addendums):\n---\n{RFP_TEXT_PLACEHOLDER}\n---";
 
-Use the following format strictly for each section:
+    const PROMPT_SECTION_KEYS = {
+        summary: "SUMMARY",
+        questions: "QUESTIONS",
+        deadlines: "DEADLINES",
+        submissionFormat: "SUBMISSION_FORMAT",
+        requirements: "REQUIREMENTS",
+        stakeholders: "STAKEHOLDERS",
+        risks: "RISKS",
+        registration: "REGISTRATION",
+        licenses: "LICENSES",
+        budget: "BUDGET"
+    };
+    
+    const DEFAULT_RFP_SECTION_PROMPTS = {
+        summary: "1. A concise summary of the RFP.",
+        questions: "2. A list of 5 to 15 critical and insightful clarification questions based on the RFP.",
+        deadlines: "3. Key Deadlines.",
+        submissionFormat: "4. Submission Format (Mail, Email, Portal, site address, etc.).",
+        requirements: "5. A list of Requirements (e.g., mandatory, highly desirable).",
+        stakeholders: "6. Mentioned Stakeholders or Key Contacts.",
+        risks: "7. Potential Risks or Red Flags identified in the RFP.",
+        registration: "8. Registration requirements or details for bidders.",
+        licenses: "9. Required Licenses or Certifications for bidders.",
+        budget: "10. Any mentioned Budget constraints or financial information."
+    };
 
-###SUMMARY_START###
-[Content]
-###SUMMARY_END###
-
-###QUESTIONS_START###
-[Content]
-###QUESTIONS_END###
-
-###DEADLINES_START###
-[Key deadlines content]
-###DEADLINES_END###
-
-###SUBMISSION_FORMAT_START###
-[Submission format content]
-###SUBMISSION_FORMAT_END###
-
-###REQUIREMENTS_START###
-[Requirements content]
-###REQUIREMENTS_END###
-
-###STAKEHOLDERS_START###
-[Content]
-###STAKEHOLDERS_END###
-
-###RISKS_START###
-[Content]
-###RISKS_END###
-
-###REGISTRATION_START###
-[Content]
-###REGISTRATION_END###
-
-###LICENSES_START###
-[Content]
-###LICENSES_END###
-
-###BUDGET_START###
-[Content]
-###BUDGET_END###
-
-RFP Text (including any addendums):
----
-{RFP_TEXT_PLACEHOLDER}
----
-`;
-    const RFP_PROMPT_STORAGE_KEY = 'rfpAnalysisUserPrompt';
+    const getPromptStorageKey = (sectionKey) => `rfpPrompt_${sectionKey}`;
 
 
     if (yearSpanRFP && !yearSpanRFP.textContent) {
@@ -138,27 +110,31 @@ RFP Text (including any addendums):
     }
 
     // --- AI Prompt Management Functions ---
-    function getStoredRfpPrompt() {
-        return localStorage.getItem(RFP_PROMPT_STORAGE_KEY) || DEFAULT_RFP_ANALYSIS_PROMPT;
+    function getStoredSectionPrompt(sectionKey) {
+        return localStorage.getItem(getPromptStorageKey(sectionKey)) || DEFAULT_RFP_SECTION_PROMPTS[sectionKey];
     }
 
-    function loadPromptIntoTextarea() {
-        if (rfpAnalysisPromptTextarea) {
-            rfpAnalysisPromptTextarea.value = getStoredRfpPrompt();
+    function loadSelectedSectionPromptToTextarea() {
+        if (promptSectionSelector && rfpIndividualPromptTextarea) {
+            const selectedKey = promptSectionSelector.value; // e.g., "summary", "questions"
+            if (selectedKey) { // Ensure a valid key is selected
+                 rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKey);
+            }
         }
     }
 
-    function savePromptFromTextarea() {
-        if (rfpAnalysisPromptTextarea && promptSaveStatus) {
-            const userPrompt = rfpAnalysisPromptTextarea.value.trim();
+    function saveCurrentSectionPrompt() {
+        if (promptSectionSelector && rfpIndividualPromptTextarea && promptSaveStatus) {
+            const selectedKey = promptSectionSelector.value;
+            const userPrompt = rfpIndividualPromptTextarea.value.trim();
+
             if (userPrompt) {
-                localStorage.setItem(RFP_PROMPT_STORAGE_KEY, userPrompt);
-                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:green;">Prompt saved successfully!</p>';
-                promptSaveStatus.style.display = 'block';
+                localStorage.setItem(getPromptStorageKey(selectedKey), userPrompt);
+                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:green;">Prompt for this section saved!</p>';
             } else {
-                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:red;">Prompt cannot be empty.</p>';
-                promptSaveStatus.style.display = 'block';
+                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:red;">Section prompt cannot be empty.</p>';
             }
+            promptSaveStatus.style.display = 'block';
             setTimeout(() => {
                 promptSaveStatus.style.display = 'none';
                 promptSaveStatus.innerHTML = '';
@@ -166,12 +142,14 @@ RFP Text (including any addendums):
         }
     }
 
-    function resetPromptToDefault() {
-        if (rfpAnalysisPromptTextarea && promptSaveStatus) {
-            if (confirm("Are you sure you want to reset the RFP analysis prompt to its default?")) {
-                localStorage.removeItem(RFP_PROMPT_STORAGE_KEY);
-                loadPromptIntoTextarea();
-                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:green;">Prompt reset to default.</p>';
+    function resetCurrentSectionPromptToDefault() {
+        if (promptSectionSelector && rfpIndividualPromptTextarea && promptSaveStatus) {
+            const selectedKey = promptSectionSelector.value;
+            const selectedOptionText = promptSectionSelector.options[promptSectionSelector.selectedIndex].text;
+            if (confirm(`Are you sure you want to reset the prompt for "${selectedOptionText}" to its default?`)) {
+                localStorage.removeItem(getPromptStorageKey(selectedKey));
+                loadSelectedSectionPromptToTextarea();
+                promptSaveStatus.innerHTML = `<p class="loading-text" style="color:green;">Prompt for "${selectedOptionText}" reset to default.</p>`;
                 promptSaveStatus.style.display = 'block';
                 setTimeout(() => {
                     promptSaveStatus.style.display = 'none';
@@ -179,6 +157,47 @@ RFP Text (including any addendums):
                 }, 3000);
             }
         }
+    }
+
+    function resetAllPromptsToDefault() {
+        if (promptSaveStatus && promptSectionSelector) {
+            if (confirm("Are you sure you want to reset ALL section prompts to their defaults? This action cannot be undone.")) {
+                Object.keys(DEFAULT_RFP_SECTION_PROMPTS).forEach(key => { // Iterate over keys in DEFAULT_RFP_SECTION_PROMPTS
+                    localStorage.removeItem(getPromptStorageKey(key));
+                });
+                loadSelectedSectionPromptToTextarea(); // Reload current selection which will now be default
+                promptSaveStatus.innerHTML = '<p class="loading-text" style="color:green;">All prompts have been reset to their defaults.</p>';
+                promptSaveStatus.style.display = 'block';
+                setTimeout(() => {
+                    promptSaveStatus.style.display = 'none';
+                    promptSaveStatus.innerHTML = '';
+                }, 4000);
+            }
+        }
+    }
+
+    function constructFullRfpAnalysisPrompt(rfpText) {
+        let fullPrompt = RFP_PROMPT_MAIN_INSTRUCTION;
+
+        // Append each section's specific instructional text
+        Object.keys(DEFAULT_RFP_SECTION_PROMPTS).forEach(key => { // Iterate based on defined default sections
+            const sectionInstruction = getStoredSectionPrompt(key);
+            fullPrompt += `\n${sectionInstruction}`;
+        });
+        
+        fullPrompt += "\n\nUse the following format strictly for each section:";
+        // Append the delimiters for each section
+        Object.keys(DEFAULT_RFP_SECTION_PROMPTS).forEach(key => {
+            const delimiterKey = PROMPT_SECTION_KEYS[key]; // Get the uppercase key like "SUMMARY"
+            if(delimiterKey){ // Check if the key exists in PROMPT_SECTION_KEYS
+                 const delimiter = RFP_PROMPT_SECTION_DELIMITER_FORMAT
+                    .replace(/{SECTION_KEY_UPPER}/g, delimiterKey); // Use the mapped uppercase key
+                 fullPrompt += delimiter;
+            }
+        });
+
+        fullPrompt += RFP_PROMPT_TEXT_SUFFIX.replace('{RFP_TEXT_PLACEHOLDER}', rfpText);
+        return fullPrompt;
     }
 
 
@@ -212,7 +231,7 @@ RFP Text (including any addendums):
     if (openPromptSettingsButton) {
         openPromptSettingsButton.addEventListener('click', () => {
             if (promptSettingsModal) {
-                loadPromptIntoTextarea();
+                loadSelectedSectionPromptToTextarea();
                 promptSettingsModal.style.display = 'block';
             }
         });
@@ -229,11 +248,18 @@ RFP Text (including any addendums):
             }
         });
     }
-    if(savePromptsButton) {
-        savePromptsButton.addEventListener('click', savePromptFromTextarea);
+    
+    if (promptSectionSelector) {
+        promptSectionSelector.addEventListener('change', loadSelectedSectionPromptToTextarea);
     }
-    if(resetPromptsButton) {
-        resetPromptsButton.addEventListener('click', resetPromptToDefault);
+    if(saveCurrentPromptButton) {
+        saveCurrentPromptButton.addEventListener('click', saveCurrentSectionPrompt);
+    }
+    if(resetCurrentPromptButton) {
+        resetCurrentPromptButton.addEventListener('click', resetCurrentSectionPromptToDefault);
+    }
+    if(resetAllPromptsButton) {
+        resetAllPromptsButton.addEventListener('click', resetAllPromptsToDefault);
     }
 
 
@@ -345,7 +371,7 @@ RFP Text (including any addendums):
     }
 
     // --- API Call Functions for List Item Actions ---
-    async function updateRfpStatus(rfpId, newStatus) { /* ... (no change from original) ... */
+    async function updateRfpStatus(rfpId, newStatus) {
         const rfpToUpdate = allFetchedAnalyses.find(a => a.id === rfpId);
         const rfpTitleForMessage = rfpToUpdate ? (rfpToUpdate.rfpTitle || rfpToUpdate.rfpFileName || 'this RFP') : 'this RFP';
         showLoadingMessage(rfpListStatusArea, `Updating "${rfpTitleForMessage}" to ${newStatus}...`);
@@ -361,7 +387,7 @@ RFP Text (including any addendums):
         } catch (error) { showLoadingMessage(rfpListStatusArea, `Error: ${error.message}`, false);
         } finally { hideLoadingMessage(rfpListStatusArea, 3000); }
     }
-    async function updateRfpTitle(rfpId, currentTitle) { /* ... (no change from original) ... */
+    async function updateRfpTitle(rfpId, currentTitle) {
         const newTitle = window.prompt("Enter the new title for the RFP:", currentTitle);
         if (newTitle === null || newTitle.trim() === "" || newTitle.trim() === currentTitle) return;
         showLoadingMessage(rfpListStatusArea, `Updating title for "${currentTitle}"...`);
@@ -377,7 +403,7 @@ RFP Text (including any addendums):
         } catch (error) { showLoadingMessage(rfpListStatusArea, `Error updating title: ${error.message}`, false);
         } finally { hideLoadingMessage(rfpListStatusArea, 3000); }
     }
-    async function deleteRfp(rfpId, rfpTitleForConfirm) { /* ... (no change from original) ... */
+    async function deleteRfp(rfpId, rfpTitleForConfirm) {
         if (!window.confirm(`Are you sure you want to delete RFP: "${rfpTitleForConfirm}"? This action cannot be undone.`)) return;
         showLoadingMessage(rfpListStatusArea, `Deleting "${rfpTitleForConfirm}"...`);
         try {
@@ -392,7 +418,7 @@ RFP Text (including any addendums):
     }
 
     // --- Render Saved Analyses List (Main Page) ---
-    function renderAnalysesList() { /* ... (no change from original other than ensuring viewLink works) ... */
+    function renderAnalysesList() {
         if (!savedAnalysesListDiv || !noSavedAnalysesP) return;
         savedAnalysesListDiv.innerHTML = '';
         let filteredAnalyses = [...allFetchedAnalyses];
@@ -550,7 +576,7 @@ RFP Text (including any addendums):
     }
 
 
-    async function loadSavedAnalysesInitial() { /* ... (no change from original) ... */
+    async function loadSavedAnalysesInitial() {
         showLoadingMessage(rfpListStatusArea, "Loading saved analyses...", true);
         try {
             const response = await fetch('/api/rfp-analyses');
@@ -567,7 +593,7 @@ RFP Text (including any addendums):
     }
 
     // --- Event Listeners for Main Page List Tabs & Sorting ---
-    if (rfpListTabsContainer) { /* ... (no change from original) ... */
+    if (rfpListTabsContainer) {
         rfpListTabsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('rfp-list-tab-button')) {
                 rfpListTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
@@ -577,7 +603,7 @@ RFP Text (including any addendums):
             }
         });
     }
-    document.querySelectorAll('#saved-analyses-header .sortable-header').forEach(header => { /* ... (no change from original) ... */
+    document.querySelectorAll('#saved-analyses-header .sortable-header').forEach(header => {
         header.addEventListener('click', () => {
             const sortKey = header.dataset.sortKey;
             if (currentSortKey === sortKey) {
@@ -608,7 +634,7 @@ RFP Text (including any addendums):
             const submittedByValue = document.getElementById('submittedBy').value;
             
             const mainRfpFile = rfpFileUpload.files[0];
-            const addendumFiles = rfpAddendumUpload.files; // HTMLCollection of addendum files
+            const addendumFiles = rfpAddendumUpload.files;
 
             showLoadingMessage(modalAnalysisStatusArea, "Starting analysis...");
             if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'none';
@@ -633,7 +659,6 @@ RFP Text (including any addendums):
                     filesToProcess.push(addendumFiles[i]);
                 } else {
                     showLoadingMessage(modalAnalysisStatusArea, `Skipping non-PDF addendum: '${addendumFiles[i].name}'.`, false);
-                    // Do not return, just skip and continue with other valid PDFs
                 }
             }
 
@@ -642,13 +667,13 @@ RFP Text (including any addendums):
                     const file = filesToProcess[i];
                     showLoadingMessage(modalAnalysisStatusArea, `Extracting text from ${file.name} (${i + 1}/${filesToProcess.length})...`);
                     const text = await extractTextFromPdf(file);
-                    combinedRfpText += text + "\n\n"; // Add separation between documents
-                    if (!text || text.trim().length < 10) { // Looser check for individual files
+                    combinedRfpText += text + "\n\n";
+                    if (!text || text.trim().length < 10) {
                         console.warn(`Minimal text extracted from ${file.name}.`);
                     }
                 }
                 
-                if (combinedRfpText.trim().length < 50) { // Check combined length
+                if (combinedRfpText.trim().length < 50) {
                     throw new Error("Insufficient total text extracted from PDF(s) for analysis.");
                 }
 
@@ -658,13 +683,14 @@ RFP Text (including any addendums):
                 return;
             }
             
-            const currentRfpPromptTemplate = getStoredRfpPrompt();
-            const aiPrompt = currentRfpPromptTemplate.replace('{RFP_TEXT_PLACEHOLDER}', combinedRfpText);
+            // Construct the full prompt using the new method
+            const aiPrompt = constructFullRfpAnalysisPrompt(combinedRfpText);
             
+            console.log("Constructed AI Prompt for Submission:\n", aiPrompt); // For debugging
+
             let summaryText, questionsText, deadlinesText, submissionFormatText,
                 requirementsText, stakeholdersText, risksText,
                 registrationText, licensesText, budgetText;
-            const defaultErrorMsg = (section) => `${section.replace(/_/g, ' ')} not extracted.`;
 
             try {
                 showLoadingMessage(modalAnalysisStatusArea, "AI is analyzing and generating content...");
@@ -679,22 +705,23 @@ RFP Text (including any addendums):
                 let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
                 console.log("Raw AI Output from Gemini (New RFP):\n", rawAiOutput);
 
-                const parseSection = (output, sectionName) => {
-                    const regex = new RegExp(`###${sectionName}_START###([\\s\\S]*?)###${sectionName}_END###`);
+                const parseSection = (output, sectionKeyName) => { 
+                    const regex = new RegExp(`###${sectionKeyName}_START###([\\s\\S]*?)###${sectionKeyName}_END###`);
                     const match = output.match(regex);
-                    return match && match[1] ? match[1].trim() : defaultErrorMsg(sectionName);
+                    return match && match[1] ? match[1].trim() : `${sectionKeyName.replace(/_/g, ' ')} not found in AI response.`;
                 };
+                
+                summaryText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.summary);
+                questionsText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.questions);
+                deadlinesText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.deadlines);
+                submissionFormatText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.submissionFormat);
+                requirementsText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.requirements);
+                stakeholdersText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.stakeholders);
+                risksText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.risks);
+                registrationText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.registration);
+                licensesText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.licenses);
+                budgetText = parseSection(rawAiOutput, PROMPT_SECTION_KEYS.budget);
 
-                summaryText = parseSection(rawAiOutput, "SUMMARY");
-                questionsText = parseSection(rawAiOutput, "QUESTIONS");
-                deadlinesText = parseSection(rawAiOutput, "DEADLINES");
-                submissionFormatText = parseSection(rawAiOutput, "SUBMISSION_FORMAT");
-                requirementsText = parseSection(rawAiOutput, "REQUIREMENTS");
-                stakeholdersText = parseSection(rawAiOutput, "STAKEHOLDERS");
-                risksText = parseSection(rawAiOutput, "RISKS");
-                registrationText = parseSection(rawAiOutput, "REGISTRATION");
-                licensesText = parseSection(rawAiOutput, "LICENSES");
-                budgetText = parseSection(rawAiOutput, "BUDGET");
 
                 clearModalAnalysisResultTabs();
 
@@ -758,5 +785,8 @@ RFP Text (including any addendums):
     }
 
     loadSavedAnalysesInitial();
-    loadPromptIntoTextarea();
+    // Load initial prompt for the settings modal when the page loads
+    if (promptSectionSelector) { 
+        loadSelectedSectionPromptToTextarea();
+    }
 });
