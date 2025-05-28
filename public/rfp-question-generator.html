@@ -23,107 +23,136 @@
     </header>
 
     <main>
-        <section id="rfp-question-tool" class="container content-card">
-            <h2>Cendien RFP Analyzer</h2>
+        <section id="rfp-analyzer-main-content" class="container content-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>Previously Analyzed RFPs</h2>
+                <button id="open-new-rfp-modal-button" class="btn btn-primary">New RFP Analysis</button>
+            </div>
 
-            <div id="saved-analyses-section" style="margin-bottom: 2.5rem;">
-                <h3>Previously Analyzed RFPs</h3>
-                
+            <div id="saved-analyses-section">
                 <div class="rfp-list-tabs">
                     <button class="rfp-list-tab-button active" data-status-filter="all">All Analyzed</button>
                     <button class="rfp-list-tab-button" data-status-filter="active">Active</button>
                     <button class="rfp-list-tab-button" data-status-filter="not_pursuing">Not Pursuing</button>
                 </div>
 
-                <div id="saved-analyses-header" class="analyzed-rfp-item" style="font-weight: bold; border-bottom: 2px solid #ccc; background-color: #f8f9fa;">
+                <div id="saved-analyses-header" class="analyzed-rfp-item">
                     <span class="rfp-col-title sortable-header" data-sort-key="rfpTitle">RFP Title ⇅</span>
                     <span class="rfp-col-type sortable-header" data-sort-key="rfpType">RFP Type ⇅</span>
                     <span class="rfp-col-owner sortable-header" data-sort-key="submittedBy">Owner ⇅</span>
                     <span class="rfp-col-date sortable-header" data-sort-key="analysisDate">Date ⇅</span>
                     <span class="rfp-col-status">Status</span>
-                    <span class="rfp-col-actions">Actions</span>
+                    <span id="rfp-actions-header-text" class="rfp-col-actions">Actions</span>
                 </div>
                 <div id="saved-analyses-list" class="analyzed-rfp-list-container">
                     </div>
-                <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses saved yet for this category.</p>
-            </div>
-            
-            <form id="rfp-details-form" style="margin-top:2.5rem; padding-top:1.5rem; border-top: 1px solid #e0e0e0;">
-                 <h3 style="text-align:left; font-size:1.6rem; margin-bottom:1rem;">Analyze New RFP</h3>
-                <div class="form-group">
-                    <label for="rfpTitle">RFP Title:</label>
-                    <input type="text" id="rfpTitle" name="rfpTitle" placeholder="Enter a Title">
-                </div>
-
-                <div class="form-group">
-                    <label for="rfpType">RFP Type:</label>
-                    <select id="rfpType" name="rfpType" class="section-selector">
-                        <option value="IT Support">IT Support</option>
-                        <option value="IT Staffing">IT Staffing</option>
-                        <option value="ERP Managed Services">ERP Managed Services</option>
-                        <option value="Custom Software Development">Custom Software Development</option>
-                        <option value="Cloud Migration">Cloud Migration</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="submittedBy">Person Submitting / Analyzing:</label>
-                    <select id="submittedBy" name="submittedBy" class="section-selector">
-                        <option value="Aish">Aish</option>
-                        <option value="Helen">Helen</option>
-                        <option value="Shirley">Shirley</option>
-                        <option value="Israel">Israel</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="rfpFileUpload">Upload RFP Document (PDF only):</label>
-                    <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
-                </div>
-                
-                <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button>
-            </form>
-
-            <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
-            </div>
-
-            <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
-                <div class="tabs-container">
-                    <button class="tab-link active" onclick="openTab(event, 'summary-tab')">Summary</button>
-                    <button class="tab-link" onclick="openTab(event, 'questions-tab')">Questions</button>
-                    <button class="tab-link" onclick="openTab(event, 'deadlines-tab')">Deadlines</button>
-                    <button class="tab-link" onclick="openTab(event, 'requirements-tab')">Key Requirements</button>
-                    <button class="tab-link" onclick="openTab(event, 'stakeholders-tab')">Stakeholders</button>
-                    <button class="tab-link" onclick="openTab(event, 'risks-tab')">Risks</button>
-                </div>
-                <div id="summary-tab" class="tab-content" style="display: block;">
-                    <h3>RFP Summary:</h3>
-                    <div id="summary-result-content"></div>
-                </div>
-                <div id="questions-tab" class="tab-content">
-                    <h3>Generated Clarification Questions:</h3>
-                    <div id="questions-result-content"></div>
-                </div>
-                <div id="deadlines-tab" class="tab-content">
-                    <h3>Key Deadlines:</h3>
-                    <div id="deadlines-result-content"></div>
-                </div>
-                <div id="requirements-tab" class="tab-content">
-                    <h3>Key Requirements:</h3>
-                    <div id="requirements-result-content"></div>
-                </div>
-                <div id="stakeholders-tab" class="tab-content">
-                    <h3>Mentioned Stakeholders:</h3>
-                    <div id="stakeholders-result-content"></div>
-                </div>
-                <div id="risks-tab" class="tab-content">
-                    <h3>Potential Risks/Red Flags:</h3>
-                    <div id="risks-result-content"></div>
-                </div>
+                <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses found for this category.</p>
             </div>
         </section>
+
+        <div id="new-rfp-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <span class="modal-close-button" id="modal-close-button">&times;</span>
+                <h2 id="modal-title" style="text-align: center; margin-bottom: 1.5rem;">Analyze New RFP</h2>
+                
+                <form id="rfp-details-form">
+                    <div class="form-group">
+                        <label for="rfpTitle">RFP Title (Optional):</label>
+                        <input type="text" id="rfpTitle" name="rfpTitle" placeholder="Enter a Title for this RFP">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rfpType">RFP Type:</label>
+                        <select id="rfpType" name="rfpType" class="section-selector">
+                            <option value="IT Support">IT Support</option>
+                            <option value="IT Staffing">IT Staffing</option>
+                            <option value="ERP Managed Services">ERP Managed Services</option>
+                            <option value="Custom Software Development">Custom Software Development</option>
+                            <option value="Cloud Migration">Cloud Migration</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="submittedBy">Person Submitting / Analyzing:</label>
+                        <select id="submittedBy" name="submittedBy" class="section-selector">
+                            <option value="Aish">Aish</option>
+                            <option value="Helen">Helen</option>
+                            <option value="Shirley">Shirley</option>
+                            <option value="Israel">Israel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rfpFileUpload">Upload RFP Document (PDF only):</label>
+                        <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
+                    </div>
+                    
+                    <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button>
+                </form>
+
+                <div id="analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
+                </div>
+
+                <div id="analysis-results-area" style="margin-top: 2.5rem; display: none;">
+                    <h3 style="text-align:center; margin-bottom: 1rem;">Analysis Results</h3>
+                    <div class="tabs-container">
+                        <button class="tab-link active" onclick="openTab(event, 'summary-tab')">Summary</button>
+                        <button class="tab-link" onclick="openTab(event, 'questions-tab')">Questions</button>
+                        <button class="tab-link" onclick="openTab(event, 'deadlines-tab')">Deadlines & Format</button>
+                        <button class="tab-link" onclick="openTab(event, 'requirements-tab')">Requirements</button>
+                        <button class="tab-link" onclick="openTab(event, 'stakeholders-tab')">Stakeholders</button>
+                        <button class="tab-link" onclick="openTab(event, 'risks-tab')">Risks</button>
+                        <button class="tab-link" onclick="openTab(event, 'registration-tab')">Registration</button>
+                        <button class="tab-link" onclick="openTab(event, 'licenses-tab')">Licenses</button>
+                        <button class="tab-link" onclick="openTab(event, 'budget-tab')">Budget</button>
+                    </div>
+
+                    <div id="summary-tab" class="tab-content" style="display: block;">
+                        <h3>RFP Summary:</h3>
+                        <div id="summary-result-content"></div>
+                    </div>
+                    <div id="questions-tab" class="tab-content">
+                        <h3>Generated Clarification Questions:</h3>
+                        <div id="questions-result-content"></div>
+                    </div>
+                    <div id="deadlines-tab" class="tab-content">
+                        <h3>Key Deadlines & Submission Format:</h3>
+                        <div id="deadlines-result-content">
+                            <h4>Deadlines:</h4>
+                            <div id="deadlines-only-content"></div>
+                            <h4 style="margin-top: 1rem;">Submission Format:</h4>
+                            <div id="submission-format-content"></div>
+                        </div>
+                    </div>
+                    <div id="requirements-tab" class="tab-content">
+                        <h3>Requirements:</h3>
+                        <div id="requirements-result-content"></div>
+                    </div>
+                    <div id="stakeholders-tab" class="tab-content">
+                        <h3>Mentioned Stakeholders:</h3>
+                        <div id="stakeholders-result-content"></div>
+                    </div>
+                    <div id="risks-tab" class="tab-content">
+                        <h3>Potential Risks/Red Flags:</h3>
+                        <div id="risks-result-content"></div>
+                    </div>
+                    <div id="registration-tab" class="tab-content">
+                        <h3>Registration Details:</h3>
+                        <div id="registration-result-content"></div>
+                    </div>
+                    <div id="licenses-tab" class="tab-content">
+                        <h3>Licenses & Certifications:</h3>
+                        <div id="licenses-result-content"></div>
+                    </div>
+                    <div id="budget-tab" class="tab-content">
+                        <h3>Budget Information:</h3>
+                        <div id="budget-result-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>
@@ -134,6 +163,7 @@
 
     <script type="module" src="rfp-script.js"></script> 
     <script>
+        // This global openTab function is for the analysis result tabs inside the modal
         const yearSpanRFP = document.getElementById('current-year-rfp');
         if (yearSpanRFP) {
             yearSpanRFP.textContent = new Date().getFullYear();
@@ -141,11 +171,15 @@
 
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
+            // Scope to tabs within the analysis-results-area
+            var resultsArea = document.getElementById('analysis-results-area');
+            if (!resultsArea) return;
+
+            tabcontent = resultsArea.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-            tablinks = document.getElementsByClassName("tab-link");
+            tablinks = resultsArea.getElementsByClassName("tab-link");
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
