@@ -157,7 +157,8 @@
 }
 .analyzed-rfp-item:last-child { border-bottom: none; }
 #saved-analyses-header {
-    background-color: #f8f9fa; font-weight: bold; 
+    background-color: #f8f9fa; 
+    font-weight: bold; 
     border-bottom: 2px solid #ccc; 
 }
 
@@ -181,6 +182,7 @@
 .rfp-col-status {
     flex: 0 0 70px; display: flex;
     justify-content: center; align-items: center;
+    text-align: center;
 }
 .rfp-col-actions { /* For data rows */
     flex: 0 0 150px; 
@@ -189,10 +191,11 @@
     align-items: center;
 }
 #rfp-actions-header-text { /* For the header cell "Actions" */
-    /* This span has class .rfp-col-actions, so it gets flex properties */
-    /* Override justify-content for centering text within its cell */
+
     justify-content: center; 
     text-align: center; /* Ensure text node is centered */
+    justify-content: center; /* Centers the text node child because parent is display:flex */
+    width: 100%; 
 }
 
 .rfp-status-dot {
@@ -209,6 +212,7 @@
     transition: background-color 0.2s ease, color 0.2s ease;
     display: inline-flex; align-items: center; justify-content: center;
     background: none; border: none; cursor: pointer; line-height: 1; 
+    justify-content: flex-end;
 }
 .rfp-view-details:hover, .rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover {
     background-color: #e9f1f7; color: #003f6e; 
