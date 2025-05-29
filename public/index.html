@@ -55,11 +55,12 @@
             </div>
         </section>
 
-        <section id="view-saved-rfp-details-section" class="container content-card" style="display: none; margin-top: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 id="view-rfp-main-title-heading">RFP Details</h2>
-                <button id="close-view-rfp-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
-            </div>
+        <section id="view-saved-rfp-details-section" style="display: none;"> 
+            <div class="view-rfp-modal-content content-card container"> 
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="view-rfp-main-title-heading">RFP Details</h2>
+                    <button id="close-view-rfp-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
+                </div>
             <div id="view-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
             <div id="view-analysis-results-area"> <div class="tabs-container">
                     <button class="tab-link active" onclick="openViewTab(event, 'view-summary-tab')">Summary</button>
@@ -262,11 +263,12 @@
             }
         }
 
-
+        // Specifically for tabs within the modal's analysis results
         function openModalTab(evt, tabName) {
             openTabGeneric(evt, tabName, 'modal-analysis-results-area');
         }
 
+        // Specifically for tabs within the main page's view saved RFP details section
         function openViewTab(evt, tabName) {
             openTabGeneric(evt, tabName, 'view-analysis-results-area');
         }
