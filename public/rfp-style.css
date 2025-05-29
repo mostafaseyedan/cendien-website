@@ -537,4 +537,19 @@ header .settings-icon-container .action-icon:hover {
 }
     #saved-analyses-header { display: none; }
 }
+.prompt-display-box {
+    background-color: #f0f4f8; /* Light blue/grey background */
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9em;
+    color: #334e68; /* Darker text for readability */
+    border: 1px solid #d1d9e6;
+    line-height: 1.5;
+}
+
+.prompt-display-box strong {
+    color: #005a9c; /* Cendien blue for the "Instruction Used:" label */
+}
+
 
