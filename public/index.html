@@ -35,9 +35,10 @@
 
             <div id="saved-analyses-section">
                 <div class="rfp-list-tabs">
-                    <button class="rfp-list-tab-button active" data-status-filter="all">All Analyzed</button>
                     <button class="rfp-list-tab-button" data-status-filter="active">Active</button>
                     <button class="rfp-list-tab-button" data-status-filter="not_pursuing">Not Pursuing</button>
+                    <button class="rfp-list-tab-button" data-status-filter="archived">Archived</button>
+                    <button class="rfp-list-tab-button active" data-status-filter="all_statuses">All Analyzed</button> 
                 </div>
                 <div id="saved-analyses-header" class="analyzed-rfp-item">
                     <span class="rfp-col-title sortable-header" data-sort-key="rfpTitle">RFP Title ⇅</span>
@@ -61,59 +62,60 @@
                     <h2 id="view-rfp-main-title-heading">RFP Details</h2>
                     <button id="close-view-rfp-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
                 </div>
-            <div id="view-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
-            <div id="view-analysis-results-area"> <div class="tabs-container">
-                    <button class="tab-link active" onclick="openViewTab(event, 'view-summary-tab')">Summary</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-questions-tab')">Questions</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-deadlines-tab')">Deadlines & Format</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-requirements-tab')">Requirements</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-stakeholders-tab')">Stakeholders</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-risks-tab')">Risks</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-registration-tab')">Registration</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-licenses-tab')">Licenses</button>
-                    <button class="tab-link" onclick="openViewTab(event, 'view-budget-tab')">Budget</button>
-                </div>
-
-                <div id="view-summary-tab" class="tab-content" style="display: block;">
-                    <h3>RFP Summary:</h3>
-                    <div id="view-summary-result-content"></div>
-                </div>
-                <div id="view-questions-tab" class="tab-content">
-                    <h3>Generated Clarification Questions:</h3>
-                    <div id="view-questions-result-content"></div>
-                </div>
-                <div id="view-deadlines-tab" class="tab-content">
-                    <h3>Key Deadlines & Submission Format:</h3>
-                    <div id="view-deadlines-result-content">
-                        <h4>Deadlines:</h4>
-                        <div id="view-deadlines-only-content"></div>
-                        <h4 style="margin-top: 1rem;">Submission Format:</h4>
-                        <div id="view-submission-format-content"></div>
+                <div id="view-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
+                <div id="view-analysis-results-area"> <div class="tabs-container">
+                        <button class="tab-link active" onclick="openViewTab(event, 'view-summary-tab')">Summary</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-questions-tab')">Questions</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-deadlines-tab')">Deadlines & Format</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-requirements-tab')">Requirements</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-stakeholders-tab')">Stakeholders</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-risks-tab')">Risks</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-registration-tab')">Registration</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-licenses-tab')">Licenses</button>
+                        <button class="tab-link" onclick="openViewTab(event, 'view-budget-tab')">Budget</button>
                     </div>
-                </div>
-                <div id="view-requirements-tab" class="tab-content">
-                    <h3>Requirements:</h3>
-                    <div id="view-requirements-result-content"></div>
-                </div>
-                <div id="view-stakeholders-tab" class="tab-content">
-                    <h3>Mentioned Stakeholders:</h3>
-                    <div id="view-stakeholders-result-content"></div>
-                </div>
-                <div id="view-risks-tab" class="tab-content">
-                    <h3>Potential Risks/Red Flags:</h3>
-                    <div id="view-risks-result-content"></div>
-                </div>
-                <div id="view-registration-tab" class="tab-content">
-                    <h3>Registration Details:</h3>
-                    <div id="view-registration-result-content"></div>
-                </div>
-                <div id="view-licenses-tab" class="tab-content">
-                    <h3>Licenses & Certifications:</h3>
-                    <div id="view-licenses-result-content"></div>
-                </div>
-                <div id="view-budget-tab" class="tab-content">
-                    <h3>Budget Information:</h3>
-                    <div id="view-budget-result-content"></div>
+
+                    <div id="view-summary-tab" class="tab-content" style="display: block;">
+                        <h3>RFP Summary:</h3>
+                        <div id="view-summary-result-content"></div>
+                    </div>
+                    <div id="view-questions-tab" class="tab-content">
+                        <h3>Generated Clarification Questions:</h3>
+                        <div id="view-questions-result-content"></div>
+                    </div>
+                    <div id="view-deadlines-tab" class="tab-content">
+                        <h3>Key Deadlines & Submission Format:</h3>
+                        <div id="view-deadlines-result-content">
+                            <h4>Deadlines:</h4>
+                            <div id="view-deadlines-only-content"></div>
+                            <h4 style="margin-top: 1rem;">Submission Format:</h4>
+                            <div id="view-submission-format-content"></div>
+                        </div>
+                    </div>
+                    <div id="view-requirements-tab" class="tab-content">
+                        <h3>Requirements:</h3>
+                        <div id="view-requirements-result-content"></div>
+                    </div>
+                    <div id="view-stakeholders-tab" class="tab-content">
+                        <h3>Mentioned Stakeholders:</h3>
+                        <div id="view-stakeholders-result-content"></div>
+                    </div>
+                    <div id="view-risks-tab" class="tab-content">
+                        <h3>Potential Risks/Red Flags:</h3>
+                        <div id="view-risks-result-content"></div>
+                    </div>
+                    <div id="view-registration-tab" class="tab-content">
+                        <h3>Registration Details:</h3>
+                        <div id="view-registration-result-content"></div>
+                    </div>
+                    <div id="view-licenses-tab" class="tab-content">
+                        <h3>Licenses & Certifications:</h3>
+                        <div id="view-licenses-result-content"></div>
+                    </div>
+                    <div id="view-budget-tab" class="tab-content">
+                        <h3>Budget Information:</h3>
+                        <div id="view-budget-result-content"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -161,8 +163,7 @@
                     <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button>
                 </form>
 
-                <div id="modal-analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;">
-                    </div>
+                <div id="modal-analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;"></div>
                 <div id="modal-analysis-results-area" style="margin-top: 2.5rem; display: none;">
                      <h3 style="text-align:center; margin-bottom: 1rem;">Analysis Results</h3>
                     <div class="tabs-container">
@@ -191,6 +192,101 @@
                 </div>
             </div>
         </div>
+
+        <div id="edit-rfp-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <span class="modal-close-button" id="edit-rfp-modal-close-button">&times;</span>
+                <h2 id="edit-rfp-modal-title" style="text-align: center; margin-bottom: 1.5rem;">Edit RFP Details</h2>
+                <form id="edit-rfp-details-form">
+                    <input type="hidden" id="editRfpId" name="editRfpId">
+                    
+                    <div class="form-group">
+                        <label for="editRfpTitle">RFP Title:</label>
+                        <input type="text" id="editRfpTitle" name="editRfpTitle" placeholder="Enter a Title for this RFP">
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpFileName">Original File Name:</label>
+                        <input type="text" id="editRfpFileName" name="editRfpFileName" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpType">RFP Type:</label>
+                        <select id="editRfpType" name="editRfpType" class="section-selector">
+                            <option value="IT Support">IT Support</option>
+                            <option value="IT Staffing">IT Staffing</option>
+                            <option value="ERP Managed Services">ERP Managed Services</option>
+                            <option value="Custom Software Development">Custom Software Development</option>
+                            <option value="Cloud Migration">Cloud Migration</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSubmittedBy">Owner / Submitted By:</label>
+                        <select id="editSubmittedBy" name="editSubmittedBy" class="section-selector">
+                            <option value="Aish">Aish</option>
+                            <option value="Helen">Helen</option>
+                            <option value="Shirley">Shirley</option>
+                            <option value="Israel">Israel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpStatus">Status:</label>
+                        <select id="editRfpStatus" name="editRfpStatus" class="section-selector">
+                            <option value="analyzed">Analyzed</option>
+                            <option value="active">Active</option>
+                            <option value="not_pursuing">Not Pursuing</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editRfpSummary">RFP Summary:</label>
+                        <textarea id="editRfpSummary" name="editRfpSummary" rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGeneratedQuestions">Generated Questions:</label>
+                        <textarea id="editGeneratedQuestions" name="editGeneratedQuestions" rows="8"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpDeadlines">Key Deadlines:</label>
+                        <textarea id="editRfpDeadlines" name="editRfpDeadlines" rows="3"></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label for="editRfpSubmissionFormat">Submission Format:</label>
+                        <textarea id="editRfpSubmissionFormat" name="editRfpSubmissionFormat" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpKeyRequirements">Key Requirements:</label>
+                        <textarea id="editRfpKeyRequirements" name="editRfpKeyRequirements" rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpStakeholders">Stakeholders:</label>
+                        <textarea id="editRfpStakeholders" name="editRfpStakeholders" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRfpRisks">Risks:</label>
+                        <textarea id="editRfpRisks" name="editRfpRisks" rows="3"></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label for="editRfpRegistration">Registration Details:</label>
+                        <textarea id="editRfpRegistration" name="editRfpRegistration" rows="3"></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label for="editRfpLicenses">Licenses/Certifications:</label>
+                        <textarea id="editRfpLicenses" name="editRfpLicenses" rows="3"></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label for="editRfpBudget">Budget Information:</label>
+                        <textarea id="editRfpBudget" name="editRfpBudget" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" id="save-edited-rfp-button" class="btn btn-primary">Save Changes</button>
+                    <button type="button" id="cancel-edit-rfp-button" class="btn btn-secondary">Cancel</button>
+                </form>
+                <div id="edit-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
+            </div>
+        </div>
+
 
         <div id="prompt-settings-modal" class="modal-overlay" style="display: none;">
             <div class="modal-content">
@@ -240,7 +336,6 @@
             yearSpanRFP.textContent = new Date().getFullYear();
         }
 
-        // Helper to manage tabs for a given container
         function openTabGeneric(evt, tabName, containerElementId) {
             var i, tabcontent, tablinks;
             var container = document.getElementById(containerElementId);
@@ -254,7 +349,7 @@
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
-            const targetTab = document.getElementById(tabName); // Assumes tabName IDs are globally unique
+            const targetTab = document.getElementById(tabName);
             if (targetTab) {
                 targetTab.style.display = "block";
             }
@@ -262,13 +357,9 @@
                 evt.currentTarget.className += " active";
             }
         }
-
-        // Specifically for tabs within the modal's analysis results
         function openModalTab(evt, tabName) {
             openTabGeneric(evt, tabName, 'modal-analysis-results-area');
         }
-
-        // Specifically for tabs within the main page's view saved RFP details section
         function openViewTab(evt, tabName) {
             openTabGeneric(evt, tabName, 'view-analysis-results-area');
         }
