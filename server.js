@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const db = new Firestore({
-    projectId: process.env.GCLOUD_PROJECT || 'temporal-grin-460413-q9', // Allow project ID to be set by env var
+    projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai', // Allow project ID to be set by env var
 });
 
 app.use(express.json({ limit: '50mb' }));
@@ -25,7 +25,7 @@ app.post('/api/generate', async (req, res) => {
     }
     // Consider making the model name an environment variable or configurable if you plan to update it often
     const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
-
+    
     try {
         console.log(`Received prompt for Gemini. Sending... (Prompt length: ${prompt.length})`);
         const geminiResponse = await fetch(GEMINI_API_ENDPOINT, { // Using global fetch if Node.js v18+
