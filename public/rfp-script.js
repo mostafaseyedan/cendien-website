@@ -377,14 +377,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const promptDisplayDiv = document.createElement('div');
             promptDisplayDiv.className = 'prompt-display-box';
             const promptLabel = document.createElement('strong');
-            promptLabel.textContent = "Instruction Used: ";
+            promptLabel.textContent = "Prompt: ";
             promptDisplayDiv.appendChild(promptLabel);
             const promptTextNode = document.createTextNode(sectionPromptText);
             promptDisplayDiv.appendChild(promptTextNode);
             const currentDefaultPrompt = PROMPT_CONFIG[sectionKeySuffix]?.defaultText;
             if (currentDefaultPrompt && sectionPromptText === currentDefaultPrompt) {
                 const defaultIndicator = document.createElement('em');
-                defaultIndicator.textContent = " (This is the current default instruction)";
+                defaultIndicator.textContent = " (This is the default default prompt)";
                 defaultIndicator.style.fontSize = '0.9em';
                 defaultIndicator.style.marginLeft = '5px';
                 promptDisplayDiv.appendChild(defaultIndicator);
