@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const db = new Firestore({
-    projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai', // Allow project ID to be set by env var
+    projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai',
 });
 
 app.use(express.json({ limit: '50mb' }));
@@ -23,12 +23,11 @@ app.post('/api/generate', async (req, res) => {
         console.error('Error: GEMINI_API_KEY environment variable is not set.');
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
-    // Consider making the model name an environment variable or configurable if you plan to update it often
     const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
-    
+
     try {
         console.log(`Received prompt for Gemini. Sending... (Prompt length: ${prompt.length})`);
-        const geminiResponse = await fetch(GEMINI_API_ENDPOINT, { // Using global fetch if Node.js v18+
+        const geminiResponse = await fetch(GEMINI_API_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
@@ -72,11 +71,8 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpFileName, rfpSummary, generatedQuestions, status,
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
             rfpTitle, rfpType, submittedBy,
-            rfpSubmissionFormat, // Added from potential payload
-            rfpRegistration,     // Added from potential payload
-            rfpLicenses,         // Added from potential payload
-            rfpBudget,           // Added from potential payload
-            analysisPrompts      // *** NEW: To store the prompts used for this analysis ***
+            rfpSubmissionFormat, rfpRegistration, rfpLicenses, rfpBudget,
+            analysisPrompts
         } = req.body;
 
         if (!rfpFileName || !rfpSummary || !generatedQuestions) {
@@ -100,11 +96,11 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpRegistration: rfpRegistration || "Not specified",
             rfpLicenses: rfpLicenses || "Not specified",
             rfpBudget: rfpBudget || "Not specified",
-            analysisPrompts: analysisPrompts || {} // *** NEW: Store the prompts, default to empty object if not provided ***
+            analysisPrompts: analysisPrompts || {}
         };
 
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
-        console.log('RFP Analysis saved with ID:', docRef.id); // Removed full data from log for brevity
+        console.log('RFP Analysis saved with ID:', docRef.id);
         res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.', ...analysisData });
     } catch (error) {
         console.error('Error saving RFP analysis:', error);
@@ -112,7 +108,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
     }
 });
 
-// Endpoint to update RFP status
+// Endpoint to update RFP status (kept for potentially quick status updates from list view if needed)
 app.put('/api/rfp-analysis/:id/status', async (req, res) => {
     try {
         const analysisId = req.params.id;
@@ -121,8 +117,10 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         if (!status) {
             return res.status(400).json({ error: 'New status is required.' });
         }
-        if (!['active', 'not_pursuing', 'analyzed'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid status value.' });
+        // *** UPDATED: Added "archived" to valid statuses ***
+        const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: `Invalid status value. Must be one of: ${validStatuses.join(', ')}` });
         }
 
         const docRef = db.collection('rfpAnalyses').doc(analysisId);
@@ -132,16 +130,16 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
             return res.status(404).json({ error: 'RFP analysis not found.' });
         }
 
-        await docRef.update({ status: status, lastModified: Timestamp.now() }); // Optionally track lastModified
+        await docRef.update({ status: status, lastModified: Timestamp.now() });
         console.log('RFP Analysis status updated for ID:', analysisId, 'New Status:', status);
-        res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', status: status });
+        res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', newStatus: status }); // Return newStatus
     } catch (error) {
         console.error('Error updating RFP status:', error);
         res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
     }
 });
 
-// Endpoint to update RFP title
+// Endpoint to update RFP title (kept for potentially quick title updates if needed)
 app.put('/api/rfp-analysis/:id/title', async (req, res) => {
     try {
         const analysisId = req.params.id;
@@ -158,17 +156,66 @@ app.put('/api/rfp-analysis/:id/title', async (req, res) => {
             return res.status(404).json({ error: 'RFP analysis not found.' });
         }
 
-        await docRef.update({ rfpTitle: rfpTitle, lastModified: Timestamp.now() }); // Optionally track lastModified
+        await docRef.update({ rfpTitle: rfpTitle, lastModified: Timestamp.now() });
         console.log('RFP Analysis title updated for ID:', analysisId, 'New Title:', rfpTitle);
-        res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', rfpTitle: rfpTitle });
+        res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', newRfpTitle: rfpTitle }); // Return newRfpTitle
     } catch (error) {
         console.error('Error updating RFP title:', error);
         res.status(500).json({ error: 'Failed to update RFP title.', details: error.message });
     }
 });
 
+// *** NEW: Endpoint to update multiple details of an RFP analysis ***
+app.put('/api/rfp-analysis/:id', async (req, res) => {
+    try {
+        const analysisId = req.params.id;
+        const docRef = db.collection('rfpAnalyses').doc(analysisId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'RFP analysis not found.' });
+        }
+
+        const updates = {};
+        const allowedFieldsToUpdate = [
+            'rfpTitle', 'rfpType', 'submittedBy', 'status',
+            'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
+            'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
+            'rfpRegistration', 'rfpLicenses', 'rfpBudget'
+        ];
+        const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
+
+        for (const field of allowedFieldsToUpdate) {
+            if (req.body.hasOwnProperty(field)) {
+                if (field === 'status' && !validStatuses.includes(req.body[field])) {
+                    return res.status(400).json({ error: `Invalid status value. Must be one of: ${validStatuses.join(', ')}` });
+                }
+                // Add more specific validation per field if needed (e.g., type checks)
+                updates[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No valid fields provided for update.' });
+        }
+
+        updates.lastModified = Timestamp.now(); // Always update lastModified timestamp
+
+        await docRef.update(updates);
+        console.log('RFP Analysis updated for ID:', analysisId, 'Data:', updates);
+        const updatedDoc = await docRef.get(); // Get the updated document to return
+        res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated successfully.', ...updatedDoc.data() });
+
+    } catch (error) {
+        console.error('Error updating RFP analysis details:', error);
+        res.status(500).json({ error: 'Failed to update RFP analysis details.', details: error.message });
+    }
+});
+
+
 // Endpoint to delete an RFP analysis
 app.delete('/api/rfp-analysis/:id', async (req, res) => {
+    // ... (no changes from original)
     try {
         const analysisId = req.params.id;
         const docRef = db.collection('rfpAnalyses').doc(analysisId);
@@ -189,6 +236,7 @@ app.delete('/api/rfp-analysis/:id', async (req, res) => {
 
 
 app.get('/api/rfp-analyses', async (req, res) => {
+    // ... (no changes from original)
     try {
         const analysesSnapshot = await db.collection('rfpAnalyses')
                                         .orderBy('analysisDate', 'desc')
@@ -208,6 +256,7 @@ app.get('/api/rfp-analyses', async (req, res) => {
 });
 
 app.get('/api/rfp-analysis/:id', async (req, res) => {
+    // ... (no changes from original)
     try {
         const analysisId = req.params.id;
         if (!analysisId) {
