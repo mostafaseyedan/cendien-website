@@ -3,7 +3,36 @@ import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- MODAL Elements (for New RFP Analysis) ---
+
+    
+    const editRfpModal = document.getElementById('edit-rfp-modal');
+    const editRfpModalCloseButton = document.getElementById('edit-rfp-modal-close-button');
+    const editRfpModalTitle = document.getElementById('edit-rfp-modal-title');
+    const editRfpForm = document.getElementById('edit-rfp-details-form');
+    const editRfpId = document.getElementById('editRfpId'); // Hidden input
+
+
+    const editRfpTitleInput = document.getElementById('editRfpTitle');
+    const editRfpFileNameInput = document.getElementById('editRfpFileName'); // Readonly
+    const editRfpTypeSelect = document.getElementById('editRfpType');
+    const editSubmittedBySelect = document.getElementById('editSubmittedBy');
+    const editRfpStatusSelect = document.getElementById('editRfpStatus');
+    const editRfpSummaryTextarea = document.getElementById('editRfpSummary');
+    const editGeneratedQuestionsTextarea = document.getElementById('editGeneratedQuestions');
+    const editRfpDeadlinesTextarea = document.getElementById('editRfpDeadlines');
+    const editRfpSubmissionFormatTextarea = document.getElementById('editRfpSubmissionFormat');
+    const editRfpKeyRequirementsTextarea = document.getElementById('editRfpKeyRequirements');
+    const editRfpStakeholdersTextarea = document.getElementById('editRfpStakeholders');
+    const editRfpRisksTextarea = document.getElementById('editRfpRisks');
+    const editRfpRegistrationTextarea = document.getElementById('editRfpRegistration');
+    const editRfpLicensesTextarea = document.getElementById('editRfpLicenses');
+    const editRfpBudgetTextarea = document.getElementById('editRfpBudget');
+
+    const saveEditedRfpButton = document.getElementById('save-edited-rfp-button');
+    const cancelEditRfpButton = document.getElementById('cancel-edit-rfp-button');
+    const editRfpStatusArea = document.getElementById('edit-rfp-status-area');
+
+    
     const newRfpModal = document.getElementById('new-rfp-modal');
     const openNewRfpModalButton = document.getElementById('open-new-rfp-modal-button');
     const modalCloseButton = document.getElementById('modal-close-button');
@@ -291,6 +320,94 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+if (editRfpModalCloseButton) {
+    editRfpModalCloseButton.addEventListener('click', () => {
+        if (editRfpModal) editRfpModal.style.display = 'none';
+        document.body.style.overflow = '';
+    });
+}
+
+if (cancelEditRfpButton) {
+    cancelEditRfpButton.addEventListener('click', () => {
+        if (editRfpModal) editRfpModal.style.display = 'none';
+        document.body.style.overflow = '';
+    });
+}
+
+if (editRfpModal) {
+    editRfpModal.addEventListener('click', (event) => {
+        if (event.target === editRfpModal) {
+            editRfpModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+if (editRfpForm) {
+    editRfpForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!saveEditedRfpButton) return;
+
+        const rfpIdToUpdate = editRfpId.value;
+        if (!rfpIdToUpdate) {
+            showLoadingMessage(editRfpStatusArea, 'Error: RFP ID is missing.', false);
+            hideLoadingMessage(editRfpStatusArea, 3000);
+            return;
+        }
+
+        const updatedData = {
+            rfpTitle: editRfpTitleInput.value.trim(),
+            rfpType: editRfpTypeSelect.value,
+            submittedBy: editSubmittedBySelect.value,
+            status: editRfpStatusSelect.value,
+            rfpSummary: editRfpSummaryTextarea.value.trim(),
+            generatedQuestions: editGeneratedQuestionsTextarea.value.trim(),
+            rfpDeadlines: editRfpDeadlinesTextarea.value.trim(),
+            rfpSubmissionFormat: editRfpSubmissionFormatTextarea.value.trim(),
+            rfpKeyRequirements: editRfpKeyRequirementsTextarea.value.trim(),
+            rfpStakeholders: editRfpStakeholdersTextarea.value.trim(),
+            rfpRisks: editRfpRisksTextarea.value.trim(),
+            rfpRegistration: editRfpRegistrationTextarea.value.trim(),
+            rfpLicenses: editRfpLicensesTextarea.value.trim(),
+            rfpBudget: editRfpBudgetTextarea.value.trim()
+        };
+
+        showLoadingMessage(editRfpStatusArea, 'Saving changes...');
+        saveEditedRfpButton.disabled = true;
+
+        try {
+            const response = await fetch(`/api/rfp-analysis/${rfpIdToUpdate}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (!response.ok) {
+                const errorResult = await response.json().catch(() => ({ error: 'Failed to save changes. Server error.' }));
+                throw new Error(errorResult.error || `HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            showLoadingMessage(editRfpStatusArea, result.message || 'Changes saved successfully!', false);
+            
+            await loadSavedAnalysesInitial(); // Refresh the list
+            
+            setTimeout(() => {
+                if (editRfpModal) editRfpModal.style.display = 'none';
+                document.body.style.overflow = '';
+                hideLoadingMessage(editRfpStatusArea);
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error saving RFP details:', error);
+            showLoadingMessage(editRfpStatusArea, `Error: ${error.message}`, false);
+            hideLoadingMessage(editRfpStatusArea, 5000);
+        } finally {
+            if (saveEditedRfpButton) saveEditedRfpButton.disabled = false;
+        }
+    });
+}
+    
 
     // --- Helper: Clear Tab Content ---
     function clearTabContent(tabContentMap, isModalView) {
@@ -505,13 +622,11 @@ document.addEventListener('DOMContentLoaded', () => {
         savedAnalysesListDiv.innerHTML = '';
         let filteredAnalyses = [...allFetchedAnalyses];
 
-        if (currentStatusFilter === 'active') {
-            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'active');
-        } else if (currentStatusFilter === 'not_pursuing') {
-            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'not_pursuing');
-        } else if (currentStatusFilter === 'all') {
-            filteredAnalyses = filteredAnalyses.filter(a => a.status === 'analyzed' || a.status === 'active' || a.status === 'new');
-        }
+        if (currentStatusFilter === 'active' || currentStatusFilter === 'not_pursuing' || currentStatusFilter === 'archived') {
+            filteredAnalyses = filteredAnalyses.filter(a => a.status === currentStatusFilter);
+        } else if (currentStatusFilter === 'all_statuses') { 
+
+        } 
 
         filteredAnalyses.sort((a, b) => {
             let valA = a[currentSortKey]; let valB = b[currentSortKey];
@@ -527,11 +642,79 @@ document.addEventListener('DOMContentLoaded', () => {
             return 0;
         });
 
+
+async function openEditRfpModal(analysisFullDetails) {
+    if (!editRfpModal || !editRfpForm) return;
+
+    let analysis = analysisFullDetails;
+    // If the analysis object from the list doesn't have all text fields, fetch full details
+    // (Assuming your allFetchedAnalyses might not always contain large text fields for performance)
+    if (!analysis.rfpSummary || !analysis.generatedQuestions) { // Check for a couple of large fields
+        showLoadingMessage(editRfpStatusArea, 'Loading full RFP details...');
+        try {
+            const response = await fetch(`/api/rfp-analysis/${analysisFullDetails.id}`);
+            if (!response.ok) throw new Error('Failed to fetch full RFP details.');
+            analysis = await response.json();
+        } catch (error) {
+            console.error("Error fetching full RFP details:", error);
+            showLoadingMessage(editRfpStatusArea, `Error: ${error.message}`, false);
+            hideLoadingMessage(editRfpStatusArea, 3000);
+            return;
+        } finally {
+            // Hide loading message only if it wasn't replaced by an error
+             if (editRfpStatusArea.innerHTML.includes('Loading full RFP details...')) {
+                hideLoadingMessage(editRfpStatusArea);
+            }
+        }
+    }
+
+
+    // Populate the form
+    if (editRfpId) editRfpId.value = analysis.id;
+    if (editRfpTitleInput) editRfpTitleInput.value = analysis.rfpTitle || '';
+    if (editRfpFileNameInput) editRfpFileNameInput.value = analysis.rfpFileName || 'N/A';
+    if (editRfpTypeSelect) editRfpTypeSelect.value = analysis.rfpType || 'Other';
+    if (editSubmittedBySelect) editSubmittedBySelect.value = analysis.submittedBy || 'Other';
+    if (editRfpStatusSelect) editRfpStatusSelect.value = analysis.status || 'analyzed';
+
+    if (editRfpSummaryTextarea) editRfpSummaryTextarea.value = analysis.rfpSummary || '';
+    if (editGeneratedQuestionsTextarea) editGeneratedQuestionsTextarea.value = analysis.generatedQuestions || '';
+    if (editRfpDeadlinesTextarea) editRfpDeadlinesTextarea.value = analysis.rfpDeadlines || '';
+    if (editRfpSubmissionFormatTextarea) editRfpSubmissionFormatTextarea.value = analysis.rfpSubmissionFormat || '';
+    if (editRfpKeyRequirementsTextarea) editRfpKeyRequirementsTextarea.value = analysis.rfpKeyRequirements || '';
+    if (editRfpStakeholdersTextarea) editRfpStakeholdersTextarea.value = analysis.rfpStakeholders || '';
+    if (editRfpRisksTextarea) editRfpRisksTextarea.value = analysis.rfpRisks || '';
+    if (editRfpRegistrationTextarea) editRfpRegistrationTextarea.value = analysis.rfpRegistration || '';
+    if (editRfpLicensesTextarea) editRfpLicensesTextarea.value = analysis.rfpLicenses || '';
+    if (editRfpBudgetTextarea) editRfpBudgetTextarea.value = analysis.rfpBudget || '';
+
+    if (editRfpModalTitle) editRfpModalTitle.textContent = `Edit RFP: ${analysis.rfpTitle || analysis.rfpFileName}`;
+    
+    // Hide other modals if open
+    if (newRfpModal) newRfpModal.style.display = 'none';
+    if (promptSettingsModal) promptSettingsModal.style.display = 'none';
+    if (viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active')) {
+        viewSavedRfpDetailsSection.classList.remove('modal-active');
+        viewSavedRfpDetailsSection.style.display = 'none';
+    }
+
+    editRfpModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+
+
+        
+
         if (filteredAnalyses.length === 0) {
             noSavedAnalysesP.style.display = 'block';
-            noSavedAnalysesP.textContent = `No analyses found for "${currentStatusFilter}" category.`;
+             if (currentStatusFilter === 'all_statuses') {
+                noSavedAnalysesP.textContent = `No analyses found.`;
+            } else {
+                noSavedAnalysesP.textContent = `No analyses found for "${currentStatusFilter}" category.`;
+            }
         } else {
-            noSavedAnalysesP.style.display = 'none';
+        noSavedAnalysesP.style.display = 'none';
             filteredAnalyses.forEach(analysis => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'analyzed-rfp-item';
@@ -547,7 +730,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 const statusDotClass = analysis.status === 'active' ? 'green' :
-                                       analysis.status === 'not_pursuing' ? 'red' : 'orange'; // 'analyzed' or other = orange
+                                       analysis.status === 'not_pursuing' ? 'red' :
+                                       analysis.status === 'archived' ? 'grey' : // Or another color for archived
+                                       'orange';
 
                 itemDiv.innerHTML = `
                     <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
@@ -558,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="rfp-col-actions"></span>`;
 
                 const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
-
+            
                 const viewLink = document.createElement('a');
                 viewLink.href = '#'; viewLink.className = 'rfp-view-details action-icon';
                 viewLink.dataset.id = analysis.id;
@@ -633,43 +818,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 actionsSpan.appendChild(viewLink);
 
-                const editTitleButton = document.createElement('button');
-                editTitleButton.className = 'action-icon';
-                editTitleButton.innerHTML = '<i class="fas fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit Title</span>';
-                editTitleButton.title = "Edit RFP Title";
-                editTitleButton.onclick = () => updateRfpTitle(analysis.id, displayTitle);
-                actionsSpan.appendChild(editTitleButton);
+                const editButton = actionsSpan.querySelector('.fa-edit')?.closest('button') || document.createElement('button'); // Find existing or create
+                if (!actionsSpan.querySelector('.fa-edit')) { // If creating new
+                    editButton.className = 'action-icon edit-rfp-button'; // Add a class for easier selection if needed
+                    editButton.innerHTML = '<i class="fas fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit RFP Details</span>';
+                    editButton.title = "Edit RFP Details";
+                    actionsSpan.appendChild(editButton); // Ensure it's added if it was created new
+                }
+                editButton.onclick = null; // Clear previous listener if it was direct onclick
+                editButton.addEventListener('click', (e) => {
+                    e.preventDefault(); // Good practice
+                    openEditRfpModal(analysis); // Pass the full analysis object
+            });
+        function createActionButton(iconClass, title, newStatus, analysisId) {
+                const button = document.createElement('button');
+                button.className = 'action-icon';
+                button.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i>`;
+                button.title = title;
+                button.onclick = () => updateRfpStatus(analysisId, newStatus);
+                return button;
+            }
 
-                if (analysis.status !== 'active') {
-                    const setActiveButton = document.createElement('button');
-                    setActiveButton.className = 'action-icon';
-                    setActiveButton.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i>';
-                    setActiveButton.title = "Move to Active";
-                    setActiveButton.onclick = () => updateRfpStatus(analysis.id, 'active');
-                    actionsSpan.appendChild(setActiveButton);
-                }
-                if (analysis.status !== 'not_pursuing') {
-                    const setNotPursuingButton = document.createElement('button');
-                    setNotPursuingButton.className = 'action-icon';
-                    setNotPursuingButton.innerHTML = '<i class="fas fa-times-circle" aria-hidden="true"></i>';
-                    setNotPursuingButton.title = "Move to Not Pursuing";
-                    setNotPursuingButton.onclick = () => updateRfpStatus(analysis.id, 'not_pursuing');
-                    actionsSpan.appendChild(setNotPursuingButton);
-                }
-                if (analysis.status === 'active' || analysis.status === 'not_pursuing') {
-                    const setAnalyzedButton = document.createElement('button');
-                    setAnalyzedButton.className = 'action-icon';
-                    setAnalyzedButton.innerHTML = '<i class="fas fa-inbox" aria-hidden="true"></i>';
-                    setAnalyzedButton.title = "Move to Analyzed/Unactuated";
-                    setAnalyzedButton.onclick = () => updateRfpStatus(analysis.id, 'analyzed');
-                    actionsSpan.appendChild(setAnalyzedButton);
-                }
-                const deleteButton = document.createElement('button');
-                deleteButton.className = 'action-icon delete';
-                deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i>';
-                deleteButton.title = "Delete RFP";
-                deleteButton.onclick = () => deleteRfp(analysis.id, displayTitle);
-                actionsSpan.appendChild(deleteButton);
+            // Status-dependent action buttons
+            if (analysis.status === 'analyzed') {
+                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-times-circle', 'Move to Not Pursuing', 'not_pursuing', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
+            } else if (analysis.status === 'active') {
+                actionsSpan.appendChild(createActionButton('fa-times-circle', 'Move to Not Pursuing', 'not_pursuing', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
+            } else if (analysis.status === 'not_pursuing') {
+                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
+            } else if (analysis.status === 'archived') {
+                actionsSpan.appendChild(createActionButton('fa-box-open', 'Unarchive (Move to Analyzed)', 'analyzed', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active (from Archived)', 'active', analysis.id));
+            } else { // Default/fallback for any other or new statuses not explicitly handled
+                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
+                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
+            }
+
+            // Delete button (always present after status buttons)
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'action-icon delete';
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i><span class="visually-hidden">Delete RFP</span>';
+            deleteButton.title = "Delete RFP";
+            deleteButton.onclick = () => deleteRfp(analysis.id, displayTitle); // displayTitle should be defined earlier in your loop
+            actionsSpan.appendChild(deleteButton);
 
                 savedAnalysesListDiv.appendChild(itemDiv);
             });
