@@ -210,8 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modalAnalysisStatusArea) modalAnalysisStatusArea.style.display = 'none';
                 clearModalAnalysisResultTabs();
                 if (modalFormTitle) modalFormTitle.textContent = "Analyze New RFP";
-                if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'none';
-                newRfpModal.style.display = 'block';
+                if (viewSavedRfpDetailsSection) {
+                    // **MODIFIED PART TO SHOW THE MODAL**
+                    viewSavedRfpDetailsSection.style.display = 'block'; // Make it block first to take up space
+                    viewSavedRfpDetailsSection.classList.add('modal-active'); // Then activate modal styles
+                    document.body.style.overflow = 'hidden'; // Prevent body scroll
+                }
             }
         });
     }
@@ -265,7 +269,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeViewRfpDetailsButton) {
         closeViewRfpDetailsButton.addEventListener('click', () => {
-            if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'none';
+            if (viewSavedRfpDetailsSection) {
+                viewSavedRfpDetailsSection.classList.remove('modal-active'); // Remove class
+                viewSavedRfpDetailsSection.style.display = 'none';
+                document.body.style.overflow = ''; // Restore body scroll
+            }
+        });
+    }
+    if (viewSavedRfpDetailsSection) {
+        viewSavedRfpDetailsSection.addEventListener('click', (event) => {
+            // Check if the click is on the overlay itself (viewSavedRfpDetailsSection)
+            // and not on its children (the modal content box which is .view-rfp-modal-content)
+            if (event.target === viewSavedRfpDetailsSection) {
+                viewSavedRfpDetailsSection.classList.remove('modal-active');
+                viewSavedRfpDetailsSection.style.display = 'none';
+                document.body.style.overflow = ''; // Restore body scroll
+            }
         });
     }
 
@@ -482,14 +501,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 viewLink.dataset.id = analysis.id;
                 viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i><span class="visually-hidden">View Details</span>';
                 viewLink.title = "View Analysis Details";
-                viewLink.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const analysisId = e.currentTarget.dataset.id;
-                    const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
-                    const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
-                    const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected RFP';
+            viewLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const analysisId = e.currentTarget.dataset.id;
+                const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
+                const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
+                const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected RFP';
 
-                    if (newRfpModal) newRfpModal.style.display = 'none';
+                if (newRfpModal) newRfpModal.style.display = 'none'; // Hide other modals if open
+                if (promptSettingsModal) promptSettingsModal.style.display = 'none'; // Hide other modals if open
                     if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.style.display = 'block';
                     if (viewRfpMainTitleHeading) viewRfpMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
 
@@ -527,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } catch (loadError) {
                         showLoadingMessage(viewRfpStatusArea, `Error: ${loadError.message}`, false);
                     } finally {
-                        hideLoadingMessage(viewRfpStatusArea, 5000);
+                        setTimeout(() => hideLoadingMessage(viewRfpStatusArea), loadError ? 5000 : 2000);
                     }
                 });
                 actionsSpan.appendChild(viewLink);
