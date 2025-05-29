@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentDefaultPrompt = PROMPT_CONFIG[sectionKeySuffix]?.defaultText;
             if (currentDefaultPrompt && sectionPromptText === currentDefaultPrompt) {
                 const defaultIndicator = document.createElement('em');
-                defaultIndicator.textContent = " (This is the current default instruction)";
+                defaultIndicator.textContent = " (Default instruction)";
                 defaultIndicator.style.fontSize = '0.9em';
                 defaultIndicator.style.marginLeft = '5px';
                 promptDisplayDiv.appendChild(defaultIndicator);
