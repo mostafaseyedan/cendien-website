@@ -6,10 +6,6 @@ const { Firestore, Timestamp } = require('@google-cloud/firestore'); // Added Ti
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Firestore
-// This will automatically use the Cloud Run service account's credentials
-// when running on Google Cloud. For local development, you might need to
-// set up authentication (e.g., gcloud auth application-default login).
 const db = new Firestore({
     projectId: 'cendien-sales-support-ai', // Replace with the actual Project ID
 });
