@@ -294,6 +294,66 @@ header .settings-icon-container .action-icon:hover {
     flex: 0 0 150px; 
     display: flex; 
     align-items: center;
+    position: relative; /* For positioning the dropdown menu */
+    justify-content: flex-end;
+}
+.rfp-col-actions .rfp-view-details {
+    margin-right: 5px; /* Space between View button and Actions dropdown trigger */
+}
+
+.actions-dropdown-trigger.action-icon {
+    /* Uses existing .action-icon styles */
+    /* Add any specific overrides if needed */
+    padding: 0.25rem 0.5rem; /* Adjust padding for a "..." or gear icon */
+}
+
+.actions-dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position below the trigger button */
+    right: 0; /* Align to the right of the actions column */
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 100; /* Ensure it's above other row content */
+    min-width: 180px; /* Minimum width for the dropdown */
+    list-style: none;
+    padding: 5px 0;
+    margin: 2px 0 0;
+}
+
+.actions-dropdown-menu button.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 8px 15px;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 0.9rem;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.actions-dropdown-menu button.dropdown-item:hover {
+    background-color: #f5f5f5;
+    color: #005a9c;
+}
+
+.actions-dropdown-menu button.dropdown-item i.fas {
+    margin-right: 8px; /* Space between icon and text in dropdown item */
+    width: 16px; /* Align icons nicely */
+    text-align: center;
+}
+
+/* Separator in dropdown */
+.actions-dropdown-menu .dropdown-divider {
+    height: 1px;
+    margin: 5px 0;
+    overflow: hidden;
+    background-color: #e5e5e5;
 }
 
 #saved-analyses-header .rfp-col-type,
