@@ -617,19 +617,23 @@ if (editRfpForm) {
     }
 
     // --- Render Saved Analyses List (Main Page) ---
+// --- Render Saved Analyses List (Main Page) ---
     function renderAnalysesList() {
         if (!savedAnalysesListDiv || !noSavedAnalysesP) return;
-        savedAnalysesListDiv.innerHTML = '';
+        savedAnalysesListDiv.innerHTML = ''; // Clear previous list
         let filteredAnalyses = [...allFetchedAnalyses];
 
+        // Updated filter logic
         if (currentStatusFilter === 'active' || currentStatusFilter === 'not_pursuing' || currentStatusFilter === 'archived') {
             filteredAnalyses = filteredAnalyses.filter(a => a.status === currentStatusFilter);
         } else if (currentStatusFilter === 'all_statuses') { 
+            // "All Analyzed" now shows everything
+        }
 
-        } 
-
+        // Sort logic
         filteredAnalyses.sort((a, b) => {
-            let valA = a[currentSortKey]; let valB = b[currentSortKey];
+            let valA = a[currentSortKey]; 
+            let valB = b[currentSortKey];
             if (currentSortKey === 'analysisDate') {
                 valA = a.analysisDate && a.analysisDate._seconds ? Number(a.analysisDate._seconds) : 0;
                 valB = b.analysisDate && b.analysisDate._seconds ? Number(b.analysisDate._seconds) : 0;
@@ -642,79 +646,15 @@ if (editRfpForm) {
             return 0;
         });
 
-
-async function openEditRfpModal(analysisFullDetails) {
-    if (!editRfpModal || !editRfpForm) return;
-
-    let analysis = analysisFullDetails;
-    // If the analysis object from the list doesn't have all text fields, fetch full details
-    // (Assuming your allFetchedAnalyses might not always contain large text fields for performance)
-    if (!analysis.rfpSummary || !analysis.generatedQuestions) { // Check for a couple of large fields
-        showLoadingMessage(editRfpStatusArea, 'Loading full RFP details...');
-        try {
-            const response = await fetch(`/api/rfp-analysis/${analysisFullDetails.id}`);
-            if (!response.ok) throw new Error('Failed to fetch full RFP details.');
-            analysis = await response.json();
-        } catch (error) {
-            console.error("Error fetching full RFP details:", error);
-            showLoadingMessage(editRfpStatusArea, `Error: ${error.message}`, false);
-            hideLoadingMessage(editRfpStatusArea, 3000);
-            return;
-        } finally {
-            // Hide loading message only if it wasn't replaced by an error
-             if (editRfpStatusArea.innerHTML.includes('Loading full RFP details...')) {
-                hideLoadingMessage(editRfpStatusArea);
-            }
-        }
-    }
-
-
-    // Populate the form
-    if (editRfpId) editRfpId.value = analysis.id;
-    if (editRfpTitleInput) editRfpTitleInput.value = analysis.rfpTitle || '';
-    if (editRfpFileNameInput) editRfpFileNameInput.value = analysis.rfpFileName || 'N/A';
-    if (editRfpTypeSelect) editRfpTypeSelect.value = analysis.rfpType || 'Other';
-    if (editSubmittedBySelect) editSubmittedBySelect.value = analysis.submittedBy || 'Other';
-    if (editRfpStatusSelect) editRfpStatusSelect.value = analysis.status || 'analyzed';
-
-    if (editRfpSummaryTextarea) editRfpSummaryTextarea.value = analysis.rfpSummary || '';
-    if (editGeneratedQuestionsTextarea) editGeneratedQuestionsTextarea.value = analysis.generatedQuestions || '';
-    if (editRfpDeadlinesTextarea) editRfpDeadlinesTextarea.value = analysis.rfpDeadlines || '';
-    if (editRfpSubmissionFormatTextarea) editRfpSubmissionFormatTextarea.value = analysis.rfpSubmissionFormat || '';
-    if (editRfpKeyRequirementsTextarea) editRfpKeyRequirementsTextarea.value = analysis.rfpKeyRequirements || '';
-    if (editRfpStakeholdersTextarea) editRfpStakeholdersTextarea.value = analysis.rfpStakeholders || '';
-    if (editRfpRisksTextarea) editRfpRisksTextarea.value = analysis.rfpRisks || '';
-    if (editRfpRegistrationTextarea) editRfpRegistrationTextarea.value = analysis.rfpRegistration || '';
-    if (editRfpLicensesTextarea) editRfpLicensesTextarea.value = analysis.rfpLicenses || '';
-    if (editRfpBudgetTextarea) editRfpBudgetTextarea.value = analysis.rfpBudget || '';
-
-    if (editRfpModalTitle) editRfpModalTitle.textContent = `Edit RFP: ${analysis.rfpTitle || analysis.rfpFileName}`;
-    
-    // Hide other modals if open
-    if (newRfpModal) newRfpModal.style.display = 'none';
-    if (promptSettingsModal) promptSettingsModal.style.display = 'none';
-    if (viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active')) {
-        viewSavedRfpDetailsSection.classList.remove('modal-active');
-        viewSavedRfpDetailsSection.style.display = 'none';
-    }
-
-    editRfpModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-
-
-        
-
         if (filteredAnalyses.length === 0) {
             noSavedAnalysesP.style.display = 'block';
-             if (currentStatusFilter === 'all_statuses') {
+            if (currentStatusFilter === 'all_statuses') {
                 noSavedAnalysesP.textContent = `No analyses found.`;
             } else {
                 noSavedAnalysesP.textContent = `No analyses found for "${currentStatusFilter}" category.`;
             }
         } else {
-        noSavedAnalysesP.style.display = 'none';
+            noSavedAnalysesP.style.display = 'none';
             filteredAnalyses.forEach(analysis => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'analyzed-rfp-item';
@@ -723,16 +663,19 @@ async function openEditRfpModal(analysisFullDetails) {
                 if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') {
                     const date = new Date(analysis.analysisDate._seconds * 1000);
                     if (!isNaN(date.valueOf())) {
-                        const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0'); const hours = String(date.getHours()).padStart(2, '0');
+                        const year = date.getFullYear(); 
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0'); 
+                        const hours = String(date.getHours()).padStart(2, '0');
                         const minutes = String(date.getMinutes()).padStart(2, '0');
                         formattedDateTime = `${year}/${month}/${day} ${hours}:${minutes}`;
                     }
                 }
+                
                 const statusDotClass = analysis.status === 'active' ? 'green' :
-                                       analysis.status === 'not_pursuing' ? 'red' :
-                                       analysis.status === 'archived' ? 'grey' : // Or another color for archived
-                                       'orange';
+                                   analysis.status === 'not_pursuing' ? 'red' :
+                                   analysis.status === 'archived' ? 'grey' : 
+                                   'orange';
 
                 itemDiv.innerHTML = `
                     <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
@@ -743,14 +686,17 @@ async function openEditRfpModal(analysisFullDetails) {
                     <span class="rfp-col-actions"></span>`;
 
                 const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
-            
+                
+                // 1. View Button (Always visible, to the left)
                 const viewLink = document.createElement('a');
-                viewLink.href = '#'; viewLink.className = 'rfp-view-details action-icon';
+                viewLink.href = '#'; 
+                viewLink.className = 'rfp-view-details action-icon';
                 viewLink.dataset.id = analysis.id;
-                viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i><span class="visually-hidden">View Details</span>';
+                viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
                 viewLink.title = "View Analysis Details";
                 viewLink.addEventListener('click', async (e) => {
                     e.preventDefault();
+                    // ... (existing viewLink click logic to open view modal) ...
                     const analysisId = e.currentTarget.dataset.id;
                     const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
                     const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
@@ -758,46 +704,36 @@ async function openEditRfpModal(analysisFullDetails) {
 
                     if (newRfpModal) newRfpModal.style.display = 'none';
                     if (promptSettingsModal) promptSettingsModal.style.display = 'none';
+                    if (editRfpModal) editRfpModal.style.display = 'none';
 
                     if (viewSavedRfpDetailsSection) {
-                        viewSavedRfpDetailsSection.dataset.currentViewingId = analysisId; // Track current ID
+                        viewSavedRfpDetailsSection.dataset.currentViewingId = analysisId; 
                         viewSavedRfpDetailsSection.style.display = 'block'; 
                         viewSavedRfpDetailsSection.classList.add('modal-active'); 
                         document.body.style.overflow = 'hidden'; 
                     }
                     
                     if (viewRfpMainTitleHeading) viewRfpMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
-                    
                     showLoadingMessage(viewRfpStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
                     if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'none'; 
                     clearViewAnalysisResultTabs();
-
                     let loadErrorOccurred = false;
                     try {
                         const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
                         if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch details.');
                         const detailedAnalysis = await detailResponse.json();
-                        
                         const savedPrompts = detailedAnalysis.analysisPrompts || {};
-
                         Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
                             const contentDiv = viewTabContentMap[keySuffix];
-                            const sectionContent = detailedAnalysis[keySuffix === 'questions' ? 'generatedQuestions' : `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`] || 
-                                                  detailedAnalysis[`rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1).replace('Format', 'SubmissionFormat').replace('KeyRequirements', 'KeyRequirements')}`] || // Handle naming inconsistencies if any
-                                                  (keySuffix === 'summary' ? detailedAnalysis.rfpSummary : null) || // Explicit for summary
-                                                  "N/A";
+                            const sectionDataField = keySuffix === 'questions' ? 'generatedQuestions' : 
+                                                    keySuffix === 'summary' ? 'rfpSummary' :
+                                                    `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                            const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
                             const promptText = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
-                            
                             if (contentDiv) {
                                 formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent);
-                            } else if (keySuffix === 'deadlines' || keySuffix === 'submissionFormat') {
-                                // These are handled together in the 'deadlines' tab
-                                // Ensure this is done once if they are part of the same parent
-                            } else {
-                                console.warn(`View Tab Content Div not found for key: ${keySuffix}`);
                             }
                         });
-                        
                         if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'block';
                         const firstViewTabLink = document.querySelector('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link');
                         if (firstViewTabLink) {
@@ -806,7 +742,6 @@ async function openEditRfpModal(analysisFullDetails) {
                             const tabNameToOpen = firstViewTabLink.getAttribute('onclick').match(/'([^']*)'/)[1];
                             if (window.openViewTab) window.openViewTab(null, tabNameToOpen); 
                         }
-                        
                         const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
                         showLoadingMessage(viewRfpStatusArea, `Displaying: ${titleForStatus}`, false);
                     } catch (loadError) {
@@ -818,60 +753,105 @@ async function openEditRfpModal(analysisFullDetails) {
                 });
                 actionsSpan.appendChild(viewLink);
 
-                const editButton = actionsSpan.querySelector('.fa-edit')?.closest('button') || document.createElement('button'); // Find existing or create
-                if (!actionsSpan.querySelector('.fa-edit')) { // If creating new
-                    editButton.className = 'action-icon edit-rfp-button'; // Add a class for easier selection if needed
-                    editButton.innerHTML = '<i class="fas fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit RFP Details</span>';
-                    editButton.title = "Edit RFP Details";
-                    actionsSpan.appendChild(editButton); // Ensure it's added if it was created new
+                // 2. Actions Dropdown
+                const dropdownContainer = document.createElement('div');
+                dropdownContainer.className = 'actions-dropdown-container'; // For potential relative positioning if needed
+                
+                const dropdownTrigger = document.createElement('button');
+                dropdownTrigger.className = 'actions-dropdown-trigger action-icon';
+                dropdownTrigger.innerHTML = '<i class="fas fa-ellipsis-v"></i>'; // Vertical ellipsis icon
+                dropdownTrigger.title = "More actions";
+                
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'actions-dropdown-menu';
+
+                dropdownTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent click from bubbling to document listener immediately
+                    // Close other open dropdowns
+                    document.querySelectorAll('.actions-dropdown-menu').forEach(menu => {
+                        if (menu !== dropdownMenu) menu.style.display = 'none';
+                    });
+                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+                });
+
+                // Helper to add item to dropdown
+                function addDropdownItem(iconClass, text, clickHandler) {
+                    const item = document.createElement('button');
+                    item.className = 'dropdown-item';
+                    item.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        clickHandler();
+                        dropdownMenu.style.display = 'none'; // Close dropdown after action
+                    });
+                    dropdownMenu.appendChild(item);
                 }
-                editButton.onclick = null; // Clear previous listener if it was direct onclick
-                editButton.addEventListener('click', (e) => {
-                    e.preventDefault(); // Good practice
-                    openEditRfpModal(analysis); // Pass the full analysis object
-            });
-        function createActionButton(iconClass, title, newStatus, analysisId) {
-                const button = document.createElement('button');
-                button.className = 'action-icon';
-                button.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i>`;
-                button.title = title;
-                button.onclick = () => updateRfpStatus(analysisId, newStatus);
-                return button;
-            }
+                
+                // Populate dropdown items based on status
+                addDropdownItem('fa-edit', 'Edit Details', () => openEditRfpModal(analysis));
+                
+                dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
 
-            // Status-dependent action buttons
-            if (analysis.status === 'analyzed') {
-                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-times-circle', 'Move to Not Pursuing', 'not_pursuing', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
-            } else if (analysis.status === 'active') {
-                actionsSpan.appendChild(createActionButton('fa-times-circle', 'Move to Not Pursuing', 'not_pursuing', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
-            } else if (analysis.status === 'not_pursuing') {
-                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-archive', 'Archive', 'archived', analysis.id));
-            } else if (analysis.status === 'archived') {
-                actionsSpan.appendChild(createActionButton('fa-box-open', 'Unarchive (Move to Analyzed)', 'analyzed', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active (from Archived)', 'active', analysis.id));
-            } else { // Default/fallback for any other or new statuses not explicitly handled
-                actionsSpan.appendChild(createActionButton('fa-check-circle', 'Move to Active', 'active', analysis.id));
-                actionsSpan.appendChild(createActionButton('fa-inbox', 'Move to Analyzed', 'analyzed', analysis.id));
-            }
+                if (analysis.status === 'analyzed') {
+                    addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                    addDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                    addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                } else if (analysis.status === 'active') {
+                    addDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                    addDropdownItem('fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                    addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                } else if (analysis.status === 'not_pursuing') {
+                    addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                    addDropdownItem('fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                    addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                } else if (analysis.status === 'archived') {
+                    addDropdownItem('fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
+                    addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                } else { // Fallback for 'new' or other statuses
+                    addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                    addDropdownItem('fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                }
+                
+                dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
+                addDropdownItem('fa-trash-alt', 'Delete RFP', () => deleteRfp(analysis.id, displayTitle));
 
-            // Delete button (always present after status buttons)
-            const deleteButton = document.createElement('button');
-            deleteButton.className = 'action-icon delete';
-            deleteButton.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i><span class="visually-hidden">Delete RFP</span>';
-            deleteButton.title = "Delete RFP";
-            deleteButton.onclick = () => deleteRfp(analysis.id, displayTitle); // displayTitle should be defined earlier in your loop
-            actionsSpan.appendChild(deleteButton);
-
+                dropdownContainer.appendChild(dropdownTrigger);
+                dropdownContainer.appendChild(dropdownMenu);
+                actionsSpan.appendChild(dropdownContainer);
+                
                 savedAnalysesListDiv.appendChild(itemDiv);
             });
         }
     }
+
+    // Add a global click listener to close open dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        const openDropdowns = document.querySelectorAll('.actions-dropdown-menu');
+        let clickedInsideADropdown = false;
+        openDropdowns.forEach(menu => {
+            if (menu.contains(e.target) || menu.previousElementSibling?.contains(e.target)) {
+                clickedInsideADropdown = true;
+            }
+        });
+        if (!clickedInsideADropdown) {
+            openDropdowns.forEach(menu => menu.style.display = 'none');
+        }
+    });
+    }
+}
+    document.addEventListener('click', (e) => {
+        const openDropdowns = document.querySelectorAll('.actions-dropdown-menu');
+        let clickedInsideADropdown = false;
+        openDropdowns.forEach(menu => {
+            if (menu.contains(e.target) || menu.previousElementSibling?.contains(e.target)) {
+                clickedInsideADropdown = true;
+            }
+        });
+        if (!clickedInsideADropdown) {
+            openDropdowns.forEach(menu => menu.style.display = 'none');
+        }
+    });
+
     async function loadSavedAnalysesInitial() {
         showLoadingMessage(rfpListStatusArea, "Loading saved analyses...", true);
         try {
