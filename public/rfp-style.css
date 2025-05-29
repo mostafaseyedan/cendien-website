@@ -365,6 +365,49 @@ header .settings-icon-container .action-icon:hover {
     white-space: nowrap; /* Prevent "Close Details" from wrapping */
 }
 
+/* Styles for Saved RFP Details View as a Modal */
+#view-saved-rfp-details-section.modal-active {
+    display: block; /* Changed from flex or other display types by JS to 'block' to show it */
+    position: fixed; /* Stay in place */
+    z-index: 1900;   /* Below new RFP modal (2000) but above other content */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent background scroll when modal is open */
+    background-color: rgba(0,0,0,0.5); /* Dim background */
+    /* Remove margin-top from inline style if it was there */
+    margin-top: 0 !important; 
+}
+
+/* This will be the actual content box within the overlay */
+#view-saved-rfp-details-section.modal-active .view-rfp-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* Centered, 5% from top */
+    padding: 25px;
+    border: 1px solid #888;
+    width: 85%; /* Wider than new RFP modal for more content */
+    max-width: 1000px; /* Max width */
+    border-radius: 8px;
+    position: relative;
+    max-height: 90vh; /* Max height to allow for scrolling within modal */
+    overflow-y: auto; /* Scroll modal content if it overflows */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#view-saved-rfp-details-section.modal-active #view-rfp-main-title-heading {
+
+}
+
+#view-saved-rfp-details-section.modal-active #close-view-rfp-details-button {
+
+}
+
+#view-saved-rfp-details-section.modal-active .tab-content {
+
+}
+
+
 /* --- Styling for Analysis Results Tabs (Consistent for Modal and Main Page View) --- */
 #modal-analysis-results-area .tabs-container,
 #view-analysis-results-area .tabs-container { 
@@ -494,3 +537,4 @@ header .settings-icon-container .action-icon:hover {
 }
     #saved-analyses-header { display: none; }
 }
+
