@@ -29,13 +29,13 @@ header .settings-icon-container .action-icon:hover {
     margin-bottom: 0; /* Handled by parent flex container's gap or child margin */
     flex-grow: 1; 
 }
-#open-new-rfp-modal-button.btn-primary {
+#open-new-rfp-modal-button.btn-primary { /* Specific styling for this button if needed beyond .btn-primary */
     margin-left: 1rem; /* Ensure some space if on the same line */
 }
 
 
-/* Modal (Overlay) Styles */
-.modal-overlay { /* Applies to #new-rfp-modal and #prompt-settings-modal */
+/* Modal (Overlay) Styles - Base for #new-rfp-modal and #prompt-settings-modal */
+.modal-overlay {
     display: none; 
     position: fixed; 
     z-index: 2000; 
@@ -47,13 +47,13 @@ header .settings-icon-container .action-icon:hover {
     background-color: rgba(0,0,0,0.6); 
 }
 
-.modal-content { /* Common styling for the white box of #new-rfp-modal and #prompt-settings-modal */
+.modal-content { /* Common styling for the white box of these modals */
     background-color: #fefefe;
     margin: 5% auto; 
     padding: 25px;
     border: 1px solid #888;
     width: 80%; 
-    max-width: 700px; /* Default max-width */
+    max-width: 700px; 
     border-radius: 8px;
     position: relative;
     max-height: 90vh; 
@@ -78,11 +78,11 @@ header .settings-icon-container .action-icon:hover {
 }
 
 /* Specifics for New RFP Modal */
-#new-rfp-modal #modal-title { 
+#new-rfp-modal #modal-title {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: #003366; 
-    font-size: 1.8rem; 
+    color: #003366;
+    font-size: 1.8rem;
 }
 #new-rfp-modal #rfp-details-form {
     padding-top: 0; 
@@ -94,16 +94,17 @@ header .settings-icon-container .action-icon:hover {
 #new-rfp-modal #rfp-details-form .form-group label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.6rem; 
+    margin-bottom: 0.6rem;
     color: #333;
     font-size: 0.95rem;
 }
+/* Applying consistent full-width styling to form elements in New RFP modal */
 #new-rfp-modal #rfp-details-form #rfpTitle,
 #new-rfp-modal #rfp-details-form #rfpType,
 #new-rfp-modal #rfp-details-form #submittedBy,
 #new-rfp-modal #rfp-details-form #rfpFileUpload,
 #new-rfp-modal #rfp-details-form #rfpAddendumUpload {
-    width: 100%; /* Changed from 50% in user upload to 100% for consistency */
+    width: 100%; 
     padding: 0.75rem 1rem; 
     border: 1px solid #d1d1d1; 
     border-radius: 4px; 
@@ -112,49 +113,45 @@ header .settings-icon-container .action-icon:hover {
     line-height: 1.5; 
     box-sizing: border-box;
 }
-#new-rfp-modal #rfp-details-form input[type="file"] { /* This was from user upload, can be kept or removed if general is enough */
+/* Specific padding for file inputs if needed, from your uploaded file */
+#new-rfp-modal #rfp-details-form input[type="file"] { 
     padding: 0.5rem; 
-    border: 1px solid #ccc; /* Slightly different border, ensure consistency or remove */
+    /* border: 1px solid #ccc; /* This was slightly different, using the general border above for consistency */
 }
-#new-rfp-modal #rfp-details-form #rfpType,
+#new-rfp-modal #rfp-details-form #rfpType, /* Selects */
 #new-rfp-modal #rfp-details-form #submittedBy {
     background-color: #fff; 
     appearance: auto; 
     -webkit-appearance: auto;
     -moz-appearance: auto;
 }
-#new-rfp-modal #rfp-details-form #rfpTitle:focus, /* Consolidating focus styles */
+/* Focus styles for modal inputs from your upload */
+#new-rfp-modal #rfp-details-form #rfpTitle:focus,
 #new-rfp-modal #rfp-details-form #rfpType:focus,
 #new-rfp-modal #rfp-details-form #submittedBy:focus,
 #new-rfp-modal #rfp-details-form #rfpFileUpload:focus,
-#new-rfp-modal #rfp-details-form #rfpAddendumUpload:focus {
+#new-rfp-modal #rfp-details-form #rfpAddendumUpload:focus { /* Added Addendum to focus */
     border-color: #005a9c; 
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); 
 }
+/* Analyze RFP Button from your upload */
 #new-rfp-modal #generate-analysis-button.btn-secondary { 
     background-color: #212529; 
     color: #ffffff; 
     border-color: #212529; 
-    width: auto; /* Explicitly auto, though btn-secondary might handle it */
+    width: auto; 
     display: inline-block; 
     margin-top: 0.5rem; 
-    /* Padding and font-size should come from global .btn styles or .btn-secondary */
+    padding: 10px 24px; 
+    font-size: 0.95rem; 
 }
-#new-rfp-modal #generate-analysis-button.btn-secondary:hover {
-    background-color: #343a40; 
-    color: #ffffff;
-    border-color: #343a40; 
-}
-#new-rfp-modal #generate-analysis-button:disabled {
-    background-color: #adb5bd !important;
-    border-color: #adb5bd !important;
-    color: #6c757d !important;
-}
+#new-rfp-modal #generate-analysis-button.btn-secondary:hover { /* from your upload */ }
+#new-rfp-modal #generate-analysis-button:disabled { /* from your upload */ }
 
 /* Prompt Settings Modal */
-#prompt-settings-modal .modal-content { /* Inherits from .modal-content, max-width is same as new-rfp-modal */
-    /* max-width: 700px; */
+#prompt-settings-modal .modal-content { /* Inherits from .modal-content */
+    /* max-width: 700px; */ /* Already set by .modal-content default */
 }
 #prompt-settings-modal #promptSectionSelector {
     width: 100%;
@@ -195,7 +192,7 @@ header .settings-icon-container .action-icon:hover {
     color: #555;
     margin-bottom: 1rem;
 }
-#prompt-settings-modal #reset-all-prompts-button.btn-danger { /* Style for the reset all button */
+#prompt-settings-modal #reset-all-prompts-button.btn-danger {
     background-color: #dc3545;
     border-color: #dc3545;
     color: #fff;
@@ -205,49 +202,124 @@ header .settings-icon-container .action-icon:hover {
     border-color: #bd2130;
 }
 
+/* == Start: Styles for Saved Analyses List (RFP Page) - Preserved from your uploaded rfp-style.css == */
+#saved-analyses-section h3 { 
+    font-size: 1.6rem; color: #003366; margin-bottom: 1rem;
+    text-align: left; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem;
+}
+.rfp-list-tabs { 
+    margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; 
+}
+.rfp-list-tab-button {
+    padding: 0.5rem 1rem; font-size: 0.95rem; font-weight: 500;
+    border: 1px solid #ccc; background-color: #f1f1f1; color: #333;
+    border-radius: 4px; cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.rfp-list-tab-button:hover { background-color: #e0e0e0; }
+.rfp-list-tab-button.active {
+    background-color: #005a9c; color: #fff; border-color: #005a9c;
+}
+.sortable-header { cursor: pointer; user-select: none; }
+.sortable-header:hover { color: #005a9c; }
 
-/* Saved Analyses List (RFP Page) */
-#saved-analyses-section h3 { /* ... (styles from user upload) ... */ }
-.rfp-list-tabs { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.rfp-list-tab-button { /* ... (styles from user upload) ... */ }
-.rfp-list-tab-button:hover { /* ... (styles from user upload) ... */ }
-.rfp-list-tab-button.active { /* ... (styles from user upload) ... */ }
-.sortable-header { /* ... (styles from user upload) ... */ }
-.sortable-header:hover { /* ... (styles from user upload) ... */ }
-.analyzed-rfp-list-container { /* ... (styles from user upload) ... */ }
-.analyzed-rfp-item {  /* ... (styles from user upload) ... */ }
-.analyzed-rfp-item:last-child { /* ... (styles from user upload) ... */ }
-#saved-analyses-header {  /* ... (styles from user upload) ... */ }
-.rfp-col-title { /* ... (styles from user upload) ... */ }
-.rfp-col-type { /* ... (styles from user upload) ... */ }
-.rfp-col-owner { /* ... (styles from user upload) ... */ }
-.rfp-col-date { /* ... (styles from user upload) ... */ }
-.rfp-col-status { /* ... (styles from user upload for flex properties) ... */ }
-.rfp-col-actions { /* ... (styles from user upload for flex properties) ... */ }
+.analyzed-rfp-list-container {
+    border: 1px solid #e0e0e0; border-radius: 6px;
+    max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; 
+}
+.analyzed-rfp-item { 
+    display: flex; align-items: center; padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee; font-size: 0.95rem;
+}
+.analyzed-rfp-item:last-child { border-bottom: none; }
+#saved-analyses-header { 
+    background-color: #f8f9fa; 
+    font-weight: bold; 
+    border-bottom: 2px solid #ccc; 
+    align-items: center; 
+}
 
-/* Alignment for Header items (from user upload, with slight adjustments if needed) */
-#saved-analyses-header .rfp-col-title,
-#saved-analyses-header .rfp-col-date { text-align: left; }
+.rfp-col-title { 
+    flex: 3 1 0%; min-width: 150px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: left; /* Ensuring this from your original */
+}
+.rfp-col-type {
+    flex: 2 1 0%; min-width: 100px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center; /* Ensuring this from your original */
+}
+.rfp-col-owner {
+    flex: 1.5 1 0%; min-width: 80px; padding-right: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center; /* Ensuring this from your original */
+}
+.rfp-col-date { 
+    flex: 2 1 0; min-width: 130px; color: #555;
+    font-size: 0.9rem; padding-right: 10px;
+    text-align: left; /* Ensuring this from your original */
+}
+.rfp-col-status { 
+    flex: 0 0 70px; 
+    display: flex;
+    justify-content: center; 
+    align-items: center;    
+    text-align: center;
+}
+.rfp-col-actions { 
+    flex: 0 0 150px; 
+    display: flex; 
+    align-items: center;
+}
+
+/* Header specific alignments from your original upload (with slight adjustments for clarity) */
 #saved-analyses-header .rfp-col-type,
-#saved-analyses-header .rfp-col-owner { text-align: center; justify-content: center; width: 100%;}
-#saved-analyses-header .rfp-col-status { justify-content: center; text-align: center; /* Centering status header too */ }
-#saved-analyses-header .rfp-col-actions { justify-content: center; text-align: center; width: 100%; } /* Centering actions header */
+#saved-analyses-header .rfp-col-owner {
+    justify-content: center; /* If it's a flex item this helps for text within */
+    width: 100%; /* Ensure it uses its flex space for centering text */
+}
+#saved-analyses-header .rfp-col-status { /* Status header was centered in your example image */
+    justify-content: center; 
+    text-align: center;
+}
+#saved-analyses-header .rfp-col-actions { /* Actions header centered */
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+/* Data Cell alignments from your original (ensured) */
+.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-status {
+    justify-content: center; /* Data row status dot remains centered */
+}
+.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-actions {
+    justify-content: flex-end; /* Action icons in data rows remain to the right */
+}
 
-/* Alignment for Data Cell items */
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-title,
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-date { text-align: left; }
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-type,
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-owner { text-align: center; }
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-status { justify-content: center; } /* Dot centered */
-.analyzed-rfp-item:not(#saved-analyses-header) .rfp-col-actions { justify-content: flex-end; } /* Icons to right */
+.rfp-status-dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+}
+.rfp-status-dot.green { background-color: #28a745; } 
+.rfp-status-dot.red { background-color: #dc3545; }   
+.rfp-status-dot.orange { background-color: #fd7e14; } 
+.rfp-status-dot.grey { background-color: #adb5bd; } 
 
-.rfp-status-dot { /* ... (styles from user upload) ... */ }
-.rfp-status-dot.green { /* ... */ } .rfp-status-dot.red { /* ... */ } .rfp-status-dot.orange { /* ... */ } .rfp-status-dot.grey { /* ... */ } 
-.rfp-view-details, .rfp-col-actions button, .rfp-col-actions .action-icon { /* ... (styles from user upload) ... */ }
-.rfp-view-details:hover, .rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover { /* ... */ }
-.rfp-col-actions .action-icon.delete:hover { /* ... */ }
+.rfp-view-details, .rfp-col-actions button, .rfp-col-actions .action-icon {
+    color: #005a9c; text-decoration: none; font-size: 1rem; 
+    padding: 0.25rem 0.4rem; margin-left: 0.3rem; border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer; line-height: 1; 
+}
+.rfp-view-details:hover, .rfp-col-actions button:hover, .rfp-col-actions .action-icon:hover {
+    background-color: #e9f1f7; color: #003f6e; 
+}
+.rfp-col-actions .action-icon.delete:hover {
+    color: #dc3545; background-color: #f8d7da;
+}
+/* == End: Styles for Saved Analyses List (RFP Page) - Preserved from your uploaded rfp-style.css == */
 
-/* STYLES FOR "VIEW SAVED RFP DETAILS" AS A MODAL - UPDATED */
+
+/* STYLES FOR "VIEW SAVED RFP DETAILS" AS A MODAL - Corrected Layout */
 #view-saved-rfp-details-section.modal-active { /* This is the full-screen overlay */
     display: block; 
     position: fixed; 
@@ -269,7 +341,7 @@ header .settings-icon-container .action-icon:hover {
     width: 85%; 
     max-width: 1000px; 
     border-radius: 8px;
-    position: relative; /* For absolute positioning of a potential 'X' button if added later */
+    position: relative;
     max-height: 90vh; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     box-sizing: border-box; 
@@ -279,7 +351,6 @@ header .settings-icon-container .action-icon:hover {
 
 /* Header within the "View RFP Details" modal (title and close button) */
 #view-saved-rfp-details-section.modal-active .view-rfp-modal-content > div:nth-child(1) { 
-    /* This targets the div directly inside .view-rfp-modal-content that holds H2 and button */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -296,11 +367,10 @@ header .settings-icon-container .action-icon:hover {
     font-size: 1.6rem; 
     flex-grow: 1; 
 }
-#view-saved-rfp-details-section.modal-active #close-view-rfp-details-button { /* Current button style is kept */
+#view-saved-rfp-details-section.modal-active #close-view-rfp-details-button {
     padding: 0.4rem 0.8rem; 
     font-size: 0.85rem;
     white-space: nowrap;
-    /* No need for position:absolute if it's part of the flex header */
 }
 
 /* Status Area within the "View RFP Details" modal */
@@ -315,7 +385,7 @@ header .settings-icon-container .action-icon:hover {
     width: 100%;
     flex-grow: 1; 
     overflow-y: auto; 
-    min-height: 0; /* Crucial for scrollable flex children */
+    min-height: 0; 
 }
 
 /* --- Styling for Analysis Results Tabs (SHARED for newRfpModal and viewSavedRfpDetailsSection) --- */
@@ -324,12 +394,11 @@ header .settings-icon-container .action-icon:hover {
     overflow: hidden; 
     border-bottom: 1px solid #ccc; 
     margin-bottom: 1.5rem; 
-    margin-top: 0; /* Header provides top spacing */
+    margin-top: 0; 
     flex-shrink: 0; 
 }
 #new-rfp-modal #analysis-results-area .tabs-container .tab-link,
 #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tabs-container .tab-link {
-    /* ... (styles from user upload, ensured consistent) ... */
     background-color: #f1f1f1; float: left; border: 1px solid #ccc;
     border-bottom: none; outline: none; cursor: pointer;
     padding: 8px 15px; transition: background-color 0.3s;
@@ -342,7 +411,6 @@ header .settings-icon-container .action-icon:hover {
 }
 #new-rfp-modal #analysis-results-area .tabs-container .tab-link.active,
 #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tabs-container .tab-link.active {
-    /* ... (styles from user upload, ensured consistent) ... */
     background-color: #fff; color: #005a9c; border-color: #ccc;
     border-bottom: 1px solid #fff; position: relative; top: 1px; 
 }
@@ -382,12 +450,10 @@ header .settings-icon-container .action-icon:hover {
     list-style-position: outside; padding-left: 20px;
     margin-top: 0.5rem; margin-bottom: 1rem;
 }
-/* Numbered lists for questions tab */
-#new-rfp-modal #modal-questions-result-content ol, /* More specific if needed */
-#view-saved-rfp-details-section.modal-active #view-questions-result-content ol { /* More specific if needed */
+#new-rfp-modal #modal-questions-result-content ol,
+#view-saved-rfp-details-section.modal-active #view-questions-result-content ol { 
     list-style-type: decimal; 
 }
-/* Disc for other ul lists */
 #new-rfp-modal #analysis-results-area .tab-content ul,
 #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tab-content ul {
     list-style-type: disc; 
@@ -435,7 +501,7 @@ header .settings-icon-container .action-icon:hover {
     #new-rfp-modal #rfp-details-form #rfpType,
     #new-rfp-modal #rfp-details-form #submittedBy,
     #new-rfp-modal #rfp-details-form #rfpFileUpload,
-    #new-rfp-modal #rfp-details-form #rfpAddendumUpload { /* Ensured addendum is included */
+    #new-rfp-modal #rfp-details-form #rfpAddendumUpload {
         width: 100%; 
     }
     #new-rfp-modal #analysis-results-area .tabs-container .tab-link,
@@ -473,12 +539,12 @@ header .settings-icon-container .action-icon:hover {
     #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tabs-container .tab-link {
         float: none; display: block; width: 100%; text-align: left; 
         margin-right: 0; margin-bottom: 2px; border-radius: 4px; 
-        border-bottom: 1px solid #ccc !important; /* Ensure bottom border for stacked tabs */
+        border-bottom: 1px solid #ccc !important; 
     }
     #new-rfp-modal #analysis-results-area .tabs-container .tab-link.active,
     #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tabs-container .tab-link.active {
         top: 0; 
-        border-bottom: 2px solid #005a9c !important; /* Stronger active indicator */
+        border-bottom: 2px solid #005a9c !important; 
     }
     #new-rfp-modal #analysis-results-area .tabs-container,
     #view-saved-rfp-details-section.modal-active #view-analysis-results-area .tabs-container { 
@@ -494,13 +560,12 @@ header .settings-icon-container .action-icon:hover {
         margin-bottom: 0.3rem; white-space: normal; 
         overflow: visible; text-overflow: clip; text-align: left !important; 
     }
-    #saved-analyses-section .rfp-col-actions { /* Applies to header when stacked - not visible */
+    #saved-analyses-section .rfp-col-actions { /* General for stacked actions column */
         justify-content: flex-start !important;
         margin-top: 0.5rem;
         width: 100% !important; 
     }
-     #saved-analyses-list .analyzed-rfp-item .rfp-col-actions { /* Actions in data rows */
-        justify-content: flex-start !important; /* Align buttons to the left when stacked */
-    }
+    /* Specifically for data rows if needed to override, but above should cover */
+    /* #saved-analyses-list .analyzed-rfp-item .rfp-col-actions { } */
     #saved-analyses-header { display: none; }
 }
