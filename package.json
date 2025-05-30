@@ -5,19 +5,20 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "vite build --config ./vite.config.js",
+    "gcp-build": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^5.1.0", 
     "@google-cloud/firestore": "^7.11.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-
     "@vitejs/plugin-react": "^4.5.0",
     "vite": "^6.3.5"
   }
