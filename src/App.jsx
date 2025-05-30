@@ -1,28 +1,24 @@
-
+// mostafaseyedan/cendien-website/Dev/src/App.jsx
 import React, { useState, useEffect } from 'react';
 import MessageModal from './MessageModal';
-import RecentRfpList from './RecentRfpList'; 
-import UpcomingDeadlines from './UpcomingDeadlines';
+import RecentRfpList from './RecentRfpList'; // We'll make sure this handles props correctly
+import UpcomingDeadlines from './UpcomingDeadlines'; // We'll make sure this handles props correctly
+
+// Assuming your Tailwind setup and global styles (from your new HTML designs)
+// are in a CSS file imported in main.jsx (e.g., src/index.css).
+
 function App() {
-    // Mock data - in a real app, this would come from state, props, or API calls
-    const [userName, setUserName] = useState("Jane Doe"); // (mock data)
+    const [userName, setUserName] = useState("User"); // Replace with actual user data logic later
 
     // For the message modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
 
-    // Data for child components - initially mock data
-    const [recentRFPs, setRecentRFPs] = useState([ // (mock data)
-        { id: 1, name: "Acme Corp Q3 IT Services", client: "Acme Corporation", status: "Analysis Complete", lastActivity: "2 days ago", statusClass: "status-analysis-complete" },
-        { id: 2, name: "Global Tech Infrastructure RFP", client: "Global Tech", status: "Drafting", lastActivity: "5 hours ago", statusClass: "status-drafting" },
-        { id: 3, name: "City Gov Public Works Project", client: "City Municipality", status: "Submitted", lastActivity: "1 week ago", statusClass: "status-submitted" },
-        { id: 4, name: "Innovate Solutions Software Dev", client: "Innovate Ltd.", status: "Analysis Complete", lastActivity: "3 days ago", statusClass: "status-analysis-complete" }
-    ]);
-    const [upcomingDeadlines, setUpcomingDeadlines] = useState([ // (mock data)
-        { id: 1, rfpName: "Global Tech", event: "Q&A Submission", date: "June 5, 2025" },
-        { id: 2, rfpName: "Acme Corp Q3", event: "Proposal Due", date: "June 15, 2025" },
-        { id: 3, rfpName: "Innovate Solutions", event: "Proposal Due", date: "June 22, 2025" }
-    ]);
+    // State for fetched data
+    const [recentRFPs, setRecentRFPs] = useState([]);
+    const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
+    const [isLoadingRFPs, setIsLoadingRFPs] = useState(true);
+    const [isLoadingDeadlines, setIsLoadingDeadlines] = useState(true);
 
     const currentYear = new Date().getFullYear();
 
@@ -31,37 +27,68 @@ function App() {
         setIsModalOpen(true);
     };
 
-    const handleUploadRFPClick = () => {
-        showModalWithMessage('"Upload New RFP" button clicked. This would typically lead to the RFP upload screen.');
-        // In a full SPA, you would navigate to a different route/component here.
-        // For now, we'll imagine this means showing the UploadRFPPage component.
-        // setCurrentPage('upload'); // Example of how you might manage views
-    };
-
-    const handleUserProfileClick = () => {
-        showModalWithMessage('User Profile / Settings clicked. This would open a profile menu or settings page.');
+    // Simulate navigation to different pages/components
+    const navigateTo = (pageName) => {
+        showModalWithMessage(`Simulating navigation to: ${pageName}`);
+        // In a real SPA, you'd use React Router or similar here.
+        // For now, this will just show a message.
+        // Example: if (pageName === 'upload') setCurrentView(<UploadRfpScreen />);
     };
     
-    const handleHelpClick = (e) => {
-        e.preventDefault();
-        showModalWithMessage('Help link clicked. This would navigate to a help/documentation page.');
-    };
+    // Fetch Recent RFPs
+    useEffect(() => {
+        setIsLoadingRFPs(true);
+        fetch('/api/rfp-analyses') // Your existing API endpoint
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch RFPs');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Assuming the API returns an array of RFPs
+                // You might need to adapt the data structure to match what RecentRfpList expects
+                // or adapt RecentRfpList to the API structure.
+                // For now, let's add the statusClass based on status.
+                const formattedData = data.map(rfp => ({
+                    ...rfp,
+                    id: rfp.id, // Ensure 'id' is present for keys
+                    name: rfp.rfpTitle || rfp.rfpFileName,
+                    client: rfp.submittedBy || "N/A", // Or another client field if available
+                    status: rfp.status || "Unknown",
+                    lastActivity: rfp.analysisDate ? new Date(rfp.analysisDate._seconds * 1000).toLocaleDateString() : "N/A",
+                    statusClass: rfp.status === 'analyzed' || rfp.status === 'active' ? 'status-analysis-complete' : rfp.status === 'drafting' ? 'status-drafting' : 'status-submitted'
+                }));
+                setRecentRFPs(formattedData.slice(0, 4)); // Displaying a few, like in mock
+                setIsLoadingRFPs(false);
+            })
+            .catch(error => {
+                console.error("Error fetching recent RFPs:", error);
+                showModalWithMessage(`Error fetching recent RFPs: ${error.message}`);
+                setIsLoadingRFPs(false);
+                setRecentRFPs([]); // Ensure it's an empty array on error
+            });
+    }, []);
 
-    const handleContactSupportClick = (e) => {
-        e.preventDefault();
-        showModalWithMessage('Contact Support link clicked. This would open a support channel or contact form.');
-    };
-
-    // useEffect to fetch real data would go here in a full application
-    // useEffect(() => {
-    //    fetchRecentRFPs().then(data => setRecentRFPs(data));
-    //    fetchUpcomingDeadlines().then(data => setUpcomingDeadlines(data));
-    // }, []);
+    // Fetch Upcoming Deadlines (Placeholder - you'll need an API or derive this)
+    useEffect(() => {
+        setIsLoadingDeadlines(true);
+        // Placeholder: In a real app, you'd fetch this or derive it from full RFP data
+        // For now, using a timeout to simulate fetch & an empty array
+        setTimeout(() => {
+            const mockDeadlines = [ // Using mock data structure for now
+                 { id: 1, rfpName: "Global Tech (from API)", event: "Q&A Submission", date: "June 5, 2025" },
+                 { id: 2, rfpName: "Acme Corp Q3 (from API)", event: "Proposal Due", date: "June 15, 2025" },
+            ];
+            setUpcomingDeadlines(mockDeadlines); // Or an empty array if no API yet: setUpcomingDeadlines([]);
+            setIsLoadingDeadlines(false);
+        }, 1500);
+    }, []);
 
 
     return (
-        <div className="flex flex-col min-h-screen"> {/* Based on body class from HTML */}
-            <header className="header-bg shadow-md sticky top-0 z-50"> {/* */}
+        <div className="flex flex-col min-h-screen bg-gray-100"> {/* body background from new HTML */}
+            <header className="bg-white shadow-md sticky top-0 z-50"> {/* header-bg from new HTML */}
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center">
@@ -70,7 +97,7 @@ function App() {
                         <div className="flex items-center">
                             <button 
                                 id="userProfileButton" 
-                                onClick={handleUserProfileClick}
+                                onClick={() => showModalWithMessage('User Profile / Settings clicked.')}
                                 className="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                 aria-label="User Profile and Settings"
                             >
@@ -85,13 +112,13 @@ function App() {
 
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 space-y-6 p-6 rounded-lg card"> {/* */}
-                        <h1 id="welcomeMessage" className="text-3xl font-semibold welcome-text">{`Welcome, ${userName}!`}</h1>
+                    {/* Main Welcome and Action Section */}
+                    <div className="lg:col-span-2 space-y-6 p-6 rounded-lg card">
+                        <h1 className="text-3xl font-semibold welcome-text">{`Welcome, ${userName}!`}</h1>
                         <p className="text-lg feature-text">Ready to streamline your RFP process with AI?</p>
                         
                         <button 
-                            id="uploadRFPButton" 
-                            onClick={handleUploadRFPClick}
+                            onClick={() => navigateTo('UploadRFP')} // Updated action
                             className="w-full sm:w-auto primary-button font-medium py-3 px-6 rounded-lg text-lg shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
@@ -109,42 +136,45 @@ function App() {
                                 <li>Customizable report generation</li>
                             </ul>
                         </div>
-                         <p className="text-sm text-gray-500 mt-4">This dashboard provides a central hub for managing your Request for Proposals. Upload new RFPs for AI analysis, track the progress of ongoing responses, and access key insights to improve your bidding strategy. Click 'Upload New RFP' to begin, or review your recent activity on the right.</p>
+                        <p className="text-sm text-gray-500 mt-4">This dashboard provides a central hub for managing your Request for Proposals. Upload new RFPs for AI analysis, track the progress of ongoing responses, and access key insights to improve your bidding strategy. Click 'Upload New RFP' to begin, or review your recent activity on the right.</p>
                     </div>
 
-                     <div className="space-y-6">
+                    {/* Sidebar Section with Recent RFPs and Upcoming Deadlines */}
+                    <div className="space-y-6">
                         <section className="p-6 rounded-lg card">
                             <h2 className="text-xl font-semibold welcome-text mb-4">Recent RFPs</h2>
-                            <RecentRfpList 
-                                rfpDataArray={recentRFPs} 
-                                onViewDetailsClick={(rfpId) => showModalWithMessage(`View Details for RFP ID: ${rfpId}. This would navigate to the RFP's detailed view.`)}
-                                onContinueDraftingClick={(rfpId) => showModalWithMessage(`Continue Drafting for RFP ID: ${rfpId}. This would open the RFP for editing.`)}
-                            />
-                            {/* Descriptive text from your original HTML design */}
-                            <p className="text-sm text-gray-500 mt-4">
-                                This section displays your most recently accessed or updated RFPs. Quickly jump back into drafting a response or view the analysis details. Status indicators provide an at-a-glance understanding of where each RFP stands in your workflow.
-                            </p>
+                            {isLoadingRFPs ? (
+                                <p className="text-gray-500">Loading recent RFPs...</p>
+                            ) : (
+                                <RecentRfpList 
+                                    rfpDataArray={recentRFPs} 
+                                    onViewDetailsClick={(rfpId) => navigateTo(`ViewDetails/${rfpId}`)}
+                                    onContinueDraftingClick={(rfpId) => navigateTo(`DraftRFP/${rfpId}`)}
+                                />
+                            )}
+                            <p className="text-sm text-gray-500 mt-4">This section displays your most recently accessed or updated RFPs...</p>
                         </section>
 
                         <section className="p-6 rounded-lg card">
                             <h2 className="text-xl font-semibold welcome-text mb-4">Upcoming Deadlines</h2>
-                            <UpcomingDeadlines deadlineDataArray={upcomingDeadlines} />
-                            {/* Descriptive text from your original HTML design */}
-                            <p className="text-sm text-gray-500 mt-4">
-                                Stay on top of your schedule. This widget highlights critical upcoming deadlines extracted from your active RFPs, helping you prioritize tasks and ensure timely submissions. Dates are automatically identified by the AI during analysis.
-                            </p>
+                            {isLoadingDeadlines ? (
+                                <p className="text-gray-500">Loading upcoming deadlines...</p>
+                            ) : (
+                                <UpcomingDeadlines deadlineDataArray={upcomingDeadlines} />
+                            )}
+                            <p className="text-sm text-gray-500 mt-4">Stay on top of your schedule...</p>
                         </section>
                     </div>
-                </div> {/* This closes the "grid grid-cols-1 lg:grid-cols-3 gap-8" from App.jsx main content */}
+                </div>
             </main>
 
-            <footer className="footer-bg py-6 text-center"> {/* */}
+            <footer className="footer-bg py-6 text-center">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex justify-center space-x-4">
-                        <a href="#" id="helpLink" onClick={handleHelpClick} className="text-gray-600 hover:text-blue-600">Help</a>
-                        <a href="#" id="contactSupportLink" onClick={handleContactSupportClick} className="text-gray-600 hover:text-blue-600">Contact Support</a>
+                        <a href="#" onClick={(e) => {e.preventDefault(); showModalWithMessage('Help link clicked.')}} className="text-gray-600 hover:text-blue-600">Help</a>
+                        <a href="#" onClick={(e) => {e.preventDefault(); showModalWithMessage('Contact Support link clicked.')}} className="text-gray-600 hover:text-blue-600">Contact Support</a>
                     </nav>
-                    <p className="text-sm text-gray-500 mt-2">&copy; <span id="currentYear">{currentYear}</span> RFP Analyzer Pro. All rights reserved.</p>
+                    <p className="text-sm text-gray-500 mt-2">&copy; {currentYear} RFP Analyzer Pro. All rights reserved.</p>
                 </div>
             </footer>
 
