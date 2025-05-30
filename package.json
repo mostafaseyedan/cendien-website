@@ -10,7 +10,6 @@
     "dev": "vite",
     "build": "npx vite build",
     "preview": "vite preview",
-    "postinstall": "npm run build"
   },
   "keywords": [],
   "author": "",
