@@ -1,7 +1,7 @@
-// mostafaseyedan/cendien-website/Dev/
-export default {
+
+module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
   },
-}
+};
