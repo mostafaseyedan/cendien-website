@@ -1,11 +1,6 @@
-// mostafaseyedan/cendien-website/Dev/src/App.jsx
+
 import React, { useState, useEffect } from 'react';
 import MessageModal from './MessageModal'; // Assuming MessageModal.jsx is in the same src/ folder
-// import RecentRfpList from './RecentRfpList'; // You will create this
-// import UpcomingDeadlines from './UpcomingDeadlines'; // You will create this
-
-// Assuming your Tailwind setup and global styles (including .welcome-text, .feature-text etc.
-// from your HTML's <style> block) are in a CSS file imported in main.jsx, like src/index.css
 
 function App() {
     // Mock data - in a real app, this would come from state, props, or API calls
