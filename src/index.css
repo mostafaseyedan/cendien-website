@@ -1,0 +1,56 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your custom global styles from the HTML files should also go here */
+body {
+    font-family: 'Inter', sans-serif; /* */
+    background-color: #f8f9fa; /* Light warm neutral */
+}
+.welcome-text { color: #343a40; } /* */
+.feature-text { color: #495057; } /* */
+.primary-button {
+    background-color: #007bff; /* Professional Blue */ /* */
+    color: white; /* */
+    transition: background-color 0.3s ease; /* */
+}
+.primary-button:hover { background-color: #0056b3; } /* */
+.secondary-button {
+    background-color: #6c757d; /* Muted gray */ /* */
+    color: white; /* */
+    transition: background-color 0.3s ease; /* */
+}
+.secondary-button:hover { background-color: #545b62; } /* */
+.card {
+    background-color: white; /* */
+    border: 1px solid #dee2e6; /* Light border */ /* */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* */
+}
+.header-bg { background-color: #ffffff; } /* */
+.footer-bg { background-color: #e9ecef; } /* */
+.status-analysis-complete { color: #28a745; } /* Green */ /* */
+.status-drafting { color: #ffc107; } /* Yellow */ /* */
+.status-submitted { color: #17a2b8; } /* Teal */ /* */
+.status-low { color: #dc3545; } /* Red for low compliance, from results overview page */ /* */
+.deadline-item { border-left: 3px solid #007bff; } /* */
+
+/* Modal styles from your new designs */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); display: flex; /* */
+    align-items: center; justify-content: center; z-index: 1000; /* */
+    opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; /* */
+}
+.modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; } /* */
+.modal-content {
+    background-color: white; padding: 2rem; border-radius: 0.5rem; /* */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; /* */
+    max-width: 90%; width: 400px; /* */
+}
+.modal-close-button {
+    margin-top: 1rem; /* */
+    background-color: #007bff; /* */
+    color: white; /* */
+}
+.modal-close-button:hover { background-color: #0056b3; } /* */
