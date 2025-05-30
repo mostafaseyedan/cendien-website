@@ -112,27 +112,30 @@ function App() {
                          <p className="text-sm text-gray-500 mt-4">This dashboard provides a central hub for managing your Request for Proposals. Upload new RFPs for AI analysis, track the progress of ongoing responses, and access key insights to improve your bidding strategy. Click 'Upload New RFP' to begin, or review your recent activity on the right.</p>
                     </div>
 
-                    <div className="space-y-6">
+                     <div className="space-y-6">
                         <section className="p-6 rounded-lg card">
                             <h2 className="text-xl font-semibold welcome-text mb-4">Recent RFPs</h2>
-                            <div id="recentRFPsContainer" className="space-y-4">
-                                {/* <RecentRfpList rfpDataArray={recentRFPs} /> You will uncomment and use this later */}
-                                <p className="text-gray-500">Recent RFP list will load here via component...</p>
-
-                            </div>
-                             <p className="text-sm text-gray-500 mt-4">This section displays your most recently accessed or updated RFPs. Quickly jump back into drafting a response or view the analysis details. Status indicators provide an at-a-glance understanding of where each RFP stands in your workflow.</p>
+                            <RecentRfpList 
+                                rfpDataArray={recentRFPs} 
+                                onViewDetailsClick={(rfpId) => showModalWithMessage(`View Details for RFP ID: ${rfpId}. This would navigate to the RFP's detailed view.`)}
+                                onContinueDraftingClick={(rfpId) => showModalWithMessage(`Continue Drafting for RFP ID: ${rfpId}. This would open the RFP for editing.`)}
+                            />
+                            {/* Descriptive text from your original HTML design */}
+                            <p className="text-sm text-gray-500 mt-4">
+                                This section displays your most recently accessed or updated RFPs. Quickly jump back into drafting a response or view the analysis details. Status indicators provide an at-a-glance understanding of where each RFP stands in your workflow.
+                            </p>
                         </section>
 
                         <section className="p-6 rounded-lg card">
                             <h2 className="text-xl font-semibold welcome-text mb-4">Upcoming Deadlines</h2>
-                            <div id="upcomingDeadlinesContainer" className="space-y-3">
-                                {/* <UpcomingDeadlines deadlineDataArray={upcomingDeadlines} /> You will uncomment and use this later */}
-                                <p className="text-gray-500">Upcoming deadlines will load here via component...</p>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-4">Stay on top of your schedule. This widget highlights critical upcoming deadlines extracted from your active RFPs, helping you prioritize tasks and ensure timely submissions. Dates are automatically identified by the AI during analysis.</p>
+                            <UpcomingDeadlines deadlineDataArray={upcomingDeadlines} />
+                            {/* Descriptive text from your original HTML design */}
+                            <p className="text-sm text-gray-500 mt-4">
+                                Stay on top of your schedule. This widget highlights critical upcoming deadlines extracted from your active RFPs, helping you prioritize tasks and ensure timely submissions. Dates are automatically identified by the AI during analysis.
+                            </p>
                         </section>
                     </div>
-                </div>
+                </div> {/* This closes the "grid grid-cols-1 lg:grid-cols-3 gap-8" from App.jsx main content */}
             </main>
 
             <footer className="footer-bg py-6 text-center"> {/* */}
