@@ -1,8 +1,7 @@
-
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./public_react/index.html", // Path to your React app's main HTML file
+    "./index.html", // Ensure this path is correct relative to your project root
     "./src/**/*.{js,ts,jsx,tsx}", // Scans all JS/JSX files in src
   ],
   theme: {
