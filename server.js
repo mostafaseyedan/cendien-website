@@ -1,22 +1,22 @@
-// mostafaseyedan/cendien-website/cendien-website-Dev/server.js
-const express = require('express');
+// mostafaseyedan/cendien-website/cendien-website-Dev/server.jsconst express = require('express');
 const path = require('path');
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Firestore
+
 const db = new Firestore({
     projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai', // Allow project ID to be set by env var
 });
 
-// Middlewares for parsing JSON and URL-encoded data
-app.use(express.json({ limit: '50mb' })); //
-app.use(express.urlencoded({ limit: '50mb', extended: true })); //
 
-// Serve original static files from the 'public' directory (e.g., for resume-generator.html, images)
-app.use(express.static(path.join(__dirname, 'public'))); //
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Serve original static files from the 'public' directory (e.g., for images, other static assets not part of the React build)
+// This means if you have public/images/my-image.png, it's accessible via yoursite.com/images/my-image.png
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 // === API Endpoints (Your existing API logic) ===
@@ -230,11 +230,11 @@ app.get('/api/rfp-analysis/:id', async (req, res) => { //
 
 
 // === Serve React App (RFP Analyzer) ===
-// This assumes your React app is in a folder named 'react-rfp-app'
-// and is built into its 'dist' subdirectory.
-const reactAppBuildPath = path.join(__dirname, 'react-rfp-app', 'dist');
+// This assumes your Vite build output directory is 'dist' at the project root.
+// Your root vite.config.js should be configured as: build: { outDir: 'dist' }
+const reactAppBuildPath = path.join(__dirname, 'dist'); // MODIFIED HERE
 
-// Serve static files from the React build directory under the /rfp-analyzer path
+// Serve static files from the React build directory ('dist') under the /rfp-analyzer path
 app.use('/rfp-analyzer', express.static(reactAppBuildPath));
 
 // Handle client-side routing for the React app under /rfp-analyzer
@@ -247,9 +247,9 @@ app.get('/rfp-analyzer/*', (req, res) => {
 // Fallback for any other GET requests not handled by previous routes
 // This was your original fallback. It will serve index.html from the 'public' folder
 // for routes like '/' or any other non-API, non-/rfp-analyzer path.
-app.get(/.*/, (req, res) => { //
-    // This ensures that if someone goes to the root or an unknown path not matching /api or /rfp-analyzer,
-    // they get the main public/index.html (which might be your original vanilla JS app or a landing page).
+// If your React app's index.html is now at the root and should be the default,
+// you might want to change this to serve that file.
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html')); //
 });
 
@@ -258,5 +258,5 @@ app.get(/.*/, (req, res) => { //
 app.listen(PORT, () => { //
     console.log(`Cendien agency website server listening on port ${PORT}.`); //
     console.log(`Access it at http://localhost:${PORT}`); //
-    console.log(`React RFP Analyzer (if built) might be at http://localhost:${PORT}/rfp-analyzer`);
+    console.log(`React RFP Analyzer (if built) should be at http://localhost:${PORT}/rfp-analyzer`);
 });
