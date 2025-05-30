@@ -1,4 +1,4 @@
-
+// server.js with comprehensive logging and SPA fallback
 console.log('--- server.js execution started ---');
 
 try {
@@ -16,7 +16,7 @@ try {
 
     console.log('Attempting to initialize Firestore...');
     const db = new Firestore({
-        projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai', // Allow project ID to be set by env var
+        projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai',
     });
     console.log('Firestore initialized successfully.');
 
@@ -25,15 +25,15 @@ try {
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
     console.log('Middlewares set up.');
 
-    // Serve original static files from the 'public' directory (e.g., for images, other static assets not part of the React build)
-    console.log('Setting up static middleware for /public...');
+    // Serve static files from the 'public' directory first.
+    // Useful for favicon.ico, robots.txt, or other specific root-level static files.
+    // If a file is not found here, it will proceed to other routes.
+    console.log('Setting up static middleware for /public (for specific static assets)...');
     app.use(express.static(path.join(__dirname, 'public')));
     console.log('Static middleware for /public set up.');
 
-
-    // === API Endpoints (Your existing API logic) ===
+    // === API Endpoints ===
     console.log('Defining API endpoints...');
-
     // API Endpoint to communicate with Gemini
     app.post('/api/generate', async (req, res) => {
         console.log('POST /api/generate called.');
@@ -62,7 +62,7 @@ try {
             try {
                 data = JSON.parse(responseDataText);
             } catch (e) {
-                console.error('POST /api/generate - Error parsing Gemini API response as JSON. Raw response text:', responseDataText.substring(0, 500), e);
+                console.error('POST /api/generate - Error parsing Gemini API response as JSON. Raw response text:', responseDataText.substring(0, 500), 'Error object:', e);
                 return res.status(500).json({ error: 'Error parsing response from Gemini API.', details: responseDataText.substring(0, 500) });
             }
             if (!geminiResponse.ok) {
@@ -71,6 +71,7 @@ try {
                 return res.status(geminiResponse.status).json({ error: errorMessage, details: data });
             }
             if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                console.log('POST /api/generate - Successfully received text from Gemini.');
                 res.json({ generatedText: data.candidates[0].content.parts[0].text });
             } else if (data.promptFeedback && data.promptFeedback.blockReason) {
                 const blockMessage = `POST /api/generate - Prompt blocked by Gemini API. Reason: ${data.promptFeedback.blockReason}.`;
@@ -110,17 +111,13 @@ try {
             }
 
             const analysisData = {
-                rfpFileName,
-                rfpSummary,
-                generatedQuestions,
+                rfpFileName, rfpSummary, generatedQuestions,
                 rfpDeadlines: rfpDeadlines || "Not specified",
                 rfpKeyRequirements: rfpKeyRequirements || "Not specified",
                 rfpStakeholders: rfpStakeholders || "Not specified",
                 rfpRisks: rfpRisks || "Not specified",
-                analysisDate: Timestamp.now(),
-                status: status || 'analyzed',
-                rfpTitle: rfpTitle || "",
-                rfpType: rfpType || "N/A",
+                analysisDate: Timestamp.now(), status: status || 'analyzed',
+                rfpTitle: rfpTitle || "", rfpType: rfpType || "N/A",
                 submittedBy: submittedBy || "N/A",
                 rfpSubmissionFormat: rfpSubmissionFormat || "Not specified",
                 rfpRegistration: rfpRegistration || "Not specified",
@@ -141,9 +138,7 @@ try {
     app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         console.log(`PUT /api/rfp-analysis/${req.params.id}/status called.`);
         try {
-            const analysisId = req.params.id;
-            const { status } = req.body;
-
+            const analysisId = req.params.id; const { status } = req.body;
             if (!status) {
                 console.error(`PUT /api/rfp-analysis/${analysisId}/status - Error: New status is required.`);
                 return res.status(400).json({ error: 'New status is required.' });
@@ -152,15 +147,11 @@ try {
                 console.error(`PUT /api/rfp-analysis/${analysisId}/status - Error: Invalid status value: ${status}.`);
                 return res.status(400).json({ error: 'Invalid status value.' });
             }
-
-            const docRef = db.collection('rfpAnalyses').doc(analysisId);
-            const doc = await docRef.get();
-
+            const docRef = db.collection('rfpAnalyses').doc(analysisId); const doc = await docRef.get();
             if (!doc.exists) {
                 console.error(`PUT /api/rfp-analysis/${analysisId}/status - Error: RFP analysis not found.`);
                 return res.status(404).json({ error: 'RFP analysis not found.' });
             }
-
             await docRef.update({ status: status, lastModified: Timestamp.now() });
             console.log(`PUT /api/rfp-analysis/${analysisId}/status - RFP Analysis status updated. New Status: ${status}`);
             res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', status: status });
@@ -173,22 +164,16 @@ try {
     app.put('/api/rfp-analysis/:id/title', async (req, res) => {
         console.log(`PUT /api/rfp-analysis/${req.params.id}/title called.`);
         try {
-            const analysisId = req.params.id;
-            const { rfpTitle } = req.body;
-
+            const analysisId = req.params.id; const { rfpTitle } = req.body;
             if (typeof rfpTitle !== 'string') {
                 console.error(`PUT /api/rfp-analysis/${analysisId}/title - Error: New rfpTitle is required and must be a string.`);
                 return res.status(400).json({ error: 'New rfpTitle is required and must be a string.' });
             }
-
-            const docRef = db.collection('rfpAnalyses').doc(analysisId);
-            const doc = await docRef.get();
-
+            const docRef = db.collection('rfpAnalyses').doc(analysisId); const doc = await docRef.get();
             if (!doc.exists) {
                 console.error(`PUT /api/rfp-analysis/${analysisId}/title - Error: RFP analysis not found.`);
                 return res.status(404).json({ error: 'RFP analysis not found.' });
             }
-
             await docRef.update({ rfpTitle: rfpTitle, lastModified: Timestamp.now() });
             console.log(`PUT /api/rfp-analysis/${analysisId}/title - RFP Analysis title updated. New Title: ${rfpTitle}`);
             res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', rfpTitle: rfpTitle });
@@ -202,14 +187,11 @@ try {
         console.log(`DELETE /api/rfp-analysis/${req.params.id} called.`);
         try {
             const analysisId = req.params.id;
-            const docRef = db.collection('rfpAnalyses').doc(analysisId);
-            const doc = await docRef.get();
-
+            const docRef = db.collection('rfpAnalyses').doc(analysisId); const doc = await docRef.get();
             if (!doc.exists) {
                 console.error(`DELETE /api/rfp-analysis/${analysisId} - Error: RFP analysis not found.`);
                 return res.status(404).json({ error: 'RFP analysis not found.' });
             }
-
             await docRef.delete();
             console.log(`DELETE /api/rfp-analysis/${analysisId} - RFP Analysis deleted.`);
             res.status(200).json({ id: analysisId, message: 'RFP analysis deleted successfully.' });
@@ -222,17 +204,12 @@ try {
     app.get('/api/rfp-analyses', async (req, res) => {
         console.log('GET /api/rfp-analyses called.');
         try {
-            const analysesSnapshot = await db.collection('rfpAnalyses')
-                                            .orderBy('analysisDate', 'desc')
-                                            .get();
+            const analysesSnapshot = await db.collection('rfpAnalyses').orderBy('analysisDate', 'desc').get();
             if (analysesSnapshot.empty) {
                 console.log('GET /api/rfp-analyses - No analyses found.');
                 return res.status(200).json([]);
             }
-            const analyses = [];
-            analysesSnapshot.forEach(doc => {
-                analyses.push({ id: doc.id, ...doc.data() });
-            });
+            const analyses = []; analysesSnapshot.forEach(doc => { analyses.push({ id: doc.id, ...doc.data() }); });
             console.log(`GET /api/rfp-analyses - Retrieved ${analyses.length} analyses.`);
             res.status(200).json(analyses);
         } catch (error) {
@@ -249,8 +226,7 @@ try {
                 console.error(`GET /api/rfp-analysis/${analysisId} - Error: Analysis ID is required.`);
                 return res.status(400).json({ error: 'Analysis ID is required.' });
             }
-            const docRef = db.collection('rfpAnalyses').doc(analysisId);
-            const doc = await docRef.get();
+            const docRef = db.collection('rfpAnalyses').doc(analysisId); const doc = await docRef.get();
             if (!doc.exists) {
                 console.error(`GET /api/rfp-analysis/${analysisId} - Error: RFP analysis not found.`);
                 return res.status(404).json({ error: 'RFP analysis not found.' });
@@ -264,47 +240,45 @@ try {
     });
     console.log('API endpoints defined.');
 
-
-    // === Serve React App (RFP Analyzer) ===
-    console.log('Setting up React app serving...');
+    // === Serve React App ===
+    // This assumes your Vite build output directory is 'dist' at the project root.
+    // Your root vite.config.js should be configured as: build: { outDir: 'dist' }
     const reactAppBuildPath = path.join(__dirname, 'dist');
-    console.log(`React app build path is: ${reactAppBuildPath}`);
+    console.log(`React app build path is: ${reactAppBuildPath}. Serving static assets from this path.`);
 
-    app.use('/rfp-analyzer', express.static(reactAppBuildPath));
-    console.log('Static middleware for /rfp-analyzer set up.');
+    // Serve static assets (JS, CSS, images etc.) from the React app's build directory
+    app.use(express.static(reactAppBuildPath));
+    console.log(`Static middleware for React app assets from '${reactAppBuildPath}' set up.`);
 
-    app.get('/rfp-analyzer/*', (req, res) => {
-        console.log(`Serving index.html for /rfp-analyzer/* path: ${req.path}`);
+    // For any GET request that is not an API call and not caught by the static middleware above,
+    // serve the main index.html from the React app build. This enables client-side routing.
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api/') || req.method !== 'GET') {
+            console.log(`Path ${req.path} is API or not GET, passing to next handler.`);
+            return next(); // Pass to next handler if it's an API call or not a GET request
+        }
+        
+        console.log(`Serving React app's index.html for GET request: ${req.path}`);
         res.sendFile(path.join(reactAppBuildPath, 'index.html'), (err) => {
             if (err) {
-                console.error(`Error sending file ${path.join(reactAppBuildPath, 'index.html')}:`, err);
-                res.status(500).send('Error serving React app.');
+                console.error(`Error sending file ${path.join(reactAppBuildPath, 'index.html')} for path ${req.path}:`, err);
+                // Avoid sending a new response if headers already sent or if it's a minor client-side issue
+                if (!res.headersSent) {
+                    res.status(500).send('Error serving application.');
+                }
+            } else {
+                console.log(`Successfully sent ${path.join(reactAppBuildPath, 'index.html')} for ${req.path}`);
             }
         });
     });
-    console.log('Route for /rfp-analyzer/* set up.');
-
-
-    // Fallback for any other GET requests not handled by previous routes
-    console.log('Setting up fallback route...');
-    app.get(/.*/, (req, res) => {
-        console.log(`Serving fallback public/index.html for path: ${req.path}`);
-        res.sendFile(path.join(__dirname, 'public', 'index.html'), (err) => {
-            if (err) {
-                console.error(`Error sending file ${path.join(__dirname, 'public', 'index.html')}:`, err);
-                res.status(500).send('Error serving fallback page.');
-            }
-        });
-    });
-    console.log('Fallback route set up.');
-
+    console.log('Catch-all GET route for serving React app index.html set up.');
 
     // Start the server
     console.log(`Attempting to start server on port ${PORT}...`);
     app.listen(PORT, () => {
         console.log(`--- Cendien agency website server listening on port ${PORT}. ---`);
         console.log(`Access it at http://localhost:${PORT}`);
-        console.log(`React RFP Analyzer (if built) should be at http://localhost:${PORT}/rfp-analyzer`);
+        console.log(`React RFP Analyzer (if built) should be at http://localhost:${PORT}`);
     });
 
 } catch (error) {
