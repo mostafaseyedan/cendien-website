@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import MessageModal from './MessageModal'; // Assuming MessageModal.jsx is in the same src/ folder
-
+import MessageModal from './MessageModal';
+import RecentRfpList from './RecentRfpList'; 
+import UpcomingDeadlines from './UpcomingDeadlines';
 function App() {
     // Mock data - in a real app, this would come from state, props, or API calls
     const [userName, setUserName] = useState("Jane Doe"); // (mock data)
