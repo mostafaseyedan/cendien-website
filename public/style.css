@@ -1,4 +1,4 @@
-/* Global Styles & Resets */
+
 * {
     margin: 0;
     padding: 0;
@@ -6,8 +6,8 @@
 }
 
 body {
-    font-family: 'Montserrat', sans-serif; /* Primary font */
-    line-height: 1.65;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1; /* Base line-height, can be overridden */
     color: #373F41; /* Dark grey/charcoal for body text */
     background-color: #f8f9fa; /* Very light grey background */
     font-weight: 400; /* Montserrat Regular */
@@ -18,13 +18,17 @@ body {
 .container {
     width: 90%;
     max-width: 1180px;
-    margin: auto;
-    padding: 0 15px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 .container-fluid {
     width: 100%;
-    padding: 0;
-    margin: auto;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .visually-hidden {
@@ -55,56 +59,62 @@ header {
 .logo-container img#company-logo {
     max-height: 48px;
     width: auto;
+    vertical-align: middle; /* Improve alignment */
 }
-header nav { /* Container for dropdown and link */
+header nav { 
     display: flex;
     align-items: center;
-    gap: 1.5rem; /* Space between dropdown and new link(s) */
+    gap: 1.5rem; 
 }
-#section-selector {
+/* General Section Selector (used on homepage, can be base for other selects) */
+#section-selector, select.section-selector { /* Combined for base styling */
     padding: 0.6rem 1.2rem;
     border: 1px solid #ced4da;
-    border-radius: 25px; /* Rounded */
+    border-radius: 25px; 
     font-size: 0.9rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     background-color: #fff;
     color: #373F41;
     cursor: pointer;
-    min-width: 200px; /* Adjusted min-width */
+    min-width: 200px; 
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1.5; /* Added for selects */
+    box-sizing: border-box;
 }
-#section-selector:focus {
+#section-selector:focus, select.section-selector:focus {
     outline: none;
-    border-color: #35ED54; /* Green accent from greenit */
-    box-shadow: 0 0 0 0.15rem rgba(53, 237, 84, 0.25);
+    border-color: #005a9c; 
+    box-shadow: 0 0 0 0.15rem rgba(0, 90, 156, 0.25); 
 }
-/* Styles for navigation links (Resume Gen on homepage, Home on resume page) */
+/* Specific select styling for forms can override radius or min-width */
+form select.section-selector { /* Selects in forms generally */
+    border-radius: 4px; /* More standard form radius */
+    min-width: auto; /* Allow width to be controlled by specific form rules */
+}
+
+
 .nav-link {
     color: #373F41;
     text-decoration: none;
-    font-weight: 500; /* Montserrat Medium */
+    font-weight: 500; 
     padding: 0.5rem 1rem;
     border-radius: 20px;
     transition: background-color 0.2s ease, color 0.2s ease;
     white-space: nowrap;
 }
 .nav-link:hover {
-    background-color: #e9f1f7; /* Light hover background */
-    color: #005a9c; /* Cendien primary blue on hover */
+    background-color: #e9f1f7; 
+    color: #005a9c; 
 }
-.resume-nav-link { /* Specific class for homepage Resume Gen link if needed */
-    /* Add any distinct styling here if it shouldn't just be .nav-link */
-}
-header nav .nav-current-page { /* For "AI Resume Generator" text on resume-generator.html */
+header nav .nav-current-page { 
     font-weight: 700;
-    color: #005a9c;
+    color: #005a9c; 
     padding: 0.5rem 1rem;
     white-space: nowrap;
 }
 
-
-/* Hero Section - Cover Photo */
+/* Hero Section */
 #hero {
     background-image: url('/images/cendien_cover.jpg');
     background-size: cover;
@@ -112,9 +122,7 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
     position: relative; 
     min-height: 380px; 
 }
-
-/* Hero Text Box */
-#hero-text-box {
+#hero-text-box { 
     text-align: center;
     margin-top: -70px; 
     position: relative; 
@@ -122,12 +130,11 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
     margin-bottom: 3rem; 
 }
 #hero-text-box.text-center-override { text-align: center; } 
-
 #hero-text-box h1 {
     font-size: 2.5rem; 
     margin-bottom: 0.8rem;
     font-weight: 700; 
-    color: #184e51; 
+    color: #003366; 
 }
 #hero-text-box p {
     font-size: 1.15rem; 
@@ -143,7 +150,7 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
     color: #005a9c; 
 }
 
-/* Content Card Styling */
+/* Content Card Styling (Global) */
 .content-card {
     background-color: #ffffff;
     padding: 2.5rem; 
@@ -155,31 +162,36 @@ header nav .nav-current-page { /* For "AI Resume Generator" text on resume-gener
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
 }
 
-/* Main Content Headings */
+/* Main Content Headings (Global) */
+main h1, main h2, main h3, main h4, main h5, main h6 {
+    line-height: 1.3; /* Improved heading line-height */
+}
 main h2 { 
     font-size: 2rem; 
     font-weight: 700; 
-    color: #184e51; 
+    color: #003366; 
     margin-bottom: 1.5rem;
     text-align: center;
 } 
 main h3 { 
     font-size: 1.5rem; 
     font-weight: 500; 
-    color: #2c3e50; 
+    color: #004c80; 
     margin-bottom: 1.2rem;
     text-align: center; 
 } 
 
-/* Dynamic Content Area (AI Populated Service Details) */
+/* Dynamic Content Area (Homepage Specific) */
 #dynamic-content-area #content-title {
      text-align: center;
      font-weight: 700;
+     color: #003366; 
 }
-#ai-generated-content p { margin-bottom: 1.1rem; color: #4a4a4a; }
+#ai-generated-content p { margin-bottom: 1.1rem; color: #373F41; }
 #ai-generated-content p:last-child { margin-bottom: 0; }
 
-/* Two Column Layout */
+
+/* Two Column Layout (Homepage Specific) */
 .two-column-layout {
     display: flex;
     flex-wrap: wrap; 
@@ -192,523 +204,223 @@ main h3 {
     flex-grow: 1;
     margin-bottom: 0; 
 }
-#ai-module-suggester.column {
+#ai-module-suggester.column { 
     flex-basis: calc(45% - 1.25rem); 
 }
 #services-overview-static.column { 
     flex-basis: calc(55% - 1.25rem); 
 }
-#services-overview-static.column h3,
-#contact-details.column h3 { /* Assuming contact-details could also be a column */
-    text-align: left; 
-    font-size: 1.4rem; 
-    font-weight: 500;
-}
 
-
-/* AI Module Suggester Section Specifics */
+/* AI Module Suggester Section (Homepage Specific) */
 #ai-module-suggester { text-align: left; }
 .suggester-header { text-align: center; margin-bottom: 1.5rem; }
-.suggester-icon { max-height: 35px; margin-bottom: 0.5rem; }
+.suggester-icon { max-height: 35px; margin-bottom: 0.5rem; vertical-align: middle; }
 #ai-module-suggester h2 { 
     font-size: 1.8rem; 
+    color: #003366; 
 }
 #ai-module-suggester .suggester-header p {
     font-size: 0.95rem; color: #555; max-width: 100%; margin: 0 auto 1rem auto;
 }
-#needs-form label { display: block; font-weight: 500; margin-bottom: 0.4rem; color: #333; font-size: 0.9rem; }
-#needs-form textarea {
-    width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d1d1;
-    border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.95rem;
-    line-height: 1.5; margin-bottom: 0.4rem; resize: vertical;
-}
-#needs-form textarea:focus {
-    border-color: #35ED54; 
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
-}
-.char-count { font-size: 0.8rem; color: #777; margin-bottom: 1rem; text-align: right;}
 
-/* BUTTON STYLING - Inspired by greenit-solution.de */
-.btn {
-    display: inline-block;
-    padding: 12px 30px; 
-    font-size: 1rem;   
-    font-weight: 500;  
-    text-align: center;
-    text-decoration: none;
-    border-radius: 48px; /* Pill shape */
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
-    border: 2px solid transparent; 
-    line-height: 1.5; 
+/* General Form Styling (can be base for all forms) */
+.form-group {
+    margin-bottom: 1.2rem; /* Default spacing for form groups */
 }
-.btn:active { transform: translateY(1px); }
-
-.btn-primary { 
-    background-color: #35ED54; 
-    color: #184e51; 
-    border-color: #35ED54; 
-    width: 100%; /* Primary buttons are full width by default */
-}
-.btn-primary:hover {
-    background-color: #D9FFE5; 
-    color: #184e51; 
-    border-color: #184e51; 
-}
-.btn-secondary { /* Secondary buttons (like DOCX and RFP Generate) will be auto width unless specified */
-    background-color: #184e51; 
-    color: #fff;
-    border-color: #184e51;
-    width: auto; /* Default to auto width for secondary */
-    display: inline-block; /* Needed for auto width to work well */
-}
-.btn-secondary:hover {
-    background-color: #D9FFE5; 
-    color: #184e51;
-    border-color: #184e51; 
-}
-
-/* Ensure resume page's primary PDF button remains full width if desired, or auto if preferred */
-#resume-generator-tool #generate-resume-button.btn-primary {
-     width: 100%; /* Or 'auto' if you prefer it to size to content like secondary */
-     /* display: inline-block; Remove if width: 100% */
-     margin-top: 1rem; /* Retained from previous */
-}
-
-
-#suggest-modules-button:disabled,
-#generate-resume-button:disabled, /* Updated ID */
-#generate-questions-button:disabled { /* Added for RFP page button */
-    background-color: #d1e7dd; 
-    border-color: #d1e7dd;
-    color: #799988;
-    cursor: not-allowed;
-}
-
-#suggested-modules-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
-#suggested-modules-area h3 { 
-    text-align: left; font-size: 1.4rem; 
-}
-#modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #4a4a4a; }
-
-/* Loading Indicator */
-.loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; text-align: center; width: 100%; }
-.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #005a9c; animation: spin 1s ease infinite; margin-bottom: 12px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.loading-text { font-style: italic; color: #555; font-size: 0.95rem; }
-
-/* Contact Details Section */
-#contact-details h2 {} 
-.contact-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; }
-.address-block, .phone-block { padding: 0; } 
-.address-block h3, .phone-block h3 { font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem; text-align: left; font-weight: 500; }
-.address-block address, .phone-block p { font-style: normal; line-height: 1.7; color: #555; font-size: 0.95rem; }
-.phone-block a { color: #005a9c; text-decoration: none; }
-.phone-block a:hover { text-decoration: underline; }
-.contact-info-simple p { margin-bottom: 0.8rem; }
-
-
-/* Services Overview (static) & General Contact Message */
-#services-overview-static h3 {} 
-#general-contact-message h2 {} 
-#general-contact-message .btn { margin-top: 1rem; } 
-
-.service-item { 
-    background: #e9f1f7; 
-    padding: 1rem; 
-    border-radius: 4px; 
-    text-align: center; 
-    font-weight: 500; 
-    color: #004c80;
-    font-size: 0.9rem;
-}
-.centered-text { text-align: center; margin-top: 1rem; font-style: italic; color: #666; font-size: 0.95rem; }
-
-/* Footer */
-footer {
-    background: #2c3e50; 
-    color: #bdc3c7; 
-    text-align: center;
-    padding: 2.5rem 0;
-    margin-top: 3rem;
-}
-footer p { margin: 0; font-size: 0.9rem; }
-
-/* Styles for Resume Generator Page (resume-generator.html) */
-#resume-generator-tool .form-group {
-    margin-bottom: 1.5rem;
-}
-#resume-generator-tool label {
+.form-group label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem; /* Consistent label spacing */
     color: #333;
     font-size: 0.95rem;
 }
-#resume-generator-tool input[type="text"],
-#resume-generator-tool textarea {
-    width: 100%;
+.form-group input[type="text"],
+.form-group input[type="file"], /* Base style for file inputs */
+.form-group textarea,
+.form-group select { /* Base style for selects in forms */
+    width: 100%; /* Default to full width within their container */
     padding: 0.75rem 1rem;
     border: 1px solid #d1d1d1;
     border-radius: 4px;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.95rem;
     line-height: 1.5;
+    box-sizing: border-box; /* Important for consistent sizing */
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-#resume-generator-tool input[type="text"]:focus,
-#resume-generator-tool textarea:focus {
-    border-color: #35ED54; 
+.form-group input[type="file"] {
+    background-color: #fff; /* Ensure background for file input */
+}
+.form-group textarea {
+    resize: vertical; /* Allow vertical resize only */
+}
+.form-group input[type="text"]:focus,
+.form-group input[type="file"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #005a9c; 
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); 
 }
-/* Specific styling for the select dropdown on resume page if needed */
-#resume-generator-tool #outputFormat.section-selector { 
-    /* Inherits #section-selector styles, can override here if needed */
-    margin-bottom: 1rem; /* Ensures space before the button */
-}
-
-#generated-resume-area, #resume-generation-status { /* Apply to both for consistency */
-    background-color: #f0f4f8; 
-    padding: 1.5rem;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    margin-top: 2.5rem;
-}
-#generated-resume-area h3 { 
-    text-align: left;
-    font-size: 1.4rem;
-    color: #184e51;
-    margin-bottom: 1rem;
-}
-#resume-result p, 
-#resume-result li {
-    color: #373F41; 
-    font-size: 0.95rem;
-}
-#resume-result ul {
-    list-style-type: disc; 
-    list-style-position: outside;
-    padding-left: 20px;
-    margin-top: 0.5rem;
-}
-#resume-result ul li {
-    margin-bottom: 0.5rem;
-}
+.char-count { font-size: 0.8rem; color: #777; margin-bottom: 1rem; text-align: right;}
 
 
-/* Styles for RFP Question Generator Page (rfp-question-generator.html) */
-/* Styles for Saved Analyses List */
-#saved-analyses-section h3 {
-    font-size: 1.6rem; /* Slightly smaller than main h2 */
-    color: #184e51;
-    margin-bottom: 1rem;
-    text-align: left; /* Align to left, not center */
-    border-bottom: 1px solid #e0e0e0; /* Separator line */
-    padding-bottom: 0.5rem;
-}
-
-.analyzed-rfp-list-container {
-    border: 1px solid #e0e0e0; /* Border around the list container */
-    border-radius: 6px;
-    max-height: 300px; /* Example max height, make it scrollable if too long */
-    overflow-y: auto;   /* Add scroll if content exceeds max-height */
-    margin-bottom: 1.5rem; /* Space below the list */
-}
-
-.analyzed-rfp-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #eee;
-    font-size: 0.95rem;
-}
-
-.analyzed-rfp-item:last-child {
-    border-bottom: none;
-}
-
-.rfp-date {
-    flex-basis: 100px; /* Fixed width for date */
-    color: #555;
-    font-size: 0.9rem;
-}
-
-.rfp-name {
-    flex-grow: 1; /* Takes up remaining space */
-    margin-left: 1rem;
-    margin-right: 1rem;
-    color: #373F41;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.rfp-status-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 1rem;
-    flex-shrink: 0; /* Prevent dot from shrinking */
-}
-
-.rfp-status-dot.green { background-color: #28a745; }
-.rfp-status-dot.red { background-color: #dc3545; }
-.rfp-status-dot.orange { background-color: #fd7e14; }
-/* Add more colors as needed for your statuses */
-
-.rfp-view-details {
-    color: #005a9c; /* Cendien blue */
+/* BUTTON STYLING (Global) */
+.btn {
+    display: inline-block;
+    padding: 10px 24px; 
+    font-size: 0.95rem; 
+    font-weight: 500;  
+    text-align: center;
     text-decoration: none;
-    font-size: 1rem;
-}
-
-.rfp-view-details:hover {
-    color: #003f6e; /* Darker blue on hover */
-}
-
-#rfp-question-tool .form-group {
-    margin-bottom: 1.5rem; 
-}
-
-#rfp-question-tool label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 0.95rem; 
-}
-
-#rfp-question-tool input[type="file"] {
-    width: 100%;
-    padding: 0.75rem 1rem; 
-    border: 1px solid #d1d1d1; 
-    border-radius: 4px; 
-    font-family: 'Montserrat', sans-serif; 
-    font-size: 0.95rem; 
+    border-radius: 25px; 
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+    border: 2px solid transparent; 
     line-height: 1.5; 
-    box-sizing: border-box;
-    background-color: #fff; 
-    margin-bottom: 1.5rem; /* Added margin below the file input for spacing */
+    vertical-align: middle; /* Better alignment if next to text */
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { 
+    background-color: #005a9c; 
+    color: #ffffff; 
+    border-color: #005a9c; 
+    width: auto; /* MODIFIED: For natural sizing */
+    display: inline-block; 
+}
+.btn-primary:hover {
+    background-color: #003f6e; 
+    color: #ffffff; 
+    border-color: #003355; 
 }
 
-#rfp-question-tool input[type="file"]:focus {
-    border-color: #35ED54; 
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(53, 237, 84, 0.25);
-}
-
-/* Ensure RFP button uses secondary styles and auto width */
-#rfp-question-tool #generate-questions-button.btn-secondary {
+.btn-secondary { 
+    background-color: #f0f4f8; 
+    color: #005a9c; 
+    border-color: #005a9c; 
     width: auto; 
     display: inline-block; 
-    /* margin-top is handled by margin-bottom of file input or general .form-group margin */
 }
-.tabs-container {
-    overflow: hidden; /* Clears floats or ensures border containment */
-    border-bottom: 1px solid #ccc; /* Line below the tabs */
-    margin-bottom: 1.5rem; /* Space below the tabs before content */
-}
-
-/* Individual Tab Button Styles */
-.tabs-container .tab-link {
-    background-color: #f1f1f1; /* Default background for tabs */
-    float: left; /* Align tabs horizontally */
-    border: 1px solid #ccc;
-    border-bottom: none; /* Remove bottom border as it's on the container */
-    outline: none;
-    cursor: pointer;
-    padding: 10px 20px;
-    transition: background-color 0.3s;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #333;
-    border-radius: 6px 6px 0 0; /* Rounded top corners */
-    margin-right: 4px; /* Space between tabs */
+.btn-secondary:hover {
+    background-color: #d9e6f2; 
+    color: #003f6e; 
+    border-color: #003f6e; 
 }
 
-/* Tab Button Hover Style */
-.tabs-container .tab-link:hover {
-    background-color: #ddd; /* Slightly darker on hover */
-}
-
-/* Active Tab Button Style */
-.tabs-container .tab-link.active {
-    background-color: #fff; /* White background for active tab */
-    color: #005a9c; /* Cendien primary blue for active tab text */
-    border-color: #ccc;
-    border-bottom: 1px solid #fff; /* Make it look like it's part of the content area */
-    position: relative;
-    top: 1px; /* Lifts it slightly to merge with content border */
-}
-
-/* Tab Content Panes */
-.tab-content {
-    display: none; /* Hidden by default, JS will show active one */
-    padding: 1rem 0; /* Padding inside the content area below tabs */
-    /* border: 1px solid #ccc; */ /* Optional: border around content if desired */
-    /* border-top: none; */ /* Optional: if you add border to tab-content */
-}
-
-/* Ensure the initially active tab's content is visible */
-#analysis-results-area .tab-content[style*="display: block;"] {
-    /* This style is applied inline by JS, no extra CSS needed here unless for overrides */
-}
-
-/* Styles for the area where generated questions/summary will be shown */
-#generated-questions-area { /* This ID is still in the HTML, but results are now in tabs */
-    /* background-color: #f0f4f8; 
-    padding: 1.5rem;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0; */
-    margin-top: 0; /* Reset margin as it's now part of the tabbed area */
-}
-#generated-questions-area h3, /* This h3 is now inside the tab-content divs */
-#analysis-results-area .tab-content h3 { 
-    text-align: left;
-    font-size: 1.4rem;
-    color: #184e51; 
-    margin-bottom: 1rem; 
-}
-
-#questions-result-content p, 
-#questions-result-content li,
-#summary-result-content p,
-#summary-result-content li { 
-    color: #373F41; 
-    font-size: 0.95rem; 
-    margin-bottom: 0.75rem; 
-    line-height: 1.7; /* Improved line height for readability */
-}
-
-#questions-result-content ul,
-#summary-result-content ul { 
-    list-style-type: disc; /* Using disc for summary, decimal for questions might be good */
-    list-style-position: outside;
-    padding-left: 20px;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-}
-#questions-result-content ul.numbered-list, /* Add class="numbered-list" in JS if you want numbers */
-#summary-result-content ul.numbered-list { 
-    list-style-type: decimal;
-}
-
-#questions-result-content ul li,
-#summary-result-content ul li {
-    margin-bottom: 0.5rem;
-}
-
-#generated-questions-area {
-    background-color: #f0f4f8; 
-    padding: 1.5rem;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    margin-top: 2.5rem;
-}
-
-#generated-questions-area h3 { 
-    text-align: left;
-    font-size: 1.4rem;
-    color: #184e51; 
-    margin-bottom: 1rem; 
-}
-
-#questions-result p, 
-#questions-result li { 
-    color: #373F41; 
-    font-size: 0.95rem; 
-    margin-bottom: 0.75rem; 
-}
-
-#questions-result ul { 
-    list-style-type: decimal; 
-    list-style-position: outside;
-    padding-left: 20px;
-    margin-top: 0.5rem;
-}
-
-#questions-result ul li {
-    margin-bottom: 0.5rem;
-}
-
-#question-generation-status {
-    margin-top: 2.5rem; 
+/* Disabled Button State (Global) */
+.btn:disabled,
+button:disabled { 
+    background-color: #adb5bd !important; 
+    border-color: #adb5bd !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.65; /* Visual cue for disabled */
 }
 
 
-/* Responsive Adjustments */
+#suggested-modules-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
+#suggested-modules-area h3 { 
+    text-align: left; font-size: 1.4rem; color: #004c80; 
+}
+#modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #373F41; }
+
+/* Loading Indicator (Global) */
+.loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; text-align: center; width: 100%; }
+.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #005a9c; animation: spin 1s ease infinite; margin-bottom: 12px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loading-text { font-style: italic; color: #555; font-size: 0.95rem; }
+
+/* Contact Details Section (Homepage) */
+#services-overview-static.column h3, 
+#contact-details.column h3, 
+#contact-details h3:not(.column h3) { 
+    text-align: left; font-size: 1.4rem; font-weight: 500; color: #004c80; 
+}
+.contact-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; }
+.address-block h3, .phone-block h3 { 
+    font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem; 
+    text-align: left; font-weight: 500; 
+}
+.address-block address, .phone-block p { font-style: normal; line-height: 1.7; color: #555; font-size: 0.95rem; }
+.phone-block a { color: #005a9c; text-decoration: none; }
+.phone-block a:hover { text-decoration: underline; }
+
+/* Footer */
+footer {
+    background: #003366; color: #bdc3c7; text-align: center;
+    padding: 2.5rem 0; margin-top: 3rem;
+}
+footer p { margin: 0; font-size: 0.9rem; }
+
+/* Styles for Resume Generator Page */
+#resume-generator-tool #outputFormat.section-selector { margin-bottom: 1rem; width: 100%; }
+#resume-generator-tool #generate-resume-button.btn-secondary { 
+    background-color: #212529; color: #ffffff; border-color: #212529; 
+}
+#resume-generator-tool #generate-resume-button.btn-secondary:hover {
+    background-color: #343a40; color: #ffffff; border-color: #343a40; 
+}
+#resume-generator-tool #generate-resume-button.btn-primary { 
+     width: 100%; margin-top: 1rem; 
+}
+#generated-resume-area, #resume-generation-status { 
+    background-color: #f0f4f8; padding: 1.5rem; border-radius: 6px;
+    border: 1px solid #e0e0e0; margin-top: 2.5rem;
+}
+#generated-resume-area h3 { 
+    text-align: left; font-size: 1.4rem; color: #003366; margin-bottom: 1rem;
+}
+#resume-result p, #resume-result li { color: #373F41; font-size: 0.95rem; }
+#resume-result ul { list-style-type: disc; list-style-position: outside; padding-left: 20px; margin-top: 0.5rem; }
+#resume-result ul li { margin-bottom: 0.5rem; }
+
+/* Responsive Adjustments (Global) */
 @media (max-width: 992px) { 
     .two-column-layout { flex-direction: column; }
     .two-column-layout > .column { 
-        flex-basis: 100%; 
-        margin-bottom: 2.5rem;
+        flex-basis: 100%; margin-bottom: 2.5rem;
     }
-    .two-column-layout > .column:last-child {
-        margin-bottom: 0;
-    }
-     .two-column-layout {
-        margin-bottom: 0; 
-    }
+    .two-column-layout > .column:last-child { margin-bottom: 0; }
+    .two-column-layout { margin-bottom: 0; }
 }
 @media (max-width: 768px) {
     body { font-size: 15px; }
-    header nav { /* For homepage nav */
-        width: 100%; 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 0.75rem; 
+    header nav { 
+        width: 100%; flex-direction: column; 
+        align-items: stretch; gap: 0.75rem; 
     }
-    /* For resume-generator.html header nav (if different structure) */
     header .nav-container nav:not(:has(#section-selector)) {
-        flex-direction: row; /* Keep as row if it's just Home + Current Page */
-        flex-wrap: wrap; /* Allow nav links to wrap on small screens */
-        justify-content: center; /* Center items if they wrap */
-        gap: 0.5rem; /* Reduce gap for wrapped items */
+        flex-direction: row; flex-wrap: wrap; 
+        justify-content: center; gap: 0.5rem; 
     }
-
     #company-logo { max-height: 40px; }
-    #section-selector { width: 100%; font-size: 0.9rem; }
-    .nav-link.resume-nav-link { /* This might be too specific now, general .nav-link used more */
-        text-align: center; 
-        /* display: block;  -- remove if you want them inline on small screens for tools pages */
-        /* background-color: #f0f0f0;  -- remove if not desired */
-    }
-    header nav .nav-link { /* For tool pages, make links stack if needed or just wrap */
-        /* If you want them to stack on tool pages on mobile: */
-        /* display: block; 
-        text-align: center;
-        margin-bottom: 0.5rem; */
-    }
-
+    #section-selector { width: 100%; font-size: 0.9rem; } /* Homepage dropdown */
+    
     #hero { min-height: 280px; }
     #hero-text-box { margin-top: -50px; padding: 1.5rem; }
     #hero-text-box h1 { font-size: 1.8rem; }
     #hero-text-box p { font-size: 1rem; }
     main h2 { font-size: 1.7rem; }
     main h3 { font-size: 1.3rem; }
-    #ai-module-suggester h2 { font-size: 1.5rem; }
-    #suggested-modules-area h3 { font-size: 1.2rem; }
-    .content-card, .two-column-layout > .column { padding: 1.5rem; }
-    .contact-info-grid { grid-template-columns: 1fr; gap: 1rem; }
-    .btn { padding: 10px 24px; font-size: 0.95rem; }
-}
-@media (max-width: 480px) {
-    #hero-text-box h1 { font-size: 1.6rem; }
-    #hero-text-box p { font-size: 0.9rem; }
-    #ai-module-suggester h2 { font-size: 1.3rem; }
-    /* .btn { width: 100%; } -- Re-enabled for very small screens if desired, but might make auto-width buttons full again */
-    /* If you want buttons to stack and be full-width on smallest screens: */
-    #resume-generator-tool #generate-resume-button.btn-primary,
-    #rfp-question-tool #generate-questions-button.btn-secondary {
+    .content-card { padding: 1.5rem; }
+    .btn { padding: 10px 20px; font-size: 0.9rem; } 
+
+    /* Make form elements in .form-group full width on smaller screens by default */
+    .form-group input[type="text"],
+    .form-group input[type="file"],
+    .form-group textarea,
+    .form-group select {
         width: 100%;
-        display: block; /* Make them stack */
-        margin-left: auto; /* Center if block */
-        margin-right: auto; /* Center if block */
     }
-    #resume-generator-tool #outputFormat.section-selector {
-         margin-bottom: 1rem; /* Ensure space before full-width button */
+}
+
+@media (max-width: 480px) {
+    .btn-primary, .btn-secondary { 
+        width: 100%; display: block; 
+        margin-left: auto; margin-right: auto; margin-bottom: 0.5rem;
     }
+    .btn-primary:last-child, .btn-secondary:last-child { margin-bottom: 0; }
+    
+    /* Specific button on RFP page handled in rfp-style.css */
 }
