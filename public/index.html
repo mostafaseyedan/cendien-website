@@ -3,114 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cendien - Specialized Technology & IT Solutions</title>
+    <title>Cendien RFP Analyzer</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="rfp-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="container nav-container">
-            <div class="logo-container">
-                <a href="index.html"><img src="/images/cendien_corp_logo.jpg" alt="Cendien Corporation Logo" id="company-logo"></a>
-            </div>
-            <nav> 
-                <label for="section-selector" class="visually-hidden">Select a Service:</label>
-                <select id="section-selector">
-                    <option value="" disabled>** BROWSE SERVICES **</option> <option value="home_overview" selected>Homepage Overview</option> <option value="infor_consulting">Infor Consulting</option>
-                    <option value="lawson_consulting">Lawson Consulting</option>
-                    <option value="oracle_consulting">Oracle Consulting</option>
-                    <option value="peoplesoft_consulting">Peoplesoft Consulting</option>
-                    <option value="sap_consulting">SAP Consulting</option>
-                    <option value="managed_it_services">Managed IT Services</option>
-                    <option value="it_staffing">IT Staffing Services</option>
-                    <option value="about_us">About Cendien</option>
-                    </select>
-                <a href="resume-generator.html" class="nav-link resume-nav-link">AI Resume Generator</a>
-                <a href="rfp-question-generator.html" class="nav-link">RFP Question Generator</a>
-            </nav>
+
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <div class="auth-modal-content">
+            <h2>RFP Analyzer Login</h2>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-username">Username:</label>
+                    <input type="text" id="auth-username" name="auth-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Password:</label>
+                    <input type="password" id="auth-password" name="auth-password" required>
+                </div>
+                <button type="submit" id="auth-submit-button" class="btn btn-primary">Login</button>
+                <p id="auth-error-message" class="auth-error" style="display:none; color:red; margin-top:10px;"></p>
+            </form>
         </div>
-    </header>
+    </div>
 
-    <main>
-        <section id="hero" class="container-fluid">
-            </section>
-
-        <section id="hero-text-box" class="container content-card text-center-override">
-            <h1>Specialized Technology & IT Solutions</h1>
-            <p>Delivering expert solutions and managed services for your <span id="hero-location-city">Dallas</span>-area business.</p>
-        </section>
-
-        <section id="dynamic-content-area" class="container content-card">
-            <h2 id="content-title">Welcome to Cendien</h2>
-            <div id="ai-generated-content">
-                <div class="loading-container">
-                    <div class="spinner"></div>
-                    <p class="loading-text">Please select an option from the drop-down menu to view details.</p>
+    <div id="page-content-wrapper" class="content-hidden">
+        <header>
+            <div class="container nav-container">
+                <div class="logo-container">
+                    <a href="index.html"><img src="/images/cendien_corp_logo.jpg" alt="Cendien Corporation Logo" id="company-logo"></a>
+                </div>
+                <nav>
+                    <a href="index.html" class="nav-link">Home</a>
+                    <span class="nav-current-page">RFP Analyzer</span>
+                    <a href="resume-generator.html" class="nav-link">AI Resume Generator</a>
+                </nav>
+                <div class="settings-icon-container">
+                    <button id="open-prompt-settings-modal-button" class="action-icon" title="Edit AI Prompts">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
-        </section>
+        </header>
 
-        <div class="two-column-layout container">
-            <section id="ai-module-suggester" class="content-card column">
-                <div class="suggester-header">
-                    <img src="/images/idea-icon.png" alt="Tailored Solutions Icon" class="suggester-icon">
-                    <h2>Get Tailored IT Solutions</h2>
-                    <p>Describe your IT challenges and operational goals, and our AI will suggest suitable Managed IT services or solutions.</p>
+        <main>
+            <section id="rfp-analyzer-main-content" class="container content-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2>Previously Analyzed RFPs</h2>
+                    <button id="open-new-rfp-modal-button" class="btn btn-primary">New RFP Analysis</button>
                 </div>
-                <form id="needs-form">
-                    <label for="business-needs">Your IT Challenges & Goals</label>
-                    <textarea id="business-needs" name="business-needs" rows="6" placeholder="e.g., We need reliable IT support for our 50 employees... (Min 50 characters)"></textarea>
-                    <div id="char-count-feedback" class="char-count">Min 50 characters</div>
-                    <button type="submit" id="suggest-modules-button" class="btn btn-primary">Suggest Solutions</button>
-                </form>
-                <div id="suggested-modules-area" style="display: none;">
-                    <h3>Tailored IT Solution Suggestion:</h3>
-                    <div id="modules-result" class="loading-container">
+
+                <div id="saved-analyses-section">
+                    <div class="rfp-list-tabs">
+                        <button class="rfp-list-tab-button" data-status-filter="active">Active</button>
+                        <button class="rfp-list-tab-button" data-status-filter="not_pursuing">Not Pursuing</button>
+                        <button class="rfp-list-tab-button" data-status-filter="archived">Archived</button>
+                        <button class="rfp-list-tab-button active" data-status-filter="all_statuses">All Analyzed</button> 
+                    </div>
+                    <div id="saved-analyses-header" class="analyzed-rfp-item">
+                        <span class="rfp-col-title sortable-header" data-sort-key="rfpTitle">RFP Title ⇅</span>
+                        <span class="rfp-col-type sortable-header" data-sort-key="rfpType">RFP Type ⇅</span>
+                        <span class="rfp-col-owner sortable-header" data-sort-key="submittedBy">Owner ⇅</span>
+                        <span class="rfp-col-date sortable-header" data-sort-key="analysisDate">Date ⇅</span>
+                        <span class="rfp-col-status">Status</span>
+                        <span id="rfp-actions-header-text" class="rfp-col-actions">Actions</span>
+                    </div>
+                    <div id="saved-analyses-list" class="analyzed-rfp-list-container">
+                        </div>
+                    <p id="no-saved-analyses" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No analyses found.</p>
+                    <div id="rfp-list-status-area" class="loading-container" style="display: none; margin-top: 1rem;">
                         </div>
                 </div>
             </section>
 
-            <section id="services-overview-static" class="content-card column">
-                <h3>Our Commitment</h3>
-                <p>Cendien is dedicated to providing top-tier IT consulting, managed services, and staffing solutions. We partner with you to understand your unique challenges and deliver solutions that drive success and peace of mind.</p>
-                <p>Our access to a deep pool of specialized, senior-level talent ensures your IT infrastructure is robust and your projects are completed on time and within budget, exceeding expectations.</p>
-                <p class="centered-text">Flexible IT Solutions: Managed Services, Project Consulting, Staff Augmentation.</p>
-            </section>
-        </div> <section id="contact-details" class="container content-card">
-            <h2>Contact Information</h2>
-            <div class="contact-info-grid">
-                <div class="address-block">
-                    <h3>Mailing Address</h3>
-                    <address>
-                        Cendien Consulting<br>
-                        1846 E Rosemeade Pkwy, Suite 200<br>
-                        Carrollton, TX 75007
-                    </address>
+            <section id="view-saved-rfp-details-section" style="display: none;"> 
+                <div class="view-rfp-modal-content content-card container"> 
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 id="view-rfp-main-title-heading">RFP Details</h2>
+                        <button id="close-view-rfp-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
+                    </div>
+                    <div id="view-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
+                    <div id="view-analysis-results-area"> <div class="tabs-container">
+                            <button class="tab-link active" onclick="openViewTab(event, 'view-summary-tab')">Summary</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-questions-tab')">Questions</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-deadlines-tab')">Deadlines & Format</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-requirements-tab')">Requirements</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-stakeholders-tab')">Stakeholders</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-risks-tab')">Risks</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-registration-tab')">Registration</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-licenses-tab')">Licenses</button>
+                            <button class="tab-link" onclick="openViewTab(event, 'view-budget-tab')">Budget</button>
+                        </div>
+
+                        <div id="view-summary-tab" class="tab-content" style="display: block;">
+                            <h3>RFP Summary:</h3>
+                            <div id="view-summary-result-content"></div>
+                        </div>
+                        <div id="view-questions-tab" class="tab-content">
+                            <h3>Generated Clarification Questions:</h3>
+                            <div id="view-questions-result-content"></div>
+                        </div>
+                        <div id="view-deadlines-tab" class="tab-content">
+                            <h3>Key Deadlines & Submission Format:</h3>
+                            <div id="view-deadlines-result-content">
+                                </div>
+                        </div>
+                        <div id="view-requirements-tab" class="tab-content">
+                            <h3>Requirements:</h3>
+                            <div id="view-requirements-result-content"></div>
+                        </div>
+                        <div id="view-stakeholders-tab" class="tab-content">
+                            <h3>Mentioned Stakeholders:</h3>
+                            <div id="view-stakeholders-result-content"></div>
+                        </div>
+                        <div id="view-risks-tab" class="tab-content">
+                            <h3>Potential Risks/Red Flags:</h3>
+                            <div id="view-risks-result-content"></div>
+                        </div>
+                        <div id="view-registration-tab" class="tab-content">
+                            <h3>Registration Details:</h3>
+                            <div id="view-registration-result-content"></div>
+                        </div>
+                        <div id="view-licenses-tab" class="tab-content">
+                            <h3>Licenses & Certifications:</h3>
+                            <div id="view-licenses-result-content"></div>
+                        </div>
+                        <div id="view-budget-tab" class="tab-content">
+                            <h3>Budget Information:</h3>
+                            <div id="view-budget-result-content"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="phone-block">
-                    <h3>Telephone</h3>
-                    <p>
-                        <strong>Dallas:</strong> <a href="tel:+12142454580">(214) 245-4580</a><br>
-                        <strong>Toll-Free:</strong> <a href="tel:+18883536744">(888) 353-6744</a><br>
-                        <strong>Fax:</strong> (972) 810-4017
-                    </p>
+            </section>
+
+            <div id="new-rfp-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close-button" id="modal-close-button">&times;</span>
+                    <h2 id="modal-title" style="text-align: center; margin-bottom: 1.5rem;">Analyze New RFP</h2>
+                    
+                    <form id="rfp-details-form">
+                        <div class="form-group">
+                            <label for="rfpTitle">RFP Title (Optional):</label>
+                            <input type="text" id="rfpTitle" name="rfpTitle" placeholder="Enter a Title for this RFP">
+                        </div>
+                        <div class="form-group">
+                            <label for="rfpType">RFP Type:</label>
+                            <select id="rfpType" name="rfpType" class="section-selector">
+                                <option value="IT Support">IT Support</option>
+                                <option value="IT Staffing">IT Staffing</option>
+                                <option value="ERP Managed Services">ERP Managed Services</option>
+                                <option value="Custom Software Development">Custom Software Development</option>
+                                <option value="Cloud Migration">Cloud Migration</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="submittedBy">Person Submitting / Analyzing:</label>
+                            <select id="submittedBy" name="submittedBy" class="section-selector">
+                                <option value="Aish">Aish</option>
+                                <option value="Helen">Helen</option>
+                                <option value="Shirley">Shirley</option>
+                                <option value="Israel">Israel</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="rfpFileUpload">Upload Main RFP Document (PDF only):</label>
+                            <input type="file" id="rfpFileUpload" name="rfpFileUpload" accept=".pdf" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rfpAddendumUpload">Upload Addendum(s) (Optional, PDFs only):</label>
+                            <input type="file" id="rfpAddendumUpload" name="rfpAddendumUpload" accept=".pdf" multiple>
+                        </div>
+                        <button type="submit" id="generate-analysis-button" class="btn btn-secondary">Analyze RFP</button>
+                    </form>
+
+                    <div id="modal-analysis-status-area" class="loading-container" style="display: none; margin-top: 2rem;"></div>
+                    <div id="modal-analysis-results-area" style="margin-top: 2.5rem; display: none;">
+                         <h3 style="text-align:center; margin-bottom: 1rem;">Analysis Results</h3>
+                        <div class="tabs-container">
+                            <button class="tab-link active" onclick="openModalTab(event, 'modal-summary-tab')">Summary</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-questions-tab')">Questions</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-deadlines-tab')">Deadlines & Format</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-requirements-tab')">Requirements</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-stakeholders-tab')">Stakeholders</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-risks-tab')">Risks</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-registration-tab')">Registration</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-licenses-tab')">Licenses</button>
+                            <button class="tab-link" onclick="openModalTab(event, 'modal-budget-tab')">Budget</button>
+                        </div>
+                        <div id="modal-summary-tab" class="tab-content" style="display: block;"><div id="modal-summary-result-content"></div></div>
+                        <div id="modal-questions-tab" class="tab-content"><div id="modal-questions-result-content"></div></div>
+                        <div id="modal-deadlines-tab" class="tab-content">
+                            </div>
+                        <div id="modal-requirements-tab" class="tab-content"><div id="modal-requirements-result-content"></div></div>
+                        <div id="modal-stakeholders-tab" class="tab-content"><div id="modal-stakeholders-result-content"></div></div>
+                        <div id="modal-risks-tab" class="tab-content"><div id="modal-risks-result-content"></div></div>
+                        <div id="modal-registration-tab" class="tab-content"><div id="modal-registration-result-content"></div></div>
+                        <div id="modal-licenses-tab" class="tab-content"><div id="modal-licenses-result-content"></div></div>
+                        <div id="modal-budget-tab" class="tab-content"><div id="modal-budget-result-content"></div></div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section id="general-contact-message" class="container content-card text-center-override">
-            <h2>Ready to Optimize Your IT?</h2>
-            <p>Call us today to learn more about our specialized consulting and managed IT services. Our experts are ready to help you succeed. Our process will save you time, money, and headaches.</p>
-            <a href="tel:+12142454580" class="btn btn-secondary">Call Us: (214) 245-4580</a>
-        </section>
-    </main>
+            <div id="edit-rfp-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close-button" id="edit-rfp-modal-close-button">&times;</span>
+                    <h2 id="edit-rfp-modal-title" style="text-align: center; margin-bottom: 1.5rem;">Edit RFP Details</h2>
+                    <form id="edit-rfp-details-form">
+                        <input type="hidden" id="editRfpId" name="editRfpId">
+                        
+                        <div class="form-group">
+                            <label for="editRfpTitle">RFP Title:</label>
+                            <input type="text" id="editRfpTitle" name="editRfpTitle" placeholder="Enter a Title for this RFP">
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpFileName">Original File Name:</label>
+                            <input type="text" id="editRfpFileName" name="editRfpFileName" readonly disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpType">RFP Type:</label>
+                            <select id="editRfpType" name="editRfpType" class="section-selector">
+                                <option value="IT Support">IT Support</option>
+                                <option value="IT Staffing">IT Staffing</option>
+                                <option value="ERP Managed Services">ERP Managed Services</option>
+                                <option value="Custom Software Development">Custom Software Development</option>
+                                <option value="Cloud Migration">Cloud Migration</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSubmittedBy">Owner / Submitted By:</label>
+                            <select id="editSubmittedBy" name="editSubmittedBy" class="section-selector">
+                                <option value="Aish">Aish</option>
+                                <option value="Helen">Helen</option>
+                                <option value="Shirley">Shirley</option>
+                                <option value="Israel">Israel</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpStatus">Status:</label>
+                            <select id="editRfpStatus" name="editRfpStatus" class="section-selector">
+                                <option value="analyzed">Analyzed</option>
+                                <option value="active">Active</option>
+                                <option value="not_pursuing">Not Pursuing</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; <span id="current-year"></span> Cendien. All rights reserved. | Dallas IT Consulting & Managed Services</p>
-        </div>
-    </footer>
+                        <div class="form-group">
+                            <label for="editRfpSummary">RFP Summary:</label>
+                            <textarea id="editRfpSummary" name="editRfpSummary" rows="5"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editGeneratedQuestions">Generated Questions:</label>
+                            <textarea id="editGeneratedQuestions" name="editGeneratedQuestions" rows="8"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpDeadlines">Key Deadlines:</label>
+                            <textarea id="editRfpDeadlines" name="editRfpDeadlines" rows="3"></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="editRfpSubmissionFormat">Submission Format:</label>
+                            <textarea id="editRfpSubmissionFormat" name="editRfpSubmissionFormat" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpKeyRequirements">Key Requirements:</label>
+                            <textarea id="editRfpKeyRequirements" name="editRfpKeyRequirements" rows="5"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpStakeholders">Stakeholders:</label>
+                            <textarea id="editRfpStakeholders" name="editRfpStakeholders" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRfpRisks">Risks:</label>
+                            <textarea id="editRfpRisks" name="editRfpRisks" rows="3"></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="editRfpRegistration">Registration Details:</label>
+                            <textarea id="editRfpRegistration" name="editRfpRegistration" rows="3"></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="editRfpLicenses">Licenses/Certifications:</label>
+                            <textarea id="editRfpLicenses" name="editRfpLicenses" rows="3"></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="editRfpBudget">Budget Information:</label>
+                            <textarea id="editRfpBudget" name="editRfpBudget" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" id="save-edited-rfp-button" class="btn btn-primary">Save Changes</button>
+                        <button type="button" id="cancel-edit-rfp-button" class="btn btn-secondary">Cancel</button>
+                    </form>
+                    <div id="edit-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
+                </div>
+            </div>
 
-    <script src="/script.js"></script>
+            <div id="prompt-settings-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close-button" id="prompt-modal-close-button">&times;</span>
+                    <h2 style="text-align: center; margin-bottom: 1.5rem;">Edit AI Section Prompts</h2>
+                    
+                    <div class="form-group">
+                        <label for="promptSectionSelector">Select Section to Edit:</label>
+                        <select id="promptSectionSelector" name="promptSectionSelector" class="section-selector" style="width: 100%; margin-bottom: 1rem;">
+                            <option value="summary">1. Summary</option>
+                            <option value="questions">2. Clarification Questions</option>
+                            <option value="deadlines">3. Key Deadlines</option>
+                            <option value="submissionFormat">4. Submission Format</option>
+                            <option value="requirements">5. Requirements</option>
+                            <option value="stakeholders">6. Stakeholders/Key Contacts</option>
+                            <option value="risks">7. Potential Risks/Red Flags</option>
+                            <option value="registration">8. Registration Requirements</option>
+                            <option value="licenses">9. Licenses/Certifications</option>
+                            <option value="budget">10. Budget Constraints</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rfpIndividualPromptTextarea">Prompt for Selected Section:</label>
+                        <textarea id="rfpIndividualPromptTextarea" name="rfpIndividualPromptTextarea" rows="10" style="font-size: 0.85rem; line-height: 1.4;"></textarea>
+                        <small>Edit the instruction for how the AI should generate this specific section of the analysis. The AI will still receive the full RFP text.</small>
+                    </div>
+
+                    <button id="save-current-prompt-button" class="btn btn-primary" style="margin-top: 1rem;">Save Current Section Prompt</button>
+                    <button id="reset-current-prompt-button" class="btn btn-secondary" style="margin-top: 1rem; margin-left: 0.5rem;">Reset Current Section to Default</button>
+                    <button id="reset-all-prompts-button" class="btn btn-danger" style="margin-top: 1rem; margin-left: 0.5rem; background-color: #dc3545; border-color: #dc3545;">Reset All Prompts to Default</button>
+                    <div id="prompt-save-status" class="loading-container" style="display: none; margin-top: 1rem; min-height: 30px;"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="container">
+                <p>&copy; <span id="current-year-rfp"></span> Cendien. All rights reserved. | Dallas IT Consulting & Managed Services</p>
+            </div>
+        </footer>
+    </div> <script type="module" src="rfp-script.js"></script> 
+    <script>
+        // This script is for global tab functions if needed by modals from rfp-script.js
+        // It's placed here so it's globally available after rfp-script.js (which is type="module") might have run.
+        function openTabGeneric(evt, tabName, containerElementId) {
+            var i, tabcontent, tablinks;
+            var container = document.getElementById(containerElementId);
+            if (!container) {
+                console.error("Tab container not found:", containerElementId);
+                return;
+            }
+
+            tabcontent = container.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = container.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.style.display = "block";
+            } else {
+                console.error("Target tab not found:", tabName, "within", containerElementId);
+            }
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.className += " active";
+            }
+        }
+        // Make them globally accessible if rfp-script.js needs them (though it might be better if rfp-script.js defines them internally)
+        window.openModalTab = function(evt, tabName) {
+            openTabGeneric(evt, tabName, 'modal-analysis-results-area');
+        }
+        window.openViewTab = function(evt, tabName) {
+            openTabGeneric(evt, tabName, 'view-analysis-results-area'); 
+        }
+         // Ensure current year is set in the footer if not already by rfp-script.js
+        const yearSpanRFPGlobal = document.getElementById('current-year-rfp');
+        if (yearSpanRFPGlobal && !yearSpanRFPGlobal.textContent) {
+            yearSpanRFPGlobal.textContent = new Date().getFullYear();
+        }
+    </script>
 </body>
 </html>
