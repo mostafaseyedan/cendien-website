@@ -6,43 +6,29 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const db = new Firestore({
-    projectId: process.env.GCLOUD_PROJECT || 'temporal-grin-460413-q9',
+    projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai',
 });
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// RFP_PROMPT_DEFAULTS_FROM_CLIENT has been removed.
 
 const PROMPT_SETTINGS_DOC_ID = 'globalRfpPrompts'; // Single document to store all prompts
-
-// Helper function for retrying async operations with exponential backoff
-async function withRetry(fn, retries = 3, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            return await fn();
-        } catch (error) {
-            if (i < retries - 1) {
-                console.warn(`Attempt ${i + 1}/${retries} failed. Retrying in ${delay}ms...`, error.message);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2; // Exponential backoff
-            } else {
-                throw error; // Last attempt, re-throw the error
-            }
-        }
-    }
-}
 
 // Endpoint to get RFP prompt settings
 app.get('/api/rfp-prompt-settings', async (req, res) => {
     try {
         const docRef = db.collection('promptSettings').doc(PROMPT_SETTINGS_DOC_ID);
-        const doc = await withRetry(() => docRef.get());
+        const doc = await docRef.get();
 
         if (!doc.exists) {
-            // If no settings found, return an empty object, client will use its defaults
-            console.log('No RFP prompt settings found in Firestore, returning empty object. Client will use its defaults.');
-            res.status(200).json({ prompts: {}, source: 'default' });
+            console.log('No RFP prompt settings found in Firestore. Client should use its local defaults.');
+            // Return an empty prompts object. The client (rfp-script.js) is expected
+            // to use its own PROMPT_CONFIG defaults if it receives an empty prompts object
+            // or if the source indicates no settings were found.
+            res.status(200).json({ prompts: {}, source: 'no_settings_in_db' });
         } else {
             res.status(200).json({ prompts: doc.data(), source: 'firestore' });
         }
@@ -60,11 +46,30 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
             return res.status(400).json({ error: 'Invalid prompts data. Expecting an object.' });
         }
 
-        // No explicit key validation here; client is responsible for sending valid prompt keys.
-        // Firestore will save whatever keys are provided in the 'prompts' object.
+        // Define the expected prompt section keys for validation
+        // This list should correspond to the keys in rfp-script.js's PROMPT_CONFIG
+        const EXPECTED_PROMPT_KEYS = [
+            'summary', 'questions', 'deadlines', 'submissionFormat',
+            'requirements', 'stakeholders', 'risks', 'registration',
+            'licenses', 'budget'
+        ];
+
+        for (const key of EXPECTED_PROMPT_KEYS) {
+            // Check if the property exists and is a string.
+            // If prompts should always contain all keys, this check is appropriate.
+            // If partial updates are allowed where some keys might be missing,
+            // you might only validate keys that are present in the `prompts` object.
+            // However, the client currently sends the full `serverRfpPrompts` object.
+            if (!prompts.hasOwnProperty(key) || typeof prompts[key] !== 'string') {
+                 return res.status(400).json({ error: `Invalid or missing prompt for section: ${key}. All sections must be provided with string values.` });
+            }
+        }
 
         const docRef = db.collection('promptSettings').doc(PROMPT_SETTINGS_DOC_ID);
-        await withRetry(() => docRef.set(prompts, { merge: true })); // Use merge: true if you want to allow partial updates, or just set() to overwrite
+        // Using set with merge: true will create the document if it doesn't exist,
+        // or update/add fields if it does. Since the client sends the full object,
+        // it effectively overwrites with the new full set of prompts.
+        await docRef.set(prompts, { merge: true });
         
         console.log('RFP prompt settings saved with ID:', PROMPT_SETTINGS_DOC_ID);
         res.status(200).json({ message: 'RFP prompt settings saved successfully.', prompts });
@@ -73,7 +78,6 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
         res.status(500).json({ error: 'Failed to save RFP prompt settings.', details: error.message });
     }
 });
-
 
 
 // API Endpoint to communicate with Gemini
@@ -171,7 +175,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
     }
 });
 
-// Endpoint to update RFP status (kept for potentially quick status updates from list view if needed)
+// Endpoint to update RFP status
 app.put('/api/rfp-analysis/:id/status', async (req, res) => {
     try {
         const analysisId = req.params.id;
@@ -180,7 +184,6 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         if (!status) {
             return res.status(400).json({ error: 'New status is required.' });
         }
-        // *** UPDATED: Added "archived" to valid statuses ***
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ error: `Invalid status value. Must be one of: ${validStatuses.join(', ')}` });
@@ -195,14 +198,14 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
 
         await docRef.update({ status: status, lastModified: Timestamp.now() });
         console.log('RFP Analysis status updated for ID:', analysisId, 'New Status:', status);
-        res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', newStatus: status }); // Return newStatus
+        res.status(200).json({ id: analysisId, message: 'RFP status updated successfully.', newStatus: status });
     } catch (error) {
         console.error('Error updating RFP status:', error);
         res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
     }
 });
 
-// Endpoint to update RFP title (kept for potentially quick title updates if needed)
+// Endpoint to update RFP title
 app.put('/api/rfp-analysis/:id/title', async (req, res) => {
     try {
         const analysisId = req.params.id;
@@ -221,14 +224,14 @@ app.put('/api/rfp-analysis/:id/title', async (req, res) => {
 
         await docRef.update({ rfpTitle: rfpTitle, lastModified: Timestamp.now() });
         console.log('RFP Analysis title updated for ID:', analysisId, 'New Title:', rfpTitle);
-        res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', newRfpTitle: rfpTitle }); // Return newRfpTitle
+        res.status(200).json({ id: analysisId, message: 'RFP title updated successfully.', newRfpTitle: rfpTitle });
     } catch (error) {
         console.error('Error updating RFP title:', error);
         res.status(500).json({ error: 'Failed to update RFP title.', details: error.message });
     }
 });
 
-// *** NEW: Endpoint to update multiple details of an RFP analysis ***
+// Endpoint to update multiple details of an RFP analysis
 app.put('/api/rfp-analysis/:id', async (req, res) => {
     try {
         const analysisId = req.params.id;
@@ -253,7 +256,6 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
                 if (field === 'status' && !validStatuses.includes(req.body[field])) {
                     return res.status(400).json({ error: `Invalid status value. Must be one of: ${validStatuses.join(', ')}` });
                 }
-                // Add more specific validation per field if needed (e.g., type checks)
                 updates[field] = req.body[field];
             }
         }
@@ -262,11 +264,11 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
             return res.status(400).json({ error: 'No valid fields provided for update.' });
         }
 
-        updates.lastModified = Timestamp.now(); // Always update lastModified timestamp
+        updates.lastModified = Timestamp.now();
 
         await docRef.update(updates);
         console.log('RFP Analysis updated for ID:', analysisId, 'Data:', updates);
-        const updatedDoc = await docRef.get(); // Get the updated document to return
+        const updatedDoc = await docRef.get();
         res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated successfully.', ...updatedDoc.data() });
 
     } catch (error) {
@@ -278,7 +280,6 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
 
 // Endpoint to delete an RFP analysis
 app.delete('/api/rfp-analysis/:id', async (req, res) => {
-    // ... (no changes from original)
     try {
         const analysisId = req.params.id;
         const docRef = db.collection('rfpAnalyses').doc(analysisId);
@@ -299,7 +300,6 @@ app.delete('/api/rfp-analysis/:id', async (req, res) => {
 
 
 app.get('/api/rfp-analyses', async (req, res) => {
-    // ... (no changes from original)
     try {
         const analysesSnapshot = await db.collection('rfpAnalyses')
                                         .orderBy('analysisDate', 'desc')
@@ -319,7 +319,6 @@ app.get('/api/rfp-analyses', async (req, res) => {
 });
 
 app.get('/api/rfp-analysis/:id', async (req, res) => {
-    // ... (no changes from original)
     try {
         const analysisId = req.params.id;
         if (!analysisId) {
