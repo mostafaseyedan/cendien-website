@@ -319,6 +319,20 @@ header .settings-icon-container .action-icon:hover {
     list-style: none;
     padding: 5px 0;
     margin: 2px 0 0;
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Enable scrolling */
+}
+
+.actions-dropdown-container { 
+    position: relative; /* Establish positioning context for the dropdown */
+    display: inline-block;
+}
+
+.actions-dropdown-menu.align-top {
+    top: auto;
+    bottom: 100%;
+    transform: translateY(0%); /* Reset transform if positioned above */
+    margin-bottom: 2px;
 }
 
 .actions-dropdown-menu button.dropdown-item {
