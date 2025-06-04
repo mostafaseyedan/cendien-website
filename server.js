@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const db = new Firestore({
-    projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai',
+    projectId: process.env.GCLOUD_PROJECT || 'temporal-grin-460413-q9',
 });
 
 app.use(express.json({ limit: '50mb' }));
