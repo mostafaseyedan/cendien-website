@@ -596,22 +596,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         const savedPrompts = detailedAnalysis.analysisPrompts || {};
 
                         Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
-                            const contentDiv = viewTabContentMap[keySuffix];
-                            const sectionContent = detailedAnalysis[keySuffix === 'questions' ? 'generatedQuestions' : `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`] || 
-                                                  detailedAnalysis[`rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1).replace('Format', 'SubmissionFormat').replace('KeyRequirements', 'KeyRequirements')}`] || // Handle naming inconsistencies if any
-                                                  (keySuffix === 'summary' ? detailedAnalysis.rfpSummary : null) || // Explicit for summary
-                                                  "N/A";
-                            const promptText = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
-                            
-                            if (contentDiv) {
-                                formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent);
-                            } else if (keySuffix === 'deadlines' || keySuffix === 'submissionFormat') {
-                                // These are handled together in the 'deadlines' tab
-                                // Ensure this is done once if they are part of the same parent
-                            } else {
-                                console.warn(`View Tab Content Div not found for key: ${keySuffix}`);
-                            }
-                        });
+                                const contentDiv = viewTabContentMap[keySuffix];
+                                let sectionDataField;
+                                if (keySuffix === 'questions') {
+                                    sectionDataField = 'generatedQuestions';
+                                } else if (keySuffix === 'summary') {
+                                    sectionDataField = 'rfpSummary';
+                                } else if (keySuffix === 'requirements') {
+                                    sectionDataField = 'rfpKeyRequirements'; // This is the corrected line for requirements
+                                } else {
+                                    sectionDataField = `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                                }
+                                const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
+                                const promptTextForThisAnalysis = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
+                                if (contentDiv) {
+                                    formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptTextForThisAnalysis, sectionContent);
+                                }
+                            });
                         
                         if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'block';
                         const firstViewTabLink = document.querySelector('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link');
