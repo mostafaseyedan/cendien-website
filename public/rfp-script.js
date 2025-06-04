@@ -792,9 +792,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             const savedPrompts = detailedAnalysis.analysisPrompts || {};
                             Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
                                 const contentDiv = viewTabContentMap[keySuffix];
-                                const sectionDataField = keySuffix === 'questions' ? 'generatedQuestions' :
-                                                        keySuffix === 'summary' ? 'rfpSummary' :
-                                                        `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                                let sectionDataField;
+                                if (keySuffix === 'questions') {
+                                    sectionDataField = 'generatedQuestions';
+                                } else if (keySuffix === 'summary') {
+                                    sectionDataField = 'rfpSummary';
+                                } else if (keySuffix === 'requirements') {
+                                    sectionDataField = 'rfpKeyRequirements'; // This is the corrected line for requirements
+                                } else {
+                                    sectionDataField = `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                                }
                                 const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
                                 const promptTextForThisAnalysis = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
                                 if (contentDiv) {
