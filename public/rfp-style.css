@@ -1,3 +1,19 @@
+/* Basic Styles */
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #373F41;
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-y: auto; /* Ensure vertical scrolling for content that extends beyond viewport */
+}
+
+.container {
+    max-width: 1200px;
+}
+
 header .settings-icon-container {
     margin-left: auto; 
     padding-left: 1rem; 
@@ -249,7 +265,7 @@ header .settings-icon-container .action-icon:hover {
 
 .analyzed-rfp-list-container {
     border: 1px solid #e0e0e0; border-radius: 6px;
-    max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; 
+    margin-bottom: 1.5rem; 
 }
 .analyzed-rfp-item { 
     display: flex; align-items: center; padding: 0.75rem 1rem;
@@ -314,13 +330,12 @@ header .settings-icon-container .action-icon:hover {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    z-index: 100; 
+    z-index: 9999; 
     min-width: 180px; 
     list-style: none;
     padding: 5px 0;
     margin: 2px 0 0;
-    max-height: 200px; /* Limit height */
-    overflow-y: auto; /* Enable scrolling */
+    z-index: 9999;
 }
 
 .actions-dropdown-container { 
@@ -331,7 +346,6 @@ header .settings-icon-container .action-icon:hover {
 .actions-dropdown-menu.align-top {
     top: auto;
     bottom: 100%;
-    transform: translateY(0%); /* Reset transform if positioned above */
     margin-bottom: 2px;
 }
 
