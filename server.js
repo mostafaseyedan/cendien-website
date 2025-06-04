@@ -14,32 +14,35 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-const RFP_PROMPT_DEFAULTS_FROM_CLIENT = { // You might want to manage defaults server-side too
-    summary: "1. A concise summary of the RFP.",
-    questions: "2. A list of 5 to 15 critical and insightful clarification questions based on the RFP.",
-    deadlines: "3. Key Deadlines.",
-    submissionFormat: "4. Submission Format (Mail, Email, Portal, site address, etc.).",
-    requirements: "5. A list of Requirements (e.g., mandatory, highly desirable).",
-    stakeholders: "6. Mentioned Stakeholders or Key Contacts.",
-    risks: "7. Potential Risks or Red Flags identified in the RFP.",
-    registration: "8. Registration requirements or details for bidders.",
-    licenses: "9. Required Licenses or Certifications for bidders.",
-    budget: "10. Any mentioned Budget constraints or financial information."
-};
 const PROMPT_SETTINGS_DOC_ID = 'globalRfpPrompts'; // Single document to store all prompts
+
+// Helper function for retrying async operations with exponential backoff
+async function withRetry(fn, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (i < retries - 1) {
+                console.warn(`Attempt ${i + 1}/${retries} failed. Retrying in ${delay}ms...`, error.message);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff
+            } else {
+                throw error; // Last attempt, re-throw the error
+            }
+        }
+    }
+}
 
 // Endpoint to get RFP prompt settings
 app.get('/api/rfp-prompt-settings', async (req, res) => {
     try {
         const docRef = db.collection('promptSettings').doc(PROMPT_SETTINGS_DOC_ID);
-        const doc = await docRef.get();
+        const doc = await withRetry(() => docRef.get());
 
         if (!doc.exists) {
-            // If no settings found, return defaults (and optionally save them)
-            // For simplicity, just returning client-known defaults if not found.
-            // Or, you could save RFP_PROMPT_DEFAULTS_FROM_CLIENT here for future GETs.
-            console.log('No RFP prompt settings found in Firestore, returning client-side defaults expectation.');
-            res.status(200).json({ prompts: RFP_PROMPT_DEFAULTS_FROM_CLIENT, source: 'default' });
+            // If no settings found, return an empty object, client will use its defaults
+            console.log('No RFP prompt settings found in Firestore, returning empty object. Client will use its defaults.');
+            res.status(200).json({ prompts: {}, source: 'default' });
         } else {
             res.status(200).json({ prompts: doc.data(), source: 'firestore' });
         }
@@ -57,16 +60,11 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
             return res.status(400).json({ error: 'Invalid prompts data. Expecting an object.' });
         }
 
-        // Validate that all expected keys are present, or handle partial updates if desired
-        const expectedKeys = Object.keys(RFP_PROMPT_DEFAULTS_FROM_CLIENT);
-        for (const key of expectedKeys) {
-            if (typeof prompts[key] !== 'string') {
-                 return res.status(400).json({ error: `Invalid or missing prompt for section: ${key}` });
-            }
-        }
+        // No explicit key validation here; client is responsible for sending valid prompt keys.
+        // Firestore will save whatever keys are provided in the 'prompts' object.
 
         const docRef = db.collection('promptSettings').doc(PROMPT_SETTINGS_DOC_ID);
-        await docRef.set(prompts, { merge: true }); // Use merge: true if you want to allow partial updates, or just set() to overwrite
+        await withRetry(() => docRef.set(prompts, { merge: true })); // Use merge: true if you want to allow partial updates, or just set() to overwrite
         
         console.log('RFP prompt settings saved with ID:', PROMPT_SETTINGS_DOC_ID);
         res.status(200).json({ message: 'RFP prompt settings saved successfully.', prompts });
