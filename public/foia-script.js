@@ -180,8 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const FOIA_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Freedom of Information Act (FOIA) document(s).\nProvide the following distinct sections in your response, each clearly delimited:";
         const FOIA_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
         const FOIA_PROMPT_TEXT_SUFFIX = "\n\nFOIA Document Text:\n---\n{FOIA_TEXT_PLACEHOLDER}\n---";
-
-        // Updated FOIA_DOCUMENT_TYPE_CATEGORIES with the user-provided list
+        
         const FOIA_DOCUMENT_TYPE_CATEGORIES = [
             "IT Support",
             "IT Managed Services",
@@ -230,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: "Tasks or Work Plan"
             },
             documentType: { 
-                // Updated defaultText to use the new categories
                 defaultText: `Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Your answer MUST be one of the following predefined categories: ${FOIA_DOCUMENT_TYPE_CATEGORIES.join(", ")}. If the document appears to contain elements of multiple categories, classify it as "Mixed Batch of Records". If the type cannot be confidently determined from the provided list, classify it as "Undetermined".`,
                 delimiterKey: "DOCUMENT_TYPE",
                 databaseKey: "foiaType", 
@@ -978,8 +976,8 @@ ${originalFoiaTextForReanalysis}
                 }
                 const updatedFoiaData = {
                     foiaTitle: editFoiaTitleInput.value.trim(),
-                    // foiaType is AI-determined and read-only in edit form, so we don't send it for update.
-                    // If it needs to be updatable, remove readonly/disabled and include it here.
+                    // foiaType is AI-determined and read-only in edit form, so we don't typically send it for update.
+                    // If user *could* edit it, you would include: foiaType: editFoiaTypeInput.value.trim(),
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
                     [PROMPT_CONFIG_FOIA.summary.databaseKey]: editFoiaSummaryTextarea.value.trim(),
@@ -1487,20 +1485,35 @@ ${originalFoiaTextForReanalysis}
 
         initializeFoiaPage(); 
 
+        // Refined Global click listener to close dropdowns
         document.addEventListener('click', (e) => {
-            const openDropdowns = document.querySelectorAll('.actions-dropdown-menu'); 
-            let clickedInsideADropdownOrTrigger = false;
-            const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger');
+            const clickedOnTrigger = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger');
             
-            openDropdowns.forEach(menu => {
-                 if (menu.contains(e.target) || (actionTriggerClicked && (menu.previousElementSibling === actionTriggerClicked || menu.id === actionTriggerClicked.nextElementSibling?.id))) {
-                    clickedInsideADropdownOrTrigger = true;
+            document.querySelectorAll('.actions-dropdown-menu, .view-modal-actions-dropdown-menu').forEach(menu => {
+                // If the click was on the trigger that owns this menu, let the trigger's handler manage it
+                if (clickedOnTrigger && (menu.previousElementSibling === clickedOnTrigger || menu.id === clickedOnTrigger.nextElementSibling?.id) ) {
+                    // Special handling for view modal trigger as menu is not direct next sibling
+                    if (clickedOnTrigger.id === 'view-foia-modal-action-trigger' && menu.id === 'view-foia-modal-actions-menu') {
+                        // Let its specific handler manage visibility
+                        return;
+                    }
+                     if (clickedOnTrigger.id === 'view-rfp-modal-action-trigger' && menu.id === 'view-rfp-modal-actions-menu') { // For RFP page if this script runs there
+                        return;
+                    }
+                    // For list items, if the menu is the one for the clicked trigger, don't close it here
+                    if(menu.previousElementSibling === clickedOnTrigger) {
+                        return;
+                    }
                 }
+                // If the click was inside this menu, don't close it
+                if (menu.contains(e.target)) {
+                    return;
+                }
+                // Otherwise, close the menu
+                menu.style.display = 'none';
             });
-            if (!clickedInsideADropdownOrTrigger) {
-                openDropdowns.forEach(menu => menu.style.display = 'none');
-            }
         });
+
 
     } // End of initializeFoiaAppLogic function
 
