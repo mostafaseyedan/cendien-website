@@ -1,5 +1,3 @@
-// Import pdfjsLib. Ensure the path is correct if you host it locally.
-// Using a CDN for pdf.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
 // Set worker source for pdf.js
