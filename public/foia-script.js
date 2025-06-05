@@ -1,3 +1,5 @@
+// Import pdfjsLib. Ensure the path is correct if you host it locally.
+// Using a CDN for pdf.js
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
 
 // Set worker source for pdf.js
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const FOIA_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
         const FOIA_PROMPT_TEXT_SUFFIX = "\n\nFOIA Document Text:\n---\n{FOIA_TEXT_PLACEHOLDER}\n---";
 
-        // Defined FOIA types for the AI to choose from
+        // Updated FOIA_DOCUMENT_TYPE_CATEGORIES with the user-provided list
         const FOIA_DOCUMENT_TYPE_CATEGORIES = [
             "IT Support",
             "IT Managed Services",
@@ -187,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Cloud Migration",
             "IT Staffing",
             "Mixed Batch of Records",
-            "Undetermined" // Fallback
+            "Undetermined" 
         ];
 
         const PROMPT_CONFIG_FOIA = {
@@ -228,7 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: "Tasks or Work Plan"
             },
             documentType: { 
-                defaultText: `Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Your answer MUST be one of the following predefined categories: ${FOIA_DOCUMENT_TYPE_CATEGORIES.join(", ")}. If it's a mixed batch, state "Mixed Batch of Records" and optionally list the main components. If truly undeterminable from the list, use "Undetermined".`,
+                // Updated defaultText to use the new categories
+                defaultText: `Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Your answer MUST be one of the following predefined categories: ${FOIA_DOCUMENT_TYPE_CATEGORIES.join(", ")}. If the document appears to contain elements of multiple categories, classify it as "Mixed Batch of Records". If the type cannot be confidently determined from the provided list, classify it as "Undetermined".`,
                 delimiterKey: "DOCUMENT_TYPE",
                 databaseKey: "foiaType", 
                 title: "Document Type (AI Determined)"
@@ -975,7 +978,8 @@ ${originalFoiaTextForReanalysis}
                 }
                 const updatedFoiaData = {
                     foiaTitle: editFoiaTitleInput.value.trim(),
-                    // foiaType: editFoiaTypeInput.value, // This is read-only, so don't send it for update unless behavior changes
+                    // foiaType is AI-determined and read-only in edit form, so we don't send it for update.
+                    // If it needs to be updatable, remove readonly/disabled and include it here.
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
                     [PROMPT_CONFIG_FOIA.summary.databaseKey]: editFoiaSummaryTextarea.value.trim(),
@@ -1339,7 +1343,7 @@ ${originalFoiaTextForReanalysis}
                 });
                 
                 let parsedAISectionsFoia = {};
-                let aiDeterminedFoiaType = "Undetermined"; // Default if AI fails to determine or not in list
+                let aiDeterminedFoiaType = "Undetermined"; 
                 try {
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "AI is analyzing FOIA document(s)...");
                     const response = await fetch('/api/generate', { 
@@ -1363,14 +1367,12 @@ ${originalFoiaTextForReanalysis}
                         const content = parseFoiaSection(rawAiOutput, delimiter);
                         parsedAISectionsFoia[keySuffix] = content;
                         if (keySuffix === 'documentType') { 
-                            // Check if the AI's response is one of the predefined types
                             if (FOIA_DOCUMENT_TYPE_CATEGORIES.includes(content)) {
                                 aiDeterminedFoiaType = content;
                             } else {
                                 console.warn(`AI determined type "${content}" is not in the predefined list. Defaulting to "Undetermined".`);
-                                aiDeterminedFoiaType = "Undetermined";
+                                aiDeterminedFoiaType = "Undetermined"; 
                             }
-                            // Store the raw AI output for documentType in analysisPrompts if needed for audit/review
                             if (!currentFoiaAnalysisPrompts.documentTypeRaw) currentFoiaAnalysisPrompts.documentTypeRaw = {};
                             currentFoiaAnalysisPrompts.documentTypeRaw = content; 
                         }
@@ -1416,7 +1418,7 @@ ${originalFoiaTextForReanalysis}
                             analysisPrompts: currentFoiaAnalysisPrompts 
                         };
                         Object.keys(PROMPT_CONFIG_FOIA).forEach(key => {
-                            if (key === 'documentType') return; // Already handled in foiaType
+                            if (key === 'documentType') return; 
                             const dbKey = PROMPT_CONFIG_FOIA[key].databaseKey;
                             if (dbKey) { 
                                 savePayloadFoia[dbKey] = parsedAISectionsFoia[key];
