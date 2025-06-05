@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -56,36 +55,38 @@ header {
     justify-content: space-between;
     align-items: center;
 }
-.logo-container img#company-logo {
+/* Updated to include both logo IDs */
+.logo-container img#company-logo,
+.logo-container img#company-logo-foia {
     max-height: 48px;
     width: auto;
     vertical-align: middle; /* Improve alignment */
 }
-header nav { 
+header nav {
     display: flex;
     align-items: center;
-    gap: 1.5rem; 
+    gap: 1.5rem;
 }
 /* General Section Selector (used on homepage, can be base for other selects) */
 #section-selector, select.section-selector { /* Combined for base styling */
     padding: 0.6rem 1.2rem;
     border: 1px solid #ced4da;
-    border-radius: 25px; 
+    border-radius: 25px;
     font-size: 0.9rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     background-color: #fff;
     color: #373F41;
     cursor: pointer;
-    min-width: 200px; 
+    min-width: 200px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     line-height: 1.5; /* Added for selects */
     box-sizing: border-box;
 }
 #section-selector:focus, select.section-selector:focus {
     outline: none;
-    border-color: #005a9c; 
-    box-shadow: 0 0 0 0.15rem rgba(0, 90, 156, 0.25); 
+    border-color: #005a9c;
+    box-shadow: 0 0 0 0.15rem rgba(0, 90, 156, 0.25);
 }
 /* Specific select styling for forms can override radius or min-width */
 form select.section-selector { /* Selects in forms generally */
@@ -97,68 +98,68 @@ form select.section-selector { /* Selects in forms generally */
 .nav-link {
     color: #373F41;
     text-decoration: none;
-    font-weight: 500; 
+    font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     transition: background-color 0.2s ease, color 0.2s ease;
     white-space: nowrap;
 }
 .nav-link:hover {
-    background-color: #e9f1f7; 
-    color: #005a9c; 
+    background-color: #e9f1f7;
+    color: #005a9c;
 }
-header nav .nav-current-page { 
+header nav .nav-current-page {
     font-weight: 700;
-    color: #005a9c; 
+    color: #005a9c;
     padding: 0.5rem 1rem;
     white-space: nowrap;
 }
 
 /* Hero Section */
 #hero {
-    background-image: url('/images/cendien_cover.jpg');
+    background-image: url('/images/cendien_cover.jpg'); /* Ensure this path is correct */
     background-size: cover;
     background-position: center 50%;
-    position: relative; 
-    min-height: 380px; 
+    position: relative;
+    min-height: 380px;
 }
-#hero-text-box { 
+#hero-text-box {
     text-align: center;
-    margin-top: -70px; 
-    position: relative; 
+    margin-top: -70px;
+    position: relative;
     z-index: 10;
-    margin-bottom: 3rem; 
+    margin-bottom: 3rem;
 }
-#hero-text-box.text-center-override { text-align: center; } 
+#hero-text-box.text-center-override { text-align: center; }
 #hero-text-box h1 {
-    font-size: 2.5rem; 
+    font-size: 2.5rem;
     margin-bottom: 0.8rem;
-    font-weight: 700; 
-    color: #003366; 
+    font-weight: 700;
+    color: #003366;
 }
 #hero-text-box p {
-    font-size: 1.15rem; 
-    font-weight: 400; 
-    max-width: 720px; 
-    margin-left: auto; 
-    margin-right: auto; 
-    color: #373F41; 
+    font-size: 1.15rem;
+    font-weight: 400;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #373F41;
     line-height: 1.6;
 }
 #hero-location-city {
-    font-weight: 700; 
-    color: #005a9c; 
+    font-weight: 700;
+    color: #005a9c;
 }
 
 /* Content Card Styling (Global) */
 .content-card {
     background-color: #ffffff;
-    padding: 2.5rem; 
-    margin-bottom: 2.5rem; 
-    border-radius: 8px; 
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); 
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
-.content-card:hover { 
+.content-card:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
 }
 
@@ -166,26 +167,26 @@ header nav .nav-current-page {
 main h1, main h2, main h3, main h4, main h5, main h6 {
     line-height: 1.3; /* Improved heading line-height */
 }
-main h2 { 
-    font-size: 2rem; 
-    font-weight: 700; 
-    color: #003366; 
+main h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #003366;
     margin-bottom: 1.5rem;
     text-align: center;
-} 
-main h3 { 
-    font-size: 1.5rem; 
-    font-weight: 500; 
-    color: #004c80; 
+}
+main h3 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #004c80;
     margin-bottom: 1.2rem;
-    text-align: center; 
-} 
+    text-align: center;
+}
 
 /* Dynamic Content Area (Homepage Specific) */
 #dynamic-content-area #content-title {
      text-align: center;
      font-weight: 700;
-     color: #003366; 
+     color: #003366;
 }
 #ai-generated-content p { margin-bottom: 1.1rem; color: #373F41; }
 #ai-generated-content p:last-child { margin-bottom: 0; }
@@ -194,30 +195,30 @@ main h3 {
 /* Two Column Layout (Homepage Specific) */
 .two-column-layout {
     display: flex;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 2.5rem; 
-    margin-bottom: 2.5rem; 
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
 }
 .two-column-layout > .content-card.column {
     min-width: 300px;
     flex-grow: 1;
-    margin-bottom: 0; 
+    margin-bottom: 0;
 }
-#ai-module-suggester.column { 
-    flex-basis: calc(45% - 1.25rem); 
+#ai-module-suggester.column {
+    flex-basis: calc(45% - 1.25rem);
 }
-#services-overview-static.column { 
-    flex-basis: calc(55% - 1.25rem); 
+#services-overview-static.column {
+    flex-basis: calc(55% - 1.25rem);
 }
 
 /* AI Module Suggester Section (Homepage Specific) */
 #ai-module-suggester { text-align: left; }
 .suggester-header { text-align: center; margin-bottom: 1.5rem; }
 .suggester-icon { max-height: 35px; margin-bottom: 0.5rem; vertical-align: middle; }
-#ai-module-suggester h2 { 
-    font-size: 1.8rem; 
-    color: #003366; 
+#ai-module-suggester h2 {
+    font-size: 1.8rem;
+    color: #003366;
 }
 #ai-module-suggester .suggester-header p {
     font-size: 0.95rem; color: #555; max-width: 100%; margin: 0 auto 1rem auto;
@@ -258,9 +259,9 @@ main h3 {
 .form-group input[type="file"]:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-    border-color: #005a9c; 
+    border-color: #005a9c;
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25); 
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25);
 }
 .char-count { font-size: 0.8rem; color: #777; margin-bottom: 1rem; text-align: right;}
 
@@ -268,50 +269,50 @@ main h3 {
 /* BUTTON STYLING (Global) */
 .btn {
     display: inline-block;
-    padding: 10px 24px; 
-    font-size: 0.95rem; 
-    font-weight: 500;  
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 500;
     text-align: center;
     text-decoration: none;
-    border-radius: 25px; 
+    border-radius: 25px;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
-    border: 2px solid transparent; 
-    line-height: 1.5; 
+    border: 2px solid transparent;
+    line-height: 1.5;
     vertical-align: middle; /* Better alignment if next to text */
 }
 .btn:active { transform: translateY(1px); }
 
-.btn-primary { 
-    background-color: #005a9c; 
-    color: #ffffff; 
-    border-color: #005a9c; 
+.btn-primary {
+    background-color: #005a9c;
+    color: #ffffff;
+    border-color: #005a9c;
     width: auto; /* MODIFIED: For natural sizing */
-    display: inline-block; 
+    display: inline-block;
 }
 .btn-primary:hover {
-    background-color: #003f6e; 
-    color: #ffffff; 
-    border-color: #003355; 
+    background-color: #003f6e;
+    color: #ffffff;
+    border-color: #003355;
 }
 
-.btn-secondary { 
-    background-color: #f0f4f8; 
-    color: #005a9c; 
-    border-color: #005a9c; 
-    width: auto; 
-    display: inline-block; 
+.btn-secondary {
+    background-color: #f0f4f8;
+    color: #005a9c;
+    border-color: #005a9c;
+    width: auto;
+    display: inline-block;
 }
 .btn-secondary:hover {
-    background-color: #d9e6f2; 
-    color: #003f6e; 
-    border-color: #003f6e; 
+    background-color: #d9e6f2;
+    color: #003f6e;
+    border-color: #003f6e;
 }
 
 /* Disabled Button State (Global) */
 .btn:disabled,
-button:disabled { 
-    background-color: #adb5bd !important; 
+button:disabled {
+    background-color: #adb5bd !important;
     border-color: #adb5bd !important;
     color: #6c757d !important;
     cursor: not-allowed !important;
@@ -320,8 +321,8 @@ button:disabled {
 
 
 #suggested-modules-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
-#suggested-modules-area h3 { 
-    text-align: left; font-size: 1.4rem; color: #004c80; 
+#suggested-modules-area h3 {
+    text-align: left; font-size: 1.4rem; color: #004c80;
 }
 #modules-result p { margin-bottom: 0.75rem; line-height: 1.6; color: #373F41; }
 
@@ -332,15 +333,15 @@ button:disabled {
 .loading-text { font-style: italic; color: #555; font-size: 0.95rem; }
 
 /* Contact Details Section (Homepage) */
-#services-overview-static.column h3, 
-#contact-details.column h3, 
-#contact-details h3:not(.column h3) { 
-    text-align: left; font-size: 1.4rem; font-weight: 500; color: #004c80; 
+#services-overview-static.column h3,
+#contact-details.column h3,
+#contact-details h3:not(.column h3) {
+    text-align: left; font-size: 1.4rem; font-weight: 500; color: #004c80;
 }
 .contact-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; }
-.address-block h3, .phone-block h3 { 
-    font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem; 
-    text-align: left; font-weight: 500; 
+.address-block h3, .phone-block h3 {
+    font-size: 1.2rem; color: #005a9c; margin-bottom: 0.6rem;
+    text-align: left; font-weight: 500;
 }
 .address-block address, .phone-block p { font-style: normal; line-height: 1.7; color: #555; font-size: 0.95rem; }
 .phone-block a { color: #005a9c; text-decoration: none; }
@@ -355,20 +356,20 @@ footer p { margin: 0; font-size: 0.9rem; }
 
 /* Styles for Resume Generator Page */
 #resume-generator-tool #outputFormat.section-selector { margin-bottom: 1rem; width: 100%; }
-#resume-generator-tool #generate-resume-button.btn-secondary { 
-    background-color: #212529; color: #ffffff; border-color: #212529; 
+#resume-generator-tool #generate-resume-button.btn-secondary {
+    background-color: #212529; color: #ffffff; border-color: #212529;
 }
 #resume-generator-tool #generate-resume-button.btn-secondary:hover {
-    background-color: #343a40; color: #ffffff; border-color: #343a40; 
+    background-color: #343a40; color: #ffffff; border-color: #343a40;
 }
-#resume-generator-tool #generate-resume-button.btn-primary { 
-     width: 100%; margin-top: 1rem; 
+#resume-generator-tool #generate-resume-button.btn-primary {
+     width: 100%; margin-top: 1rem;
 }
-#generated-resume-area, #resume-generation-status { 
+#generated-resume-area, #resume-generation-status {
     background-color: #f0f4f8; padding: 1.5rem; border-radius: 6px;
     border: 1px solid #e0e0e0; margin-top: 2.5rem;
 }
-#generated-resume-area h3 { 
+#generated-resume-area h3 {
     text-align: left; font-size: 1.4rem; color: #003366; margin-bottom: 1rem;
 }
 #resume-result p, #resume-result li { color: #373F41; font-size: 0.95rem; }
@@ -376,9 +377,9 @@ footer p { margin: 0; font-size: 0.9rem; }
 #resume-result ul li { margin-bottom: 0.5rem; }
 
 /* Responsive Adjustments (Global) */
-@media (max-width: 992px) { 
+@media (max-width: 992px) {
     .two-column-layout { flex-direction: column; }
-    .two-column-layout > .column { 
+    .two-column-layout > .column {
         flex-basis: 100%; margin-bottom: 2.5rem;
     }
     .two-column-layout > .column:last-child { margin-bottom: 0; }
@@ -386,17 +387,20 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 @media (max-width: 768px) {
     body { font-size: 15px; }
-    header nav { 
-        width: 100%; flex-direction: column; 
-        align-items: stretch; gap: 0.75rem; 
+    header nav {
+        width: 100%; flex-direction: column;
+        align-items: stretch; gap: 0.75rem;
     }
     header .nav-container nav:not(:has(#section-selector)) {
-        flex-direction: row; flex-wrap: wrap; 
-        justify-content: center; gap: 0.5rem; 
+        flex-direction: row; flex-wrap: wrap;
+        justify-content: center; gap: 0.5rem;
     }
-    #company-logo { max-height: 40px; }
+    /* Updated to include both logo IDs for responsive sizing */
+    #company-logo,
+    #company-logo-foia { max-height: 40px !important; } /* Added !important to ensure override if needed, or check specificity */
+
     #section-selector { width: 100%; font-size: 0.9rem; } /* Homepage dropdown */
-    
+
     #hero { min-height: 280px; }
     #hero-text-box { margin-top: -50px; padding: 1.5rem; }
     #hero-text-box h1 { font-size: 1.8rem; }
@@ -404,7 +408,7 @@ footer p { margin: 0; font-size: 0.9rem; }
     main h2 { font-size: 1.7rem; }
     main h3 { font-size: 1.3rem; }
     .content-card { padding: 1.5rem; }
-    .btn { padding: 10px 20px; font-size: 0.9rem; } 
+    .btn { padding: 10px 20px; font-size: 0.9rem; }
 
     /* Make form elements in .form-group full width on smaller screens by default */
     .form-group input[type="text"],
@@ -416,11 +420,11 @@ footer p { margin: 0; font-size: 0.9rem; }
 }
 
 @media (max-width: 480px) {
-    .btn-primary, .btn-secondary { 
-        width: 100%; display: block; 
+    .btn-primary, .btn-secondary {
+        width: 100%; display: block;
         margin-left: auto; margin-right: auto; margin-bottom: 0.5rem;
     }
     .btn-primary:last-child, .btn-secondary:last-child { margin-bottom: 0; }
-    
+
     /* Specific button on RFP page handled in rfp-style.css */
 }
