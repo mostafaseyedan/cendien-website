@@ -80,7 +80,7 @@
             <section id="view-saved-foia-details-section" style="display: none;">
                 <div class="view-rfp-modal-content content-card container"> 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 id="view-foia-main-title-heading">FOIA Details</h2>
+                        <h2 id="view-foia-main-title-heading" class="view-modal-main-title">FOIA Details</h2>
                         <div class="view-modal-actions-dropdown-container">
                             <button id="view-foia-modal-action-trigger" class="view-modal-actions-dropdown-trigger action-icon" title="More actions">
                                 <i class="fas fa-ellipsis-v"></i>
@@ -94,35 +94,30 @@
                     <div id="view-analysis-results-area-foia">
                         <div class="tabs-container">
                             <button class="tab-link active" onclick="openFoiaViewTab(event, 'view-summary-tab-foia')">Summary</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-comparison-rating-tab-foia')">Comparison & Rating</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-insights-analysis-tab-foia')">Insights & Analysis</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-financial-intelligence-tab-foia')">Pricing/Fees</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-context-impact-tab-foia')">Market Trends</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-actionable-items-tab-foia')">Tasks/Work Plan</button>
+                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-proposalComparison-tab-foia')">Comparison & Rating</button>
+                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-insightsAnalysis-tab-foia')">Insights & Analysis</button>
+                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-pricingIntelligence-tab-foia')">Pricing/Fees Intel</button>
+                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-marketTrends-tab-foia')">Market Trends</button>
+                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-tasksWorkPlan-tab-foia')">Tasks/Work Plan</button>
                         </div>
 
                         <div id="view-summary-tab-foia" class="tab-content" style="display: block;">
-                            <h3>Document Summary:</h3>
+                            <!-- Content populated by JS: formatAndDisplayFoiaContentWithPrompt -->
                             <div id="view-summary-result-content-foia"></div>
                         </div>
-                        <div id="view-comparison-rating-tab-foia" class="tab-content">
-                            <h3>Proposal Comparison and Rating:</h3>
+                        <div id="view-proposalComparison-tab-foia" class="tab-content">
                             <div id="view-comparison-rating-result-content-foia"></div>
                         </div>
-                        <div id="view-insights-analysis-tab-foia" class="tab-content">
-                            <h3>Insights and Analysis:</h3>
+                        <div id="view-insightsAnalysis-tab-foia" class="tab-content">
                             <div id="view-insights-analysis-result-content-foia"></div>
                         </div>
-                        <div id="view-financial-intelligence-tab-foia" class="tab-content">
-                            <h3>Pricing Fees Intelligence:</h3>
+                        <div id="view-pricingIntelligence-tab-foia" class="tab-content">
                             <div id="view-financial-intelligence-result-content-foia"></div>
                         </div>
-                        <div id="view-context-impact-tab-foia" class="tab-content">
-                            <h3>Market Trends:</h3>
+                        <div id="view-marketTrends-tab-foia" class="tab-content">
                             <div id="view-context-impact-result-content-foia"></div>
                         </div>
-                        <div id="view-actionable-items-tab-foia" class="tab-content">
-                            <h3>Tasks or Work Plan:</h3>
+                        <div id="view-tasksWorkPlan-tab-foia" class="tab-content">
                             <div id="view-actionable-items-result-content-foia"></div>
                         </div>
                     </div>
@@ -166,18 +161,30 @@
                          <h3 style="text-align:center; margin-bottom: 1rem;">Analysis Results</h3>
                         <div class="tabs-container">
                             <button class="tab-link active" onclick="openFoiaModalTab(event, 'modal-summary-tab-foia')">Summary</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-comparison-rating-tab-foia')">Comparison & Rating</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-insights-analysis-tab-foia')">Insights & Analysis</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-financial-intelligence-tab-foia')">Pricing/Fees</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-context-impact-tab-foia')">Market Trends</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-actionable-items-tab-foia')">Tasks/Work Plan</button>
+                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-proposalComparison-tab-foia')">Comparison & Rating</button>
+                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-insightsAnalysis-tab-foia')">Insights & Analysis</button>
+                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-pricingIntelligence-tab-foia')">Pricing/Fees Intel</button>
+                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-marketTrends-tab-foia')">Market Trends</button>
+                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-tasksWorkPlan-tab-foia')">Tasks/Work Plan</button>
                         </div>
-                        <div id="modal-summary-tab-foia" class="tab-content" style="display: block;"><div id="modal-summary-result-content-foia"></div></div>
-                        <div id="modal-comparison-rating-tab-foia" class="tab-content"><div id="modal-comparison-rating-result-content-foia"></div></div>
-                        <div id="modal-insights-analysis-tab-foia" class="tab-content"><div id="modal-insights-analysis-result-content-foia"></div></div>
-                        <div id="modal-financial-intelligence-tab-foia" class="tab-content"><div id="modal-financial-intelligence-result-content-foia"></div></div>
-                        <div id="modal-context-impact-tab-foia" class="tab-content"><div id="modal-context-impact-result-content-foia"></div></div>
-                        <div id="modal-actionable-items-tab-foia" class="tab-content"><div id="modal-actionable-items-result-content-foia"></div></div>
+                        <div id="modal-summary-tab-foia" class="tab-content" style="display: block;">
+                            <div id="modal-summary-result-content-foia"></div>
+                        </div>
+                        <div id="modal-proposalComparison-tab-foia" class="tab-content">
+                            <div id="modal-comparison-rating-result-content-foia"></div>
+                        </div>
+                        <div id="modal-insightsAnalysis-tab-foia" class="tab-content">
+                            <div id="modal-insights-analysis-result-content-foia"></div>
+                        </div>
+                        <div id="modal-pricingIntelligence-tab-foia" class="tab-content">
+                            <div id="modal-financial-intelligence-result-content-foia"></div>
+                        </div>
+                        <div id="modal-marketTrends-tab-foia" class="tab-content">
+                            <div id="modal-context-impact-result-content-foia"></div>
+                        </div>
+                        <div id="modal-tasksWorkPlan-tab-foia" class="tab-content">
+                            <div id="modal-actionable-items-result-content-foia"></div>
+                        </div>
                     </div>
                 </div>
             </div>
