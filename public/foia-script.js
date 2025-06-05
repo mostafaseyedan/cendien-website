@@ -106,16 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalAnalysisResultsAreaFoia = document.getElementById('modal-analysis-results-area-foia');
 
         // Tab content maps for new analysis modal (FOIA specific)
+        // These keys should match the keys in PROMPT_CONFIG_FOIA after update
         const modalTabContentMapFoia = {
             summary: document.getElementById('modal-summary-result-content-foia'),
-            questions: document.getElementById('modal-questions-result-content-foia'),
-            deadlines: null, // Will be populated by clearTabContent
-            submissionFormat: null, // Will be populated by clearTabContent
-            requirements: document.getElementById('modal-requirements-result-content-foia'),
-            stakeholders: document.getElementById('modal-stakeholders-result-content-foia'),
-            risks: document.getElementById('modal-risks-result-content-foia'),
+            proposalComparison: document.getElementById('modal-comparison-rating-result-content-foia'), // New ID needed in HTML
+            insightsAnalysis: document.getElementById('modal-insights-analysis-result-content-foia'), // New ID needed in HTML
+            pricingIntelligence: document.getElementById('modal-financial-intelligence-result-content-foia'), // New ID needed in HTML
+            marketTrends: document.getElementById('modal-context-impact-result-content-foia'), // New ID needed in HTML
+            tasksWorkPlan: document.getElementById('modal-actionable-items-result-content-foia'), // New ID needed in HTML
+            // Old keys that might need removal or remapping if HTML structure changes:
+            // questions: document.getElementById('modal-questions-result-content-foia'),
+            // deadlines: null, 
+            // submissionFormat: null, 
+            // requirements: document.getElementById('modal-requirements-result-content-foia'),
+            // stakeholders: document.getElementById('modal-stakeholders-result-content-foia'),
+            // risks: document.getElementById('modal-risks-result-content-foia'),
         };
-        const modalDeadlinesTabContentDivFoia = document.getElementById('modal-deadlines-tab-foia');
+        // const modalDeadlinesTabContentDivFoia = document.getElementById('modal-deadlines-tab-foia'); // This might change based on new tab structure
 
 
         // View Saved FOIA Details Elements
@@ -124,20 +131,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeViewFoiaDetailsButton = document.getElementById('close-view-foia-details-button');
         const viewFoiaStatusArea = document.getElementById('view-foia-status-area');
         const viewAnalysisResultsAreaFoia = document.getElementById('view-analysis-results-area-foia');
-        const viewFoiaModalActionTrigger = document.getElementById('view-foia-modal-action-trigger'); // Action trigger in view modal
-        const viewFoiaModalActionsMenu = document.getElementById('view-foia-modal-actions-menu'); // Action menu in view modal
+        const viewFoiaModalActionTrigger = document.getElementById('view-foia-modal-action-trigger'); 
+        const viewFoiaModalActionsMenu = document.getElementById('view-foia-modal-actions-menu'); 
         
         // Tab content maps for viewing saved analysis (FOIA specific)
+        // These keys should match the keys in PROMPT_CONFIG_FOIA after update
         const viewTabContentMapFoia = {
             summary: document.getElementById('view-summary-result-content-foia'),
-            questions: document.getElementById('view-questions-result-content-foia'),
-            deadlines: null, // Will be populated by clearTabContent
-            submissionFormat: null, // Will be populated by clearTabContent
-            requirements: document.getElementById('view-requirements-result-content-foia'),
-            stakeholders: document.getElementById('view-stakeholders-result-content-foia'),
-            risks: document.getElementById('view-risks-result-content-foia'),
+            proposalComparison: document.getElementById('view-comparison-rating-result-content-foia'), // New ID needed in HTML
+            insightsAnalysis: document.getElementById('view-insights-analysis-result-content-foia'),   // New ID needed in HTML
+            pricingIntelligence: document.getElementById('view-financial-intelligence-result-content-foia'),// New ID needed in HTML
+            marketTrends: document.getElementById('view-context-impact-result-content-foia'),      // New ID needed in HTML
+            tasksWorkPlan: document.getElementById('view-actionable-items-result-content-foia'),   // New ID needed in HTML
         };
-        const viewDeadlinesTabContentDivFoia = document.getElementById('view-deadlines-tab-foia');
+        // const viewDeadlinesTabContentDivFoia = document.getElementById('view-deadlines-tab-foia'); // This might change
 
 
         // Edit FOIA Modal Elements
@@ -147,17 +154,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const editFoiaForm = document.getElementById('edit-foia-details-form');
         const editFoiaIdInput = document.getElementById('editFoiaId');
         const editFoiaTitleInput = document.getElementById('editFoiaTitle');
-        const editFoiaFileNamesTextarea = document.getElementById('editFoiaFileNames'); // For multiple file names
+        const editFoiaFileNamesTextarea = document.getElementById('editFoiaFileNames'); 
         const editFoiaTypeInput = document.getElementById('editFoiaType');
         const editSubmittedBySelectFoia = document.getElementById('editSubmittedByFoia');
         const editFoiaStatusSelect = document.getElementById('editFoiaStatus');
+        // Textareas for edit modal - will need to match new PROMPT_CONFIG_FOIA keys
         const editFoiaSummaryTextarea = document.getElementById('editFoiaSummary');
-        const editGeneratedQuestionsTextareaFoia = document.getElementById('editGeneratedQuestionsFoia');
-        const editFoiaDeadlinesTextarea = document.getElementById('editFoiaDeadlines');
-        const editFoiaSubmissionFormatTextarea = document.getElementById('editFoiaSubmissionFormat');
-        const editFoiaKeyRequirementsTextarea = document.getElementById('editFoiaKeyRequirements');
-        const editFoiaStakeholdersTextarea = document.getElementById('editFoiaStakeholders');
-        const editFoiaRisksTextarea = document.getElementById('editFoiaRisks');
+        const editFoiaProposalComparisonTextarea = document.getElementById('editFoiaProposalComparison'); // New ID needed in HTML
+        const editFoiaInsightsAnalysisTextarea = document.getElementById('editFoiaInsightsAnalysis'); // New ID needed in HTML
+        const editFoiaPricingIntelligenceTextarea = document.getElementById('editFoiaPricingIntelligence'); // New ID needed in HTML
+        const editFoiaMarketTrendsTextarea = document.getElementById('editFoiaMarketTrends'); // New ID needed in HTML
+        const editFoiaTasksWorkPlanTextarea = document.getElementById('editFoiaTasksWorkPlan'); // New ID needed in HTML
+        // const editGeneratedQuestionsTextareaFoia = document.getElementById('editGeneratedQuestionsFoia'); // Old
+        // const editFoiaDeadlinesTextarea = document.getElementById('editFoiaDeadlines'); // Old
+        // const editFoiaSubmissionFormatTextarea = document.getElementById('editFoiaSubmissionFormat'); // Old
+        // const editFoiaKeyRequirementsTextarea = document.getElementById('editFoiaKeyRequirements'); // Old
+        // const editFoiaStakeholdersTextarea = document.getElementById('editFoiaStakeholders'); // Old
+        // const editFoiaRisksTextarea = document.getElementById('editFoiaRisks'); // Old
+
         const saveEditedFoiaButton = document.getElementById('save-edited-foia-button');
         const cancelEditFoiaButton = document.getElementById('cancel-edit-foia-button');
         const editFoiaStatusArea = document.getElementById('edit-foia-status-area');
@@ -186,49 +200,45 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentFoiaStatusFilter = 'all_statuses';
         let serverFoiaPrompts = null; 
         let foiaPromptsLastFetchedFromServer = false; 
-        let currentlyViewedFoiaAnalysis = null; // Store the currently viewed FOIA item
+        let currentlyViewedFoiaAnalysis = null; 
 
-        // FOIA Specific Prompt Configuration (adjust defaultText as needed for FOIA context)
         const FOIA_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Freedom of Information Act (FOIA) document(s).\nProvide the following distinct sections in your response, each clearly delimited:";
         const FOIA_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
         const FOIA_PROMPT_TEXT_SUFFIX = "\n\nFOIA Document Text:\n---\n{FOIA_TEXT_PLACEHOLDER}\n---";
 
+        // Updated PROMPT_CONFIG_FOIA
         const PROMPT_CONFIG_FOIA = {
             summary: {
-                defaultText: "You will be provided with the content of a FOIA document. Focus on extracting and condensing key information. Ensure the summary captures essential aspects like: Subject matter, Key entities involved, Main findings or information disclosed, and any specified request scope or timeframe. Maintain conciseness and comprehensiveness.",
+                defaultText: "Provide a concise overview of the FOIA document content, highlighting the main subject, key information disclosed or requested, and any immediate takeaways.",
                 delimiterKey: "SUMMARY"
             },
-            questions: {
-                defaultText: "Generate a list of critical and insightful clarification questions regarding this FOIA document. These questions should aim to understand the scope of the information, identify potential ambiguities, or areas needing further context for a complete understanding.",
-                delimiterKey: "QUESTIONS"
+            proposalComparison: { // Key for "Proposal Comparison and Rating"
+                defaultText: "If the FOIA response includes multiple documents or distinct sections, compare them. Assess the relevance and completeness of the information provided in relation to the presumed request or subject matter. Assign a qualitative rating (e.g., High, Medium, Low relevance/completeness) if applicable.",
+                delimiterKey: "PROPOSAL_COMPARISON_RATING" // Changed delimiter to be more specific
             },
-            deadlines: { // For FOIA, this might be 'Key Dates' or 'Response Timelines'
-                defaultText: "Identify any key dates mentioned in the FOIA document(s), such as request dates, response deadlines, document creation dates, or event dates. Also, note any information about the format or channel of the FOIA request or response (e.g., online portal, mail).",
-                delimiterKey: "DATES_FORMAT" // Combined for FOIA
+            insightsAnalysis: { // Key for "Insights and Analysis"
+                defaultText: "Extract key insights, patterns, or significant findings from the FOIA documents. Analyze the implications of the disclosed information.",
+                delimiterKey: "INSIGHTS_ANALYSIS"
             },
-            submissionFormat: { // Often part of 'Deadlines' for FOIA, handle accordingly or make distinct
-                defaultText: "Describe the method or format of the FOIA request or response as detailed in the document (e.g., email, portal, physical mail). Include any specific instructions or contact points mentioned for correspondence.",
-                delimiterKey: "RESPONSE_CHANNEL" // Potentially rename for FOIA context
+            pricingIntelligence: { // Key for "Pricing Fees Intelligence (Budget Predictor)"
+                defaultText: "Identify any information related to fees (e.g., search, duplication, review costs), fee waivers, or any other financial data or budgetary implications mentioned in the FOIA documents.",
+                delimiterKey: "FINANCIAL_INTELLIGENCE" // Changed delimiter
             },
-            requirements: { // For FOIA, 'Key Information Requested/Disclosed' or 'Scope'
-                defaultText: "List the key pieces of information requested or disclosed in the FOIA document. Detail any specific requirements, scope limitations, or categories of information mentioned.",
-                delimiterKey: "KEY_INFORMATION"
+            marketTrends: { // Key for "Market Trends"
+                defaultText: "Analyze the disclosed information in the context of public interest, current events, or any related trends. What is the broader significance or potential impact of this information?",
+                delimiterKey: "CONTEXT_IMPACT" // Changed delimiter
             },
-            stakeholders: { // For FOIA, 'Entities Involved' or 'Mentioned Parties'
-                defaultText: "Identify all government agencies, organizations, individuals, or other entities mentioned as key parties in the FOIA document(s).",
-                delimiterKey: "ENTITIES_INVOLVED"
-            },
-            risks: { // For FOIA, 'Exemptions Cited' or 'Redactions Noted'
-                defaultText: "Identify any FOIA exemptions cited, justifications for redactions, or sections of withheld information mentioned in the document. Note any potential issues or controversies highlighted.",
-                delimiterKey: "EXEMPTIONS_REDACTIONS"
+            tasksWorkPlan: { // Key for "Tasks or Work Plan"
+                defaultText: "Based on the information disclosed, outline any potential next steps, follow-up actions, or tasks that might be necessary for the user (e.g., further investigation, data analysis, public dissemination).",
+                delimiterKey: "ACTIONABLE_ITEMS" // Changed delimiter
             }
         };
+
 
         if (yearSpanFoia && !yearSpanFoia.textContent) {
             yearSpanFoia.textContent = new Date().getFullYear();
         }
 
-        // --- Prompt Management Functions (FOIA specific) ---
         async function fetchFoiaPromptsFromServer() {
             if (foiaPromptsLastFetchedFromServer && serverFoiaPrompts) {
                 console.log("Using already fetched FOIA server prompts.");
@@ -236,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if(promptSaveStatusFoia) showLoadingMessage(promptSaveStatusFoia, 'Loading FOIA prompt settings...', true);
             try {
-                const response = await fetch('/api/foia-prompt-settings'); // FOIA specific endpoint
+                const response = await fetch('/api/foia-prompt-settings'); 
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({ error: 'Failed to fetch FOIA prompts, server error.' }));
                     throw new Error(errData.error || `HTTP error ${response.status}`);
@@ -252,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error fetching FOIA prompts:', error);
                 if(promptSaveStatusFoia) showLoadingMessage(promptSaveStatusFoia, `Error loading FOIA prompts: ${error.message}. Using local defaults.`, false);
-                serverFoiaPrompts = {}; // Initialize if error
+                serverFoiaPrompts = {}; 
                 Object.keys(PROMPT_CONFIG_FOIA).forEach(key => {
                     serverFoiaPrompts[key] = PROMPT_CONFIG_FOIA[key].defaultText;
                 });
@@ -264,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async function saveFoiaPromptsToServer(promptsToSave) {
             if(promptSaveStatusFoia) showLoadingMessage(promptSaveStatusFoia, 'Saving FOIA prompts...', true);
             try {
-                const response = await fetch('/api/foia-prompt-settings', { // FOIA specific endpoint
+                const response = await fetch('/api/foia-prompt-settings', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompts: promptsToSave }),
@@ -385,7 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return fullPrompt;
         }
 
-        // --- Modal Open/Close Utility Functions (generic, used by FOIA modals) ---
         function openModal(modalElement) {
             if (modalElement) {
                 [newFoiaModal, editFoiaModal, viewSavedFoiaDetailsSection, promptSettingsModalFoia].forEach(m => {
@@ -394,8 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (m.classList.contains('modal-active')) m.classList.remove('modal-active');
                     }
                 });
-                modalElement.style.display = 'block'; // Or 'flex' if preferred
-                if (modalElement.id === 'view-saved-foia-details-section') { // Check ID if class is reused
+                modalElement.style.display = 'block'; 
+                if (modalElement.id === 'view-saved-foia-details-section') { 
                     modalElement.classList.add('modal-active');
                 }
                 document.body.style.overflow = 'hidden';
@@ -407,13 +416,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalElement.style.display = 'none';
                  if (modalElement.id === 'view-saved-foia-details-section') {
                     modalElement.classList.remove('modal-active');
-                    currentlyViewedFoiaAnalysis = null; // Clear currently viewed item when modal closes
+                    currentlyViewedFoiaAnalysis = null; 
                  }
                 document.body.style.overflow = '';
             }
         }
         
-        // --- Event Listeners for FOIA Modals ---
         if (openNewFoiaModalButton) {
             openNewFoiaModalButton.addEventListener('click', () => {
                 if (foiaForm) foiaForm.reset();
@@ -485,37 +493,50 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // --- Tab Content Clearing (FOIA specific) ---
         function clearTabContentFoia(tabContentMap, isModalView) {
             Object.keys(tabContentMap).forEach(key => {
                 const div = tabContentMap[key];
-                if (div) div.innerHTML = '';
+                if (div) {
+                     div.innerHTML = '';
+                } else {
+                    // If the div for a new key doesn't exist, it means HTML also needs update
+                    console.warn(`Tab content div for key "${key}" not found. HTML update needed.`);
+                }
             });
+
+            // Special handling for combined "Deadlines & Format" tab might be removed or changed
+            // based on new PROMPT_CONFIG_FOIA structure.
+            // If 'deadlines' and 'submissionFormat' are no longer primary keys in PROMPT_CONFIG_FOIA,
+            // this specific logic for them might not be needed or will need to map to new keys.
+            // For now, I'll comment it out as the new config doesn't explicitly have 'deadlines' or 'submissionFormat' as top-level keys.
+            // You'll need to ensure your HTML tab structure matches the new PROMPT_CONFIG_FOIA keys.
+
+            /*
             let deadlinesTabParent, deadlinesDivId, submissionDivId;
-            if (isModalView && modalDeadlinesTabContentDivFoia) {
+            if (isModalView && modalDeadlinesTabContentDivFoia) { // This element might not exist with new tabs
                 deadlinesTabParent = modalDeadlinesTabContentDivFoia;
                 deadlinesDivId = 'modal-deadlines-only-content-foia'; 
                 submissionDivId = 'modal-submission-format-content-foia'; 
                 deadlinesTabParent.innerHTML = `<h4>Key Dates:</h4><div id="${deadlinesDivId}"></div><h4 style="margin-top: 1rem;">Response Format/Channel:</h4><div id="${submissionDivId}"></div>`;
-                modalTabContentMapFoia.deadlines = document.getElementById(deadlinesDivId);
-                modalTabContentMapFoia.submissionFormat = document.getElementById(submissionDivId);
-            } else if (!isModalView && viewDeadlinesTabContentDivFoia) {
+                modalTabContentMapFoia.deadlines = document.getElementById(deadlinesDivId); // This mapping may be invalid now
+                modalTabContentMapFoia.submissionFormat = document.getElementById(submissionDivId); // This mapping may be invalid now
+            } else if (!isModalView && viewDeadlinesTabContentDivFoia) { // This element might not exist
                  const resultContainer = viewDeadlinesTabContentDivFoia.querySelector('#view-deadlines-result-content-foia'); 
                 deadlinesDivId = 'view-deadlines-only-content-foia';
                 submissionDivId = 'view-submission-format-content-foia';
                 if (resultContainer) {
                      resultContainer.innerHTML = `<h4>Key Dates:</h4><div id="${deadlinesDivId}"></div><h4 style="margin-top: 1rem;">Response Format/Channel:</h4><div id="${submissionDivId}"></div>`;
-                    viewTabContentMapFoia.deadlines = document.getElementById(deadlinesDivId);
-                    viewTabContentMapFoia.submissionFormat = document.getElementById(submissionDivId);
+                    viewTabContentMapFoia.deadlines = document.getElementById(deadlinesDivId); // Invalid
+                    viewTabContentMapFoia.submissionFormat = document.getElementById(submissionDivId); // Invalid
                 } else if (viewDeadlinesTabContentDivFoia) {
                     viewDeadlinesTabContentDivFoia.innerHTML = '';
                 }
             }
+            */
         }
         function clearModalFoiaAnalysisResultTabs() { clearTabContentFoia(modalTabContentMapFoia, true); }
         function clearViewFoiaAnalysisResultTabs() { clearTabContentFoia(viewTabContentMapFoia, false); }
 
-        // --- Loading Message Utility (generic) ---
         function showLoadingMessage(areaElement, message = "Processing...", showSpinner = true) {
             if (!areaElement) return;
             areaElement.style.display = 'flex'; 
@@ -540,7 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, delay);
         }
 
-        // --- PDF Text Extraction (generic, can be reused) ---
         async function extractTextFromPdf(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -564,7 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // --- Content Formatting and Display with Prompt (FOIA specific) ---
         function formatAndDisplayFoiaContentWithPrompt(parentElement, sectionKeySuffix, sectionPromptText, sectionContentText) {
             if (!parentElement) {
                 console.warn("formatAndDisplayFoiaContentWithPrompt: parentElement is null for sectionKeySuffix:", sectionKeySuffix);
@@ -600,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trimmedLine = line.trim();
                 if (trimmedLine) {
                     let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-                    const isQuestionsList = sectionKeySuffix === 'questions'; 
+                    const isQuestionsList = sectionKeySuffix === 'questions'; // Retaining this for potential numbered list if 'questions' key is ever re-added or used
                     const listMatch = formattedLine.match(/^(\*|-|\d+\.)\s+/);
                     if (listMatch) { 
                         if (!currentList) { 
@@ -624,9 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
             parentElement.appendChild(contentDiv);
         }
         
-        // --- CRUD Operations for FOIA Analyses (using /api/foia-analysis endpoints) ---
         async function updateFoiaStatus(foiaId, newStatus) {
-            const foiaToUpdate = allFetchedFoiaAnalyses.find(a => a.id === foiaId) || currentlyViewedFoiaAnalysis; // Check currently viewed as well
+            const foiaToUpdate = allFetchedFoiaAnalyses.find(a => a.id === foiaId) || currentlyViewedFoiaAnalysis; 
             const foiaTitleForMessage = foiaToUpdate ? (foiaToUpdate.foiaTitle || (foiaToUpdate.foiaFileNames && foiaToUpdate.foiaFileNames.length > 0 ? foiaToUpdate.foiaFileNames.join(', ') : 'this document')) : 'this document';
             const statusArea = viewSavedFoiaDetailsSection.style.display === 'block' ? viewFoiaStatusArea : foiaListStatusArea;
 
@@ -638,14 +656,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error((await response.json()).error || 'Failed to update FOIA status.');
                 const result = await response.json(); 
                 
-                // Update in main list
                 const listItemInAllFetched = allFetchedFoiaAnalyses.find(a => a.id === foiaId);
                 if (listItemInAllFetched) listItemInAllFetched.status = result.newStatus || newStatus;
                 
-                // Update currently viewed item if it matches
                 if (currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId) {
                     currentlyViewedFoiaAnalysis.status = result.newStatus || newStatus;
-                    populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); // Re-populate actions in view modal
+                    populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); 
                 }
                 renderFoiaAnalysesList(); 
                 if(statusArea) showLoadingMessage(statusArea, `"${foiaTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
@@ -667,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 allFetchedFoiaAnalyses = allFetchedFoiaAnalyses.filter(a => a.id !== foiaId);
                 renderFoiaAnalysesList(); 
                 if (viewSavedFoiaDetailsSection && viewSavedFoiaDetailsSection.classList.contains('modal-active') && 
-                    currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId) { // Check if the deleted item was being viewed
+                    currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId) { 
                     closeModal(viewSavedFoiaDetailsSection); 
                 }
                 if(statusArea) showLoadingMessage(statusArea, `"${foiaTitleForConfirm}" deleted successfully!`, false);
@@ -681,19 +697,31 @@ document.addEventListener('DOMContentLoaded', () => {
         async function openEditFoiaModal(analysisFullDetails) {
             if (!editFoiaModal || !editFoiaForm) return;
             let analysis = analysisFullDetails;
-            if (!analysis.foiaSummary && !analysis.generatedQuestionsFoia && !analysis.foiaDeadlines) { 
-                if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Loading full FOIA details...');
+            // Check if all new fields are present, if not, fetch full details
+            const requiredNewFields = ['foiaSummary', 'foiaProposalComparison', 'foiaInsightsAnalysis', 'foiaPricingIntelligence', 'foiaMarketTrends', 'foiaTasksWorkPlan'];
+            let needsFetch = false;
+            for (const field of requiredNewFields) {
+                // Assuming the field names in the analysis object will match the PROMPT_CONFIG_FOIA keys (or a direct mapping)
+                // For example, if PROMPT_CONFIG_FOIA.proposalComparison maps to analysis.foiaProposalComparison
+                if (!analysis.hasOwnProperty(field)) { // A simple check, might need to be more robust
+                    needsFetch = true;
+                    break;
+                }
+            }
+
+            if (needsFetch) { 
+                if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Loading full FOIA details for editing...');
                 try {
                     const response = await fetch(`/api/foia-analysis/${analysisFullDetails.id}`); 
-                    if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch full FOIA details.');
+                    if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch full FOIA details for editing.');
                     analysis = await response.json();
                 } catch (error) {
-                    console.error("Error fetching full FOIA details:", error);
+                    console.error("Error fetching full FOIA details for editing:", error);
                     if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, `Error: ${error.message}`, false);
                     if(editFoiaStatusArea) hideLoadingMessage(editFoiaStatusArea, 3000);
                     return;
                 } finally {
-                     if (editFoiaStatusArea && editFoiaStatusArea.innerHTML.includes('Loading full FOIA details...')) {
+                     if (editFoiaStatusArea && editFoiaStatusArea.innerHTML.includes('Loading full FOIA details for editing...')) {
                         hideLoadingMessage(editFoiaStatusArea);
                     }
                 }
@@ -706,18 +734,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editSubmittedBySelectFoia) editSubmittedBySelectFoia.value = analysis.submittedBy || 'Other';
             if (editFoiaStatusSelect) editFoiaStatusSelect.value = analysis.status || 'analyzed';
             
+            // Populate textareas based on new PROMPT_CONFIG_FOIA keys
+            // Ensure your analysis object from DB has corresponding fields (e.g., analysis.foiaSummary, analysis.foiaProposalComparison etc.)
             if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis.foiaSummary || ''; 
-            if (editGeneratedQuestionsTextareaFoia) editGeneratedQuestionsTextareaFoia.value = analysis.generatedQuestionsFoia || ''; 
-
-            if (editFoiaDeadlinesTextarea) editFoiaDeadlinesTextarea.value = analysis.foiaDeadlines || '';
-            if (editFoiaSubmissionFormatTextarea) editFoiaSubmissionFormatTextarea.value = analysis.foiaSubmissionFormat || '';
-            if (editFoiaKeyRequirementsTextarea) editFoiaKeyRequirementsTextarea.value = analysis.foiaKeyRequirements || '';
-            if (editFoiaStakeholdersTextarea) editFoiaStakeholdersTextarea.value = analysis.foiaStakeholders || '';
-            if (editFoiaRisksTextarea) editFoiaRisksTextarea.value = analysis.foiaRisks || '';
+            if (editFoiaProposalComparisonTextarea) editFoiaProposalComparisonTextarea.value = analysis.foiaProposalComparison || ''; 
+            if (editFoiaInsightsAnalysisTextarea) editFoiaInsightsAnalysisTextarea.value = analysis.foiaInsightsAnalysis || ''; 
+            if (editFoiaPricingIntelligenceTextarea) editFoiaPricingIntelligenceTextarea.value = analysis.foiaPricingIntelligence || ''; 
+            if (editFoiaMarketTrendsTextarea) editFoiaMarketTrendsTextarea.value = analysis.foiaMarketTrends || ''; 
+            if (editFoiaTasksWorkPlanTextarea) editFoiaTasksWorkPlanTextarea.value = analysis.foiaTasksWorkPlan || ''; 
             
             if (editFoiaModalTitle) editFoiaModalTitle.textContent = `Edit FOIA: ${analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames[0] : 'Document')}`;
             
-            closeModal(viewSavedFoiaDetailsSection); // Close view modal before opening edit
+            closeModal(viewSavedFoiaDetailsSection); 
             openModal(editFoiaModal);
         }
         
@@ -730,18 +758,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Error: FOIA ID is missing.', false);
                     if(editFoiaStatusArea) hideLoadingMessage(editFoiaStatusArea, 3000); return;
                 }
+                // Construct data payload based on new PROMPT_CONFIG_FOIA keys and corresponding textarea IDs
                 const updatedFoiaData = {
                     foiaTitle: editFoiaTitleInput.value.trim(),
                     foiaType: editFoiaTypeInput.value.trim(),
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
                     foiaSummary: editFoiaSummaryTextarea.value.trim(),
-                    generatedQuestionsFoia: editGeneratedQuestionsTextareaFoia.value.trim(), 
-                    foiaDeadlines: editFoiaDeadlinesTextarea.value.trim(),
-                    foiaSubmissionFormat: editFoiaSubmissionFormatTextarea.value.trim(),
-                    foiaKeyRequirements: editFoiaKeyRequirementsTextarea.value.trim(),
-                    foiaStakeholders: editFoiaStakeholdersTextarea.value.trim(),
-                    foiaRisks: editFoiaRisksTextarea.value.trim(),
+                    foiaProposalComparison: editFoiaProposalComparisonTextarea.value.trim(),
+                    foiaInsightsAnalysis: editFoiaInsightsAnalysisTextarea.value.trim(),
+                    foiaPricingIntelligence: editFoiaPricingIntelligenceTextarea.value.trim(),
+                    foiaMarketTrends: editFoiaMarketTrendsTextarea.value.trim(),
+                    foiaTasksWorkPlan: editFoiaTasksWorkPlanTextarea.value.trim(),
                 };
                 if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Saving FOIA changes...');
                 try {
@@ -765,7 +793,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-         // --- Helper to add dropdown items for actions (generic) ---
         function addDropdownItemToMenu(menuElement, iconClass, text, clickHandler) {
             const item = document.createElement('button');
             item.className = 'dropdown-item';
@@ -773,21 +800,19 @@ document.addEventListener('DOMContentLoaded', () => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 clickHandler();
-                menuElement.style.display = 'none'; // Hide menu after action
+                menuElement.style.display = 'none'; 
             });
             menuElement.appendChild(item);
         }
 
-        // --- Populate Actions for View Modal ---
         function populateViewModalFoiaActions(analysis) {
             if (!viewFoiaModalActionsMenu || !analysis) return;
-            viewFoiaModalActionsMenu.innerHTML = ''; // Clear previous items
+            viewFoiaModalActionsMenu.innerHTML = ''; 
             const displayTitle = analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames.join(', ') : 'N/A');
 
             addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-edit', 'Edit Details', () => openEditFoiaModal(analysis));
             viewFoiaModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
 
-            // Status change actions
             if (analysis.status === 'analyzed') {
                 addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
                 addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
@@ -811,12 +836,10 @@ document.addEventListener('DOMContentLoaded', () => {
             viewFoiaModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
             addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-trash-alt', 'Delete FOIA', () => deleteFoiaAnalysis(analysis.id, displayTitle));
         }
-         // Event listener for the action trigger in the "View FOIA Details" modal
         if (viewFoiaModalActionTrigger) {
             viewFoiaModalActionTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (viewFoiaModalActionsMenu) {
-                    // If currentlyViewedFoiaAnalysis is set, populate/re-populate menu before showing
                     if (currentlyViewedFoiaAnalysis) {
                         populateViewModalFoiaActions(currentlyViewedFoiaAnalysis);
                     }
@@ -825,8 +848,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-
-        // --- Rendering FOIA Analyses List ---
         function renderFoiaAnalysesList() {
             if (!savedAnalysesListDivFoia || !noSavedAnalysesPFoia) return;
             savedAnalysesListDivFoia.innerHTML = ''; 
@@ -889,59 +910,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
-                        // Find the full analysis object, needed for populating actions in view modal
                         currentlyViewedFoiaAnalysis = allFetchedFoiaAnalyses.find(item => item.id === analysisId);
                         if (!currentlyViewedFoiaAnalysis) {
                             console.error("Could not find FOIA item in local cache for ID:", analysisId);
-                            // Optionally, fetch it if not found, though it should be in allFetchedFoiaAnalyses
-                            // For now, we'll assume it's found or handle error if critical.
                             return;
                         }
-
 
                         const foiaItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
                         const titleElement = foiaItemDiv ? foiaItemDiv.querySelector('.rfp-col-title') : null;
                         const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected FOIA';
                         
                         openModal(viewSavedFoiaDetailsSection);
-                        if (viewSavedFoiaDetailsSection) viewSavedFoiaDetailsSection.dataset.currentViewingId = analysisId; // Store ID for context
+                        if (viewSavedFoiaDetailsSection) viewSavedFoiaDetailsSection.dataset.currentViewingId = analysisId; 
                         if (viewFoiaMainTitleHeading) viewFoiaMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
                         if(viewFoiaStatusArea) showLoadingMessage(viewFoiaStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
                         if (viewAnalysisResultsAreaFoia) viewAnalysisResultsAreaFoia.style.display = 'none';
                         clearViewFoiaAnalysisResultTabs();
                         
-                        // Populate actions for the opened modal
                         populateViewModalFoiaActions(currentlyViewedFoiaAnalysis);
-
 
                         let loadErrorOccurred = false;
                         try {
-                            // Fetch full details if not all are present in the list item, or re-fetch for freshness
                             const detailResponse = await fetch(`/api/foia-analysis/${analysisId}`); 
                             if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch FOIA details.');
                             const detailedAnalysis = await detailResponse.json();
-                             currentlyViewedFoiaAnalysis = detailedAnalysis; // Update with fresh full details
-                            populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); // Re-populate with full details
+                             currentlyViewedFoiaAnalysis = detailedAnalysis; 
+                            populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); 
 
                             const savedPromptsForThisAnalysis = detailedAnalysis.analysisPrompts || {};
 
                             Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
                                 const contentDiv = viewTabContentMapFoia[keySuffix]; 
-                                let sectionDataField; 
-                                if (keySuffix === 'summary') sectionDataField = 'foiaSummary';
-                                else if (keySuffix === 'questions') sectionDataField = 'generatedQuestionsFoia'; 
-                                else if (keySuffix === 'deadlines') sectionDataField = 'foiaDeadlines'; 
-                                else if (keySuffix === 'submissionFormat') sectionDataField = 'foiaSubmissionFormat'; 
-                                else if (keySuffix === 'requirements') sectionDataField = 'foiaKeyRequirements';
-                                else if (keySuffix === 'stakeholders') sectionDataField = 'foiaStakeholders';
-                                else if (keySuffix === 'risks') sectionDataField = 'foiaRisks';
-                                else { 
-                                    sectionDataField = `foia${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                                let sectionDataFieldKey = `foia${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
+                                // Adjust field name for direct properties like foiaSummary
+                                if (keySuffix === 'summary') sectionDataFieldKey = 'foiaSummary';
+                                // Add other direct mappings if your DB schema differs from the generated pattern
+                                // e.g. if proposalComparison maps to 'foiaProposalComparison' in the DB
+                                 if (PROMPT_CONFIG_FOIA[keySuffix] && PROMPT_CONFIG_FOIA[keySuffix].databaseKey) {
+                                    sectionDataFieldKey = PROMPT_CONFIG_FOIA[keySuffix].databaseKey;
                                 }
-                                const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
+
+
+                                const sectionContent = detailedAnalysis[sectionDataFieldKey] || "N/A";
                                 const promptTextUsed = savedPromptsForThisAnalysis[keySuffix] || PROMPT_CONFIG_FOIA[keySuffix]?.defaultText;
+                                
                                 if (contentDiv) {
                                     formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptTextUsed, sectionContent);
+                                } else {
+                                    console.warn(`View tab content div for key "${keySuffix}" (mapped to ${sectionDataFieldKey}) not found. HTML update needed.`);
                                 }
                             });
                             if (viewAnalysisResultsAreaFoia) viewAnalysisResultsAreaFoia.style.display = 'block';
@@ -970,7 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     dropdownTrigger.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
                     dropdownTrigger.title = "More actions";
                     const dropdownMenu = document.createElement('div');
-                    dropdownMenu.className = 'actions-dropdown-menu'; // This is for the list view actions
+                    dropdownMenu.className = 'actions-dropdown-menu'; 
                     dropdownTrigger.addEventListener('click', (e) => {
                         e.stopPropagation(); 
                         document.querySelectorAll('.actions-dropdown-menu').forEach(menu => {
@@ -978,7 +994,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
                     });
-                    // Use the generic helper for populating the list item's dropdown
                     addDropdownItemToMenu(dropdownMenu, 'fa-edit', 'Edit Details', () => openEditFoiaModal(analysis));
                     dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
                     
@@ -1130,44 +1145,62 @@ document.addEventListener('DOMContentLoaded', () => {
                         parsedAISectionsFoia[keySuffix] = parseFoiaSection(rawAiOutput, PROMPT_CONFIG_FOIA[keySuffix].delimiterKey);
                     });
 
-                    clearModalFoiaAnalysisResultTabs();
+                    clearModalFoiaAnalysisResultTabs(); // Clear old tabs before populating new ones
                     Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
+                        // Use the key from PROMPT_CONFIG_FOIA to find the corresponding div in modalTabContentMapFoia
                         const contentDiv = modalTabContentMapFoia[keySuffix];
                         const promptText = currentFoiaAnalysisPrompts[keySuffix]; 
                         const sectionContent = parsedAISectionsFoia[keySuffix];
                         if (contentDiv) {
                              formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent);
                         } else {
-                            console.warn(`Modal FOIA Tab Content Div not found for key: ${keySuffix}`);
+                             // This warning is important for debugging HTML/JS mismatches
+                            console.warn(`Modal FOIA Tab Content Div for key "${keySuffix}" not found. Check HTML IDs and modalTabContentMapFoia.`);
                         }
                     });
+
 
                     if (modalAnalysisResultsAreaFoia) modalAnalysisResultsAreaFoia.style.display = 'block';
                     const activeModalResultTabFoia = document.querySelector('#new-foia-modal .tabs-container .tab-link');
                     if (activeModalResultTabFoia) { 
                         document.querySelectorAll('#new-foia-modal .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
                         activeModalResultTabFoia.classList.add('active');
-                        const tabNameToOpen = activeModalResultTabFoia.getAttribute('onclick').match(/'([^']*)'/)[1];
-                        if (window.openFoiaModalTab) window.openFoiaModalTab(null, tabNameToOpen); 
+                        // Ensure the tab name matches an existing tab ID
+                        const tabNameToOpen = activeModalResultTabFoia.getAttribute('onclick').match(/'(modal-[^']*-tab-foia)'/);
+                        if (tabNameToOpen && tabNameToOpen[1] && window.openFoiaModalTab) {
+                             window.openFoiaModalTab(null, tabNameToOpen[1]);
+                        } else {
+                            console.warn("Could not determine or open first tab for new FOIA analysis results.");
+                        }
                     }
                     
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "FOIA analysis complete! Saving results...", false);
                     try {
+                        // Construct payload using new keys from PROMPT_CONFIG_FOIA for consistency
                         const savePayloadFoia = {
                             foiaTitle: foiaTitleValue || "", 
                             foiaType: foiaTypeValue, 
                             submittedBy: submittedByValue,
                             foiaFileNames: foiaFileNamesArray, 
-                            foiaSummary: parsedAISectionsFoia.summary,
-                            generatedQuestionsFoia: parsedAISectionsFoia.questions, 
-                            foiaDeadlines: parsedAISectionsFoia.deadlines, 
-                            foiaSubmissionFormat: parsedAISectionsFoia.submissionFormat, 
-                            foiaKeyRequirements: parsedAISectionsFoia.requirements,
-                            foiaStakeholders: parsedAISectionsFoia.stakeholders,
-                            foiaRisks: parsedAISectionsFoia.risks,
                             status: 'analyzed',
                             analysisPrompts: currentFoiaAnalysisPrompts 
                         };
+                        // Add parsed sections to payload, mapping from PROMPT_CONFIG_FOIA keys
+                        // Ensure your backend is prepared to receive these field names
+                        Object.keys(PROMPT_CONFIG_FOIA).forEach(key => {
+                            // Example: savePayloadFoia.foiaSummary = parsedAISectionsFoia.summary
+                            // You might want a more robust mapping if keys differ significantly from DB field names
+                            let dbFieldKey = `foia${key.charAt(0).toUpperCase() + key.slice(1)}`;
+                            if (key === "summary") dbFieldKey = "foiaSummary"; // direct mapping for summary
+                            // Add specific mappings if PROMPT_CONFIG_FOIA keys don't directly translate to DB schema
+                            // For example, if 'proposalComparison' in JS maps to 'foiaComparisonRating' in DB
+                            if (PROMPT_CONFIG_FOIA[key].databaseKey) { // Hypothetical property in config
+                                dbFieldKey = PROMPT_CONFIG_FOIA[key].databaseKey;
+                            }
+                            savePayloadFoia[dbFieldKey] = parsedAISectionsFoia[key];
+                        });
+
+
                         const saveResponse = await fetch('/api/foia-analysis', { 
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(savePayloadFoia)
                         });
@@ -1204,10 +1237,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const firstActiveViewTabFoia = document.querySelector('#view-saved-foia-details-section.modal-active .tabs-container .tab-link');
         if (firstActiveViewTabFoia && viewSavedFoiaDetailsSection && viewSavedFoiaDetailsSection.classList.contains('modal-active')) {
-            const tabNameToOpen = firstActiveViewTabFoia.getAttribute('onclick').match(/'([^']*)'/)[1];
-            const tabElement = document.getElementById(tabNameToOpen);
-            if (window.openFoiaViewTab && tabElement && tabElement.style.display !== 'block') { 
-                window.openFoiaViewTab(null, tabNameToOpen);
+             // Ensure the tab name matches an existing tab ID after HTML updates
+            const tabNameMatch = firstActiveViewTabFoia.getAttribute('onclick').match(/'(view-[^']*-tab-foia)'/);
+            if (tabNameMatch && tabNameMatch[1]) {
+                const tabNameToOpen = tabNameMatch[1];
+                const tabElement = document.getElementById(tabNameToOpen);
+                if (window.openFoiaViewTab && tabElement && tabElement.style.display !== 'block') { 
+                    window.openFoiaViewTab(null, tabNameToOpen);
+                }
             }
         }
 
@@ -1224,7 +1261,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', (e) => {
             const openDropdowns = document.querySelectorAll('.actions-dropdown-menu'); 
             let clickedInsideADropdownOrTrigger = false;
-            // Check if click is inside any action trigger or menu (including view modal's action menu)
             const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger');
             
             openDropdowns.forEach(menu => {
