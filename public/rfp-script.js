@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 databaseKey: "generatedQuestions"
             },
             deadlines: {
-                defaultText: "You are an expert in analyzing Request for Proposal (RFP) documents. Your task is to identify key deadlines and the submission format for the RFP. Follow these steps to extract the required information: 1. Carefully read the entire RFP document. 2. Identify all key deadlines, including dates and times for each deadline. 3. Identify the required submission format for the RFP (e.g., electronic submission, hard copy submission, online portal submission). 4. Output the information in a well-organized list with clear labels for each deadline and the submission format.",
+                defaultText: "Carefully read the entire RFP document to iIdentify all key deadlines, including dates and times for each deadline. Output the information in a well-organized list with clear labels for each deadline",
                 delimiterKey: "DEADLINES", // This key is used by AI
                 databaseKey: "rfpDeadlines" // This is how deadline data is stored
             },
