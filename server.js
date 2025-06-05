@@ -49,7 +49,7 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
             }
         }
         const docRef = db.collection('promptSettings').doc(RFP_PROMPT_SETTINGS_DOC_ID);
-        await docRef.set(prompts, { merge: true });
+        await docRef.set(prompts, { merge: true }); // merge: true will create if not exists, or update
         console.log('RFP prompt settings saved with ID:', RFP_PROMPT_SETTINGS_DOC_ID);
         res.status(200).json({ message: 'RFP prompt settings saved successfully.', prompts });
     } catch (error) {
@@ -83,7 +83,6 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
         if (!prompts || typeof prompts !== 'object') {
             return res.status(400).json({ error: 'Invalid FOIA prompts data. Expecting an object.' });
         }
-        // Updated expected keys for FOIA prompts based on PROMPT_CONFIG_FOIA
         const EXPECTED_FOIA_PROMPT_KEYS = [
             'summary', 'proposalComparison', 'insightsAnalysis', 
             'pricingIntelligence', 'marketTrends', 'tasksWorkPlan'
@@ -192,7 +191,9 @@ app.post('/api/rfp-analysis', async (req, res) => {
         };
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
         console.log('RFP Analysis saved with ID:', docRef.id);
-        res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.', ...analysisData });
+        // Return the full document including the ID and Firestore timestamp
+        const savedDoc = await docRef.get();
+        res.status(201).json({ id: savedDoc.id, ...savedDoc.data() });
     } catch (error) {
         console.error('Error saving RFP analysis:', error);
         res.status(500).json({ error: 'Failed to save RFP analysis.', details: error.message });
@@ -211,8 +212,10 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         const docRef = db.collection('rfpAnalyses').doc(analysisId);
         const doc = await docRef.get();
         if (!doc.exists) return res.status(404).json({ error: 'RFP analysis not found.' });
-        await docRef.update({ status: status, lastModified: Timestamp.now() });
-        res.status(200).json({ id: analysisId, message: 'RFP status updated.', newStatus: status });
+        
+        const updates = { status: status, lastModified: Timestamp.now() };
+        await docRef.update(updates);
+        res.status(200).json({ id: analysisId, message: 'RFP status updated.', newStatus: status, lastModified: updates.lastModified });
     } catch (error) {
         console.error('Error updating RFP status:', error);
         res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
@@ -227,33 +230,41 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
         if (!doc.exists) return res.status(404).json({ error: 'RFP analysis not found.' });
 
         const updates = {};
-        const allowedRFPFields = [
+        const currentData = doc.data();
+        const allowedRFPFields = [ // These are direct fields in the document
             'rfpTitle', 'rfpType', 'submittedBy', 'status',
             'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
             'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
-            'rfpRegistration', 'rfpLicenses', 'rfpBudget',
-            'analysisPrompts' // Allow updating the prompts map
+            'rfpRegistration', 'rfpLicenses', 'rfpBudget'
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
+
         for (const field of allowedRFPFields) {
             if (req.body.hasOwnProperty(field)) {
                 if (field === 'status' && !validStatuses.includes(req.body[field])) {
                     return res.status(400).json({ error: `Invalid status value.` });
                 }
-                // For analysisPrompts, ensure it's an object
-                if (field === 'analysisPrompts' && typeof req.body[field] !== 'object') {
-                    return res.status(400).json({ error: 'analysisPrompts must be an object.' });
-                }
                 updates[field] = req.body[field];
             }
         }
+        
+        // Handle analysisPrompts separately for merging
+        if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
+            // Deep merge for analysisPrompts to update individual section prompts
+            updates.analysisPrompts = {
+                ...(currentData.analysisPrompts || {}), // Keep existing prompts
+                ...req.body.analysisPrompts          // Overwrite/add new ones
+            };
+        }
+
+
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for RFP update.' });
         }
         updates.lastModified = Timestamp.now();
         await docRef.update(updates);
         const updatedDoc = await docRef.get();
-        res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated.', ...updatedDoc.data() });
+        res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated successfully.', ...updatedDoc.data() });
     } catch (error) {
         console.error('Error updating RFP analysis details:', error);
         res.status(500).json({ error: 'Failed to update RFP analysis details.', details: error.message });
@@ -314,7 +325,7 @@ app.post('/api/foia-analysis', async (req, res) => {
             foiaPricingIntelligence,
             foiaMarketTrends,       
             foiaTasksWorkPlan,      
-            originalFoiaFullText, // Added to save original text for re-analysis
+            originalFoiaFullText, 
             status,
             foiaTitle,
             foiaType,
@@ -334,7 +345,7 @@ app.post('/api/foia-analysis', async (req, res) => {
             foiaPricingIntelligence: foiaPricingIntelligence || "Not specified",
             foiaMarketTrends: foiaMarketTrends || "Not specified",
             foiaTasksWorkPlan: foiaTasksWorkPlan || "Not specified",
-            originalFoiaFullText: originalFoiaFullText || "", // Save full text
+            originalFoiaFullText: originalFoiaFullText || "", 
             analysisDate: Timestamp.now(),
             status: status || 'analyzed', 
             foiaTitle: foiaTitle || "",   
@@ -345,7 +356,8 @@ app.post('/api/foia-analysis', async (req, res) => {
 
         const docRef = await db.collection(FOIA_COLLECTION_NAME).add(foiaAnalysisData);
         console.log('FOIA Analysis saved with ID:', docRef.id);
-        res.status(201).json({ id: docRef.id, message: 'FOIA analysis saved successfully.', ...foiaAnalysisData });
+        const savedDoc = await docRef.get();
+        res.status(201).json({ id: savedDoc.id, ...savedDoc.data() });
     } catch (error) {
         console.error('Error saving FOIA analysis:', error);
         res.status(500).json({ error: 'Failed to save FOIA analysis.', details: error.message });
@@ -400,9 +412,10 @@ app.put('/api/foia-analysis/:id/status', async (req, res) => {
         const docRef = db.collection(FOIA_COLLECTION_NAME).doc(analysisId);
         const doc = await docRef.get();
         if (!doc.exists) return res.status(404).json({ error: 'FOIA analysis not found.' });
-
-        await docRef.update({ status: status, lastModified: Timestamp.now() });
-        res.status(200).json({ id: analysisId, message: 'FOIA analysis status updated.', newStatus: status });
+        
+        const updates = { status: status, lastModified: Timestamp.now() };
+        await docRef.update(updates);
+        res.status(200).json({ id: analysisId, message: 'FOIA analysis status updated.', newStatus: status, lastModified: updates.lastModified });
     } catch (error) {
         console.error('Error updating FOIA analysis status:', error);
         res.status(500).json({ error: 'Failed to update FOIA analysis status.', details: error.message });
@@ -417,7 +430,7 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
         if (!doc.exists) return res.status(404).json({ error: 'FOIA analysis not found.' });
 
         const updates = {};
-        // Updated list of allowed fields for FOIA analysis
+        const currentData = doc.data();
         const allowedFoiaFields = [
             'foiaTitle', 'foiaType', 'submittedBy', 'status',
             'foiaSummary', 
@@ -426,7 +439,7 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
             'foiaPricingIntelligence',
             'foiaMarketTrends',
             'foiaTasksWorkPlan',
-            'analysisPrompts' // Allow updating the prompts map
+            // 'originalFoiaFullText' // Typically not updated after initial save
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
 
@@ -435,13 +448,17 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
                  if (field === 'status' && !validStatuses.includes(req.body[field])) {
                     return res.status(400).json({ error: `Invalid status value for FOIA analysis.` });
                 }
-                // For analysisPrompts, ensure it's an object
-                if (field === 'analysisPrompts' && typeof req.body[field] !== 'object') {
-                    return res.status(400).json({ error: 'analysisPrompts must be an object.' });
-                }
                 updates[field] = req.body[field];
             }
         }
+         // Handle analysisPrompts separately for merging
+        if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
+            updates.analysisPrompts = {
+                ...(currentData.analysisPrompts || {}), 
+                ...req.body.analysisPrompts          
+            };
+        }
+
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for FOIA analysis update.' });
