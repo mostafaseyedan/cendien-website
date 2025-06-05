@@ -41,7 +41,6 @@
                 <nav>
                     <span class="nav-current-page">FOIA Analyzer</span>
                     <a href="index.html" class="nav-link">RFP Analyzer</a> <!-- Link to RFP Analyzer -->
-                    <a href="resume-generator.html" class="nav-link">AI Resume Generator (Beta)</a>
                 </nav>
                 <div class="settings-icon-container">
                     <button id="open-prompt-settings-modal-button-foia" class="action-icon" title="Edit AI Prompts for FOIA">
@@ -55,7 +54,7 @@
             <!-- Section for displaying list of saved FOIA analyses -->
             <section id="foia-analyzer-main-content" class="container content-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2>Previously Analyzed FOIAs</h2>
+                    <h2 class="history-title">History</h2> <!-- Changed heading and added class -->
                     <button id="open-new-foia-modal-button" class="btn btn-primary">New FOIA Analysis</button>
                 </div>
 
@@ -137,7 +136,7 @@
                 <div class="modal-content">
                     <span class="modal-close-button" id="modal-close-button-foia">&times;</span>
                     <h2 id="modal-title-foia" style="text-align: center; margin-bottom: 1.5rem;">Analyze New FOIA Document(s)</h2>
-                    
+
                     <form id="foia-details-form">
                         <div class="form-group">
                             <label for="foiaTitle">Document Title (Optional):</label>
@@ -145,7 +144,7 @@
                         </div>
                         <div class="form-group">
                             <label for="foiaType">Document Type (e.g., Request, Response, Records):</label>
-                             <input type="text" id="foiaType" name="foiaType" placeholder="FOIA Request, Agency Response, ...">
+                             <input type="text" id="foiaType" name="foiaType" placeholder="e.g., FOIA Request, Agency Response">
                         </div>
                         <div class="form-group">
                             <label for="submittedByFoia">Person Submitting / Analyzing:</label>
@@ -195,7 +194,7 @@
                     <h2 id="edit-foia-modal-title" style="text-align: center; margin-bottom: 1.5rem;">Edit FOIA Details</h2>
                     <form id="edit-foia-details-form">
                         <input type="hidden" id="editFoiaId" name="editFoiaId">
-                        
+
                         <div class="form-group">
                             <label for="editFoiaTitle">Document Title:</label>
                             <input type="text" id="editFoiaTitle" name="editFoiaTitle" placeholder="Enter a Title">
@@ -257,7 +256,7 @@
                             <textarea id="editFoiaRisks" name="editFoiaRisks" rows="3"></textarea>
                         </div>
                         <!-- Add other editable FOIA fields if needed -->
-                        
+
                         <button type="submit" id="save-edited-foia-button" class="btn btn-primary">Save Changes</button>
                         <button type="button" id="cancel-edit-foia-button" class="btn btn-secondary">Cancel</button>
                     </form>
@@ -270,7 +269,7 @@
                 <div class="modal-content">
                     <span class="modal-close-button" id="prompt-modal-close-button-foia">&times;</span>
                     <h2 style="text-align: center; margin-bottom: 1.5rem;">Edit AI Section Prompts (FOIA)</h2>
-                    
+
                     <div class="form-group">
                         <label for="promptSectionSelectorFoia">Select Section to Edit:</label>
                         <select id="promptSectionSelectorFoia" name="promptSectionSelectorFoia" class="section-selector" style="width: 100%; margin-bottom: 1rem;">
@@ -308,7 +307,7 @@
             </div>
         </footer>
     </div>
-    
+
     <script type="module" src="foia-script.js"></script> <!-- Points to the new FOIA script -->
     <script>
         // Global tab functions for FOIA modals
@@ -338,14 +337,14 @@
                 evt.currentTarget.className += " active";
             }
         }
-        
+
         window.openFoiaModalTab = function(evt, tabName) {
             openTabGenericFoia(evt, tabName, 'modal-analysis-results-area-foia');
         }
         window.openFoiaViewTab = function(evt, tabName) {
             openTabGenericFoia(evt, tabName, 'view-analysis-results-area-foia');
         }
-        
+
         const yearSpanFoiaGlobal = document.getElementById('current-year-foia');
         if (yearSpanFoiaGlobal && !yearSpanFoiaGlobal.textContent) {
             yearSpanFoiaGlobal.textContent = new Date().getFullYear();
