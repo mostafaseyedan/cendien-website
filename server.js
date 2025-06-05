@@ -83,7 +83,7 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
         if (!prompts || typeof prompts !== 'object') {
             return res.status(400).json({ error: 'Invalid FOIA prompts data. Expecting an object.' });
         }
-        // Updated expected keys for FOIA prompts
+        // Updated expected keys for FOIA prompts based on PROMPT_CONFIG_FOIA
         const EXPECTED_FOIA_PROMPT_KEYS = [
             'summary', 'proposalComparison', 'insightsAnalysis', 
             'pricingIntelligence', 'marketTrends', 'tasksWorkPlan'
@@ -165,6 +165,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
             rfpTitle, rfpType, submittedBy,
             rfpSubmissionFormat, rfpRegistration, rfpLicenses, rfpBudget,
+            originalRfpFullText, // Added to save original text
             analysisPrompts 
         } = req.body;
 
@@ -186,6 +187,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpRegistration: rfpRegistration || "Not specified",
             rfpLicenses: rfpLicenses || "Not specified",
             rfpBudget: rfpBudget || "Not specified",
+            originalRfpFullText: originalRfpFullText || "", // Save the full text
             analysisPrompts: analysisPrompts || {} 
         };
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
@@ -229,13 +231,18 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
             'rfpTitle', 'rfpType', 'submittedBy', 'status',
             'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
             'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
-            'rfpRegistration', 'rfpLicenses', 'rfpBudget'
+            'rfpRegistration', 'rfpLicenses', 'rfpBudget',
+            'analysisPrompts' // Allow updating the prompts map
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
         for (const field of allowedRFPFields) {
             if (req.body.hasOwnProperty(field)) {
                 if (field === 'status' && !validStatuses.includes(req.body[field])) {
                     return res.status(400).json({ error: `Invalid status value.` });
+                }
+                // For analysisPrompts, ensure it's an object
+                if (field === 'analysisPrompts' && typeof req.body[field] !== 'object') {
+                    return res.status(400).json({ error: 'analysisPrompts must be an object.' });
                 }
                 updates[field] = req.body[field];
             }
@@ -302,11 +309,12 @@ app.post('/api/foia-analysis', async (req, res) => {
         const {
             foiaFileNames, 
             foiaSummary,
-            foiaProposalComparison, // New field
-            foiaInsightsAnalysis,   // New field
-            foiaPricingIntelligence,// New field
-            foiaMarketTrends,       // New field
-            foiaTasksWorkPlan,      // New field
+            foiaProposalComparison, 
+            foiaInsightsAnalysis,   
+            foiaPricingIntelligence,
+            foiaMarketTrends,       
+            foiaTasksWorkPlan,      
+            originalFoiaFullText, // Added to save original text for re-analysis
             status,
             foiaTitle,
             foiaType,
@@ -314,9 +322,8 @@ app.post('/api/foia-analysis', async (req, res) => {
             analysisPrompts        
         } = req.body;
 
-        // Basic validation for essential fields - adjust as needed
         if (!foiaFileNames || !Array.isArray(foiaFileNames) || foiaFileNames.length === 0 || !foiaSummary) {
-            return res.status(400).json({ error: 'Missing required fields for FOIA analysis: foiaFileNames (array) and foiaSummary are essential.' });
+            return res.status(400).json({ error: 'Missing required fields: foiaFileNames (array) and foiaSummary are essential.' });
         }
 
         const foiaAnalysisData = {
@@ -327,6 +334,7 @@ app.post('/api/foia-analysis', async (req, res) => {
             foiaPricingIntelligence: foiaPricingIntelligence || "Not specified",
             foiaMarketTrends: foiaMarketTrends || "Not specified",
             foiaTasksWorkPlan: foiaTasksWorkPlan || "Not specified",
+            originalFoiaFullText: originalFoiaFullText || "", // Save full text
             analysisDate: Timestamp.now(),
             status: status || 'analyzed', 
             foiaTitle: foiaTitle || "",   
@@ -417,7 +425,8 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
             'foiaInsightsAnalysis',
             'foiaPricingIntelligence',
             'foiaMarketTrends',
-            'foiaTasksWorkPlan'
+            'foiaTasksWorkPlan',
+            'analysisPrompts' // Allow updating the prompts map
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
 
@@ -425,6 +434,10 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
             if (req.body.hasOwnProperty(field)) {
                  if (field === 'status' && !validStatuses.includes(req.body[field])) {
                     return res.status(400).json({ error: `Invalid status value for FOIA analysis.` });
+                }
+                // For analysisPrompts, ensure it's an object
+                if (field === 'analysisPrompts' && typeof req.body[field] !== 'object') {
+                    return res.status(400).json({ error: 'analysisPrompts must be an object.' });
                 }
                 updates[field] = req.body[field];
             }
