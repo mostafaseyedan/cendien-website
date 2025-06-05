@@ -102,7 +102,6 @@
                         </div>
 
                         <div id="view-summary-tab-foia" class="tab-content" style="display: block;">
-                            <!-- Content populated by JS: formatAndDisplayFoiaContentWithPrompt -->
                             <div id="view-summary-result-content-foia"></div>
                         </div>
                         <div id="view-proposalComparison-tab-foia" class="tab-content">
@@ -134,10 +133,7 @@
                             <label for="foiaTitle">Document Title (Optional):</label>
                             <input type="text" id="foiaTitle" name="foiaTitle" placeholder="Enter a Title for this FOIA set">
                         </div>
-                        <div class="form-group">
-                            <label for="foiaType">Document Type (e.g., Request, Response, Records):</label>
-                             <input type="text" id="foiaType" name="foiaType" placeholder="e.g., FOIA Request, Agency Response">
-                        </div>
+                        <!-- Document Type input removed -->
                         <div class="form-group">
                             <label for="submittedByFoia">Person Submitting / Analyzing:</label>
                             <select id="submittedByFoia" name="submittedByFoia" class="section-selector">
@@ -205,8 +201,8 @@
                             <textarea id="editFoiaFileNames" name="editFoiaFileNames" readonly disabled rows="2"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="editFoiaType">Document Type:</label>
-                            <input type="text" id="editFoiaType" name="editFoiaType" placeholder="e.g., Agency Response">
+                            <label for="editFoiaType">Document Type (AI Determined):</label>
+                            <input type="text" id="editFoiaType" name="editFoiaType" readonly disabled>
                         </div>
                         <div class="form-group">
                             <label for="editSubmittedByFoia">Owner / Submitted By:</label>
@@ -274,6 +270,7 @@
                             <option value="pricingIntelligence">4. Pricing Fees Intelligence</option>
                             <option value="marketTrends">5. Market Trends</option>
                             <option value="tasksWorkPlan">6. Tasks or Work Plan</option>
+                            <option value="documentType">7. Document Type Determination</option> <!-- Added new prompt -->
                         </select>
                     </div>
 
