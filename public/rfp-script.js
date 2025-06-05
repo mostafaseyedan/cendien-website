@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
         const lastLoginTime = parseInt(storedTimestamp, 10);
-        if (isNaN(lastLoginTime)) { // Handle cases where timestamp might be corrupted
-            localStorage.removeItem(loginTimestampKey); // Clear invalid item
+        if (isNaN(lastLoginTime)) { 
+            localStorage.removeItem(loginTimestampKey); 
             return false;
         }
         return (Date.now() - lastLoginTime) < sessionDuration;
@@ -32,15 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSuccessfulLogin() {
         localStorage.setItem(loginTimestampKey, Date.now().toString());
         if (authModalOverlay) {
-            authModalOverlay.classList.add('auth-modal-hidden'); // Hide modal
-            authModalOverlay.style.display = 'none'; // Ensure it's fully hidden
+            authModalOverlay.classList.add('auth-modal-hidden'); 
+            authModalOverlay.style.display = 'none'; 
         }
         if (pageContentWrapper) {
             pageContentWrapper.classList.remove('content-hidden');
-            pageContentWrapper.style.display = ''; // Or 'block', 'flex', etc. depending on its original display
+            pageContentWrapper.style.display = ''; 
         }
         
-        // Initialize the rest of the RFP page functionality
         initializeAppLogic(); 
     }
 
@@ -49,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             authErrorMessage.textContent = message;
             authErrorMessage.style.display = 'block';
         }
-        if (authPasswordInput) authPasswordInput.value = ''; // Clear password
+        if (authPasswordInput) authPasswordInput.value = ''; 
         if (authUsernameInput) authUsernameInput.focus();
     }
 
@@ -60,17 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("RFP Analyzer: No valid session or session expired. Showing login modal.");
         if (authModalOverlay) {
             authModalOverlay.classList.remove('auth-modal-hidden');
-            authModalOverlay.style.display = 'flex'; // Make sure it's visible as a flex container
+            authModalOverlay.style.display = 'flex'; 
         }
         if (pageContentWrapper) {
             pageContentWrapper.classList.add('content-hidden');
-            pageContentWrapper.style.display = 'none'; // Ensure main content is hidden
+            pageContentWrapper.style.display = 'none'; 
         }
         
         if (authForm) {
             authForm.addEventListener('submit', (event) => {
                 event.preventDefault();
-                if (!authUsernameInput || !authPasswordInput) { // Guard against missing elements
+                if (!authUsernameInput || !authPasswordInput) { 
                     showLoginError("Login form elements are missing.");
                     return;
                 }
@@ -86,8 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
              console.error("RFP Analyzer: Login form (auth-form) not found in the DOM.");
-             document.body.innerHTML = "<div style='text-align:center; padding: 50px; font-family: sans-serif;'><h1>Configuration Error</h1><p>Login form not found. Page cannot load.</p></div>";
-             return; 
+             if(document.body) document.body.innerHTML = "<div style='text-align:center; padding: 50px; font-family: sans-serif;'><h1>Configuration Error</h1><p>Login form not found. Page cannot load.</p></div>";
         }
     }
     // --- END OF MODAL AUTHENTICATION ---
@@ -110,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalTabContentMap = {
             summary: document.getElementById('modal-summary-result-content'),
             questions: document.getElementById('modal-questions-result-content'),
-            deadlines: document.getElementById('modal-deadlines-only-content'),
-            submissionFormat: document.getElementById('modal-submission-format-content'),
+            deadlines: null, // Populated by clearTabContent
+            submissionFormat: null, // Populated by clearTabContent
             requirements: document.getElementById('modal-requirements-result-content'),
             stakeholders: document.getElementById('modal-stakeholders-result-content'),
             risks: document.getElementById('modal-risks-result-content'),
@@ -126,12 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeViewRfpDetailsButton = document.getElementById('close-view-rfp-details-button');
         const viewRfpStatusArea = document.getElementById('view-rfp-status-area');
         const viewAnalysisResultsArea = document.getElementById('view-analysis-results-area');
+        const viewRfpModalActionTrigger = document.getElementById('view-rfp-modal-action-trigger'); // Action trigger in view modal
+        const viewRfpModalActionsMenu = document.getElementById('view-rfp-modal-actions-menu'); // Action menu in view modal
         
         const viewTabContentMap = {
             summary: document.getElementById('view-summary-result-content'),
             questions: document.getElementById('view-questions-result-content'),
-            deadlines: document.getElementById('view-deadlines-only-content'),
-            submissionFormat: document.getElementById('view-submission-format-content'),
+            deadlines: null, // Populated by clearTabContent
+            submissionFormat: null, // Populated by clearTabContent
             requirements: document.getElementById('view-requirements-result-content'),
             stakeholders: document.getElementById('view-stakeholders-result-content'),
             risks: document.getElementById('view-risks-result-content'),
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             licenses: document.getElementById('view-licenses-result-content'),
             budget: document.getElementById('view-budget-result-content')
         };
-        const viewDeadlinesTabContentDiv = document.getElementById('view-deadlines-tab');
+        const viewDeadlinesTabContentDiv = document.getElementById('view-deadlines-tab'); // Parent for combined deadlines/format
 
         const editRfpModal = document.getElementById('edit-rfp-modal');
         const editRfpModalCloseButton = document.getElementById('edit-rfp-modal-close-button');
@@ -187,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentStatusFilter = 'all_statuses';
         let serverRfpPrompts = null; 
         let promptsLastFetchedFromServer = false; 
+        let currentlyViewedRfpAnalysis = null; // To store data of the RFP being viewed in modal
 
         const RFP_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Request for Proposal (RFP) text.\nProvide the following distinct sections in your response, each clearly delimited:";
         const RFP_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
@@ -195,26 +196,54 @@ document.addEventListener('DOMContentLoaded', () => {
         const PROMPT_CONFIG = {
             summary: {
                 defaultText: "You will be provided with the content of the RFP. Follow these guidelines to create a summary: Focus on extracting and condensing key information from the RFP. Ensure the summary captures all essential aspects, including: Project objectives, Scope of work, Requirements and specifications, Evaluation criteria,  Submission guidelines, Deadlines. Maintain a balance between conciseness and comprehensiveness. The summary should be no more 2 pages in length.",
-                delimiterKey: "SUMMARY"
+                delimiterKey: "SUMMARY",
+                databaseKey: "rfpSummary"
             },
-            questions: { // Assuming "Question" from your request maps to the "questions" key
+            questions: { 
                 defaultText: "Generate a list of 20 critical and insightful clarification questions to ask regarding an RFP. These questions should be designed to uncover hidden requirements, ambiguous statements, or areas where more detail is needed to create a comprehensive and competitive proposal. The goal is to ensure a thorough understanding of the client's needs and expectations.",
-                delimiterKey: "QUESTIONS"
+                delimiterKey: "QUESTIONS",
+                databaseKey: "generatedQuestions"
             },
             deadlines: {
                 defaultText: "You are an expert in analyzing Request for Proposal (RFP) documents. Your task is to identify key deadlines and the submission format for the RFP. Follow these steps to extract the required information: 1. Carefully read the entire RFP document. 2. Identify all key deadlines, including dates and times for each deadline. 3. Identify the required submission format for the RFP (e.g., electronic submission, hard copy submission, online portal submission). 4. Output the information in a well-organized list with clear labels for each deadline and the submission format.",
-                delimiterKey: "DEADLINES"
+                delimiterKey: "DEADLINES", // This key is used by AI
+                databaseKey: "rfpDeadlines" // This is how deadline data is stored
             },
-            submissionFormat: { // "Submission format" from your request maps to "submissionFormat" key
+            submissionFormat: { 
                 defaultText: "Carefully review the RFP document to identify the specified submission format for the proposal (e.g., mail, email, online portal, usb, fax). Identify all people related to the RFP. 3. Extract all relevant contact information, including: Addresses for mail submissions. Email addresses for electronic submissions. Links to online portals or websites for online submissions. Phone numbers for contact persons. Names and titles of contact persons. 4. Present the extracted information in a clear and organized manner.",
-                delimiterKey: "SUBMISSION_FORMAT"
+                delimiterKey: "SUBMISSION_FORMAT", // This key is used by AI
+                databaseKey: "rfpSubmissionFormat" // This is how submission format data is stored
             },
-            requirements: { defaultText: "5. A list of Requirements (e.g., mandatory, highly desirable).", delimiterKey: "REQUIREMENTS" },
-            stakeholders: { defaultText: "6. Mentioned Stakeholders or Key Contacts.", delimiterKey: "STAKEHOLDERS" },
-            risks: { defaultText: "7. Potential Risks or Red Flags identified in the RFP.", delimiterKey: "RISKS" },
-            registration: { defaultText: "8. Registration requirements or details for bidders.", delimiterKey: "REGISTRATION" },
-            licenses: { defaultText: "9. Required Licenses or Certifications for bidders.", delimiterKey: "LICENSES" },
-            budget: { defaultText: "10. Any mentioned Budget constraints or financial information.", delimiterKey: "BUDGET" }
+            requirements: { 
+                defaultText: "5. A list of Requirements (e.g., mandatory, highly desirable).", 
+                delimiterKey: "REQUIREMENTS",
+                databaseKey: "rfpKeyRequirements"
+            },
+            stakeholders: { 
+                defaultText: "6. Mentioned Stakeholders or Key Contacts.", 
+                delimiterKey: "STAKEHOLDERS",
+                databaseKey: "rfpStakeholders"
+            },
+            risks: { 
+                defaultText: "7. Potential Risks or Red Flags identified in the RFP.", 
+                delimiterKey: "RISKS",
+                databaseKey: "rfpRisks" 
+            },
+            registration: { 
+                defaultText: "8. Registration requirements or details for bidders.", 
+                delimiterKey: "REGISTRATION",
+                databaseKey: "rfpRegistration"
+            },
+            licenses: { 
+                defaultText: "9. Required Licenses or Certifications for bidders.", 
+                delimiterKey: "LICENSES",
+                databaseKey: "rfpLicenses"
+            },
+            budget: { 
+                defaultText: "10. Any mentioned Budget constraints or financial information.", 
+                delimiterKey: "BUDGET",
+                databaseKey: "rfpBudget"
+            }
         };
 
         if (yearSpanRFP && !yearSpanRFP.textContent) {
@@ -240,6 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     showLoadingMessage(promptSaveStatus, 'Prompts loaded from server!', false);
                     hideLoadingMessage(promptSaveStatus, 2000);
                 }
+                 // Ensure all keys from PROMPT_CONFIG exist in serverRfpPrompts, using defaults if not
+                Object.keys(PROMPT_CONFIG).forEach(key => {
+                    if (!serverRfpPrompts.hasOwnProperty(key)) {
+                        console.warn(`RFP Prompt for '${key}' not found on server, using local default.`);
+                        serverRfpPrompts[key] = PROMPT_CONFIG[key].defaultText;
+                    }
+                });
                 return serverRfpPrompts;
             } catch (error) {
                 console.error('Error fetching prompts from server:', error);
@@ -293,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const selectedKeySuffix = promptSectionSelector.value;
                 if (selectedKeySuffix && PROMPT_CONFIG[selectedKeySuffix]) { 
                     if (!serverRfpPrompts) {
-                        console.warn("Server prompts not yet loaded for textarea. Attempting to load now.");
                         fetchPromptsFromServer().then(() => { 
                             rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKeySuffix);
                         });
@@ -409,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalElement.style.display = 'none';
                 if (modalElement.id === 'view-saved-rfp-details-section') {
                     modalElement.classList.remove('modal-active');
+                    currentlyViewedRfpAnalysis = null; // Clear when RFP view modal is closed
                 }
                 document.body.style.overflow = '';
             }
@@ -491,24 +527,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (div) div.innerHTML = '';
             });
             let deadlinesTabParent, deadlinesDivId, submissionDivId;
-            if (isModalView && modalDeadlinesTabContentDiv) {
-                deadlinesTabParent = modalDeadlinesTabContentDiv;
-                deadlinesDivId = 'modal-deadlines-only-content';
-                submissionDivId = 'modal-submission-format-content';
-                deadlinesTabParent.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesDivId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionDivId}"></div>`;
-                modalTabContentMap.deadlines = document.getElementById(deadlinesDivId); // Re-assign to the new inner div
-                modalTabContentMap.submissionFormat = document.getElementById(submissionDivId); // Re-assign
-            } else if (!isModalView && viewDeadlinesTabContentDiv) {
-                const resultContainer = viewDeadlinesTabContentDiv.querySelector('#view-deadlines-result-content'); // Target specific inner container
-                deadlinesDivId = 'view-deadlines-only-content';
-                submissionDivId = 'view-submission-format-content';
+            let targetParentDiv = isModalView ? modalDeadlinesTabContentDiv : viewDeadlinesTabContentDiv;
+            let deadlinesContentId = isModalView ? 'modal-deadlines-only-content' : 'view-deadlines-only-content';
+            let submissionFormatContentId = isModalView ? 'modal-submission-format-content' : 'view-submission-format-content';
+
+            if (targetParentDiv) { // Check if the parent div for combined tab exists
+                 // Ensure we target the correct inner container if it exists
+                const resultContainer = !isModalView ? targetParentDiv.querySelector('#view-deadlines-result-content') : targetParentDiv;
                 if (resultContainer) {
-                     resultContainer.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesDivId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionDivId}"></div>`;
-                    viewTabContentMap.deadlines = document.getElementById(deadlinesDivId); // Re-assign
-                    viewTabContentMap.submissionFormat = document.getElementById(submissionDivId); // Re-assign
-                } else { 
-                    if(viewDeadlinesTabContentDiv) viewDeadlinesTabContentDiv.innerHTML = ''; 
+                     resultContainer.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesContentId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionFormatContentId}"></div>`;
+                    tabContentMap.deadlines = document.getElementById(deadlinesContentId);
+                    tabContentMap.submissionFormat = document.getElementById(submissionFormatContentId);
+                } else if (isModalView) { // Fallback for modal if inner container not found (structure might be simpler)
+                     targetParentDiv.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesContentId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionFormatContentId}"></div>`;
+                    tabContentMap.deadlines = document.getElementById(deadlinesContentId);
+                    tabContentMap.submissionFormat = document.getElementById(submissionFormatContentId);
+                } else {
+                    console.warn(`Could not find result container for combined deadlines/format tab in ${isModalView ? 'modal' : 'view'}.`);
                 }
+            } else {
+                 console.warn(`Parent div for combined deadlines/format tab not found for ${isModalView ? 'modal' : 'view'}.`);
             }
         }
         function clearModalAnalysisResultTabs() { clearTabContent(modalTabContentMap, true); }
@@ -619,62 +657,85 @@ document.addEventListener('DOMContentLoaded', () => {
             parentElement.appendChild(contentDiv);
         }
         async function updateRfpStatus(rfpId, newStatus) {
-            const rfpToUpdate = allFetchedAnalyses.find(a => a.id === rfpId);
+            const rfpToUpdate = allFetchedAnalyses.find(a => a.id === rfpId) || currentlyViewedRfpAnalysis;
             const rfpTitleForMessage = rfpToUpdate ? (rfpToUpdate.rfpTitle || rfpToUpdate.rfpFileName || 'this RFP') : 'this RFP';
-            if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `Updating "${rfpTitleForMessage}" to ${newStatus}...`);
+            const statusArea = viewSavedRfpDetailsSection.style.display === 'block' ? viewRfpStatusArea : rfpListStatusArea;
+
+            if(statusArea) showLoadingMessage(statusArea, `Updating "${rfpTitleForMessage}" to ${newStatus}...`);
             try {
                 const response = await fetch(`/api/rfp-analysis/${rfpId}/status`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
                 });
                 if (!response.ok) throw new Error((await response.json()).error || 'Failed to update status.');
                 const result = await response.json(); 
-                const updatedAnalysis = allFetchedAnalyses.find(a => a.id === rfpId);
-                if (updatedAnalysis) updatedAnalysis.status = result.newStatus || newStatus; 
+                
+                const listItemInAllFetched = allFetchedAnalyses.find(a => a.id === rfpId);
+                if (listItemInAllFetched) listItemInAllFetched.status = result.newStatus || newStatus;
+                
+                if (currentlyViewedRfpAnalysis && currentlyViewedRfpAnalysis.id === rfpId) {
+                    currentlyViewedRfpAnalysis.status = result.newStatus || newStatus;
+                    populateViewModalRfpActions(currentlyViewedRfpAnalysis); // Re-populate actions in view modal
+                }
                 renderAnalysesList();
-                if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `"${rfpTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
+                if(statusArea) showLoadingMessage(statusArea, `"${rfpTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
             } catch (error) { 
-                if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `Error updating status: ${error.message}`, false);
+                if(statusArea) showLoadingMessage(statusArea, `Error updating status: ${error.message}`, false);
             } finally { 
-                if(rfpListStatusArea) hideLoadingMessage(rfpListStatusArea, 3000); 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
         async function deleteRfp(rfpId, rfpTitleForConfirm) {
             if (!window.confirm(`Are you sure you want to delete RFP: "${rfpTitleForConfirm}"? This action cannot be undone.`)) return;
-            if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `Deleting "${rfpTitleForConfirm}"...`);
+            const statusArea = viewSavedRfpDetailsSection.style.display === 'block' ? viewRfpStatusArea : rfpListStatusArea;
+
+            if(statusArea) showLoadingMessage(statusArea, `Deleting "${rfpTitleForConfirm}"...`);
             try {
                 const response = await fetch(`/api/rfp-analysis/${rfpId}`, { method: 'DELETE' });
                 if (!response.ok) throw new Error((await response.json()).error || `Failed to delete ${rfpTitleForConfirm}.`);
                 allFetchedAnalyses = allFetchedAnalyses.filter(a => a.id !== rfpId);
                 renderAnalysesList();
                 if (viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active') && 
-                    viewSavedRfpDetailsSection.dataset.currentViewingId === rfpId) {
+                    currentlyViewedRfpAnalysis && currentlyViewedRfpAnalysis.id === rfpId) {
                     closeModal(viewSavedRfpDetailsSection);
                 }
-                if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `"${rfpTitleForConfirm}" deleted successfully!`, false);
+                if(statusArea) showLoadingMessage(statusArea, `"${rfpTitleForConfirm}" deleted successfully!`, false);
             } catch (error) { 
-                if(rfpListStatusArea) showLoadingMessage(rfpListStatusArea, `Error deleting: ${error.message}`, false);
+                if(statusArea) showLoadingMessage(statusArea, `Error deleting: ${error.message}`, false);
             } finally { 
-                if(rfpListStatusArea) hideLoadingMessage(rfpListStatusArea, 3000); 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
         async function openEditRfpModal(analysisFullDetails) {
             if (!editRfpModal || !editRfpForm) return;
             let analysis = analysisFullDetails;
-            if (!analysis.rfpSummary && !analysis.generatedQuestions && !analysis.rfpDeadlines) { 
-                if(editRfpStatusArea) showLoadingMessage(editRfpStatusArea, 'Loading full RFP details...');
+            
+            const requiredDbKeys = Object.values(PROMPT_CONFIG).map(config => config.databaseKey);
+            let needsFetch = false;
+            for (const dbKey of requiredDbKeys) {
+                if (PROMPT_CONFIG[Object.keys(PROMPT_CONFIG).find(key => PROMPT_CONFIG[key].databaseKey === dbKey)]) { // Check if this dbKey corresponds to a current config
+                    if (!analysis.hasOwnProperty(dbKey)) {
+                        needsFetch = true;
+                        break;
+                    }
+                }
+            }
+
+
+            if (needsFetch) { 
+                if(editRfpStatusArea) showLoadingMessage(editRfpStatusArea, 'Loading full RFP details for editing...');
                 try {
                     const response = await fetch(`/api/rfp-analysis/${analysisFullDetails.id}`);
-                    if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch full RFP details.');
+                    if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch full RFP details for editing.');
                     analysis = await response.json();
                 } catch (error) {
-                    console.error("Error fetching full RFP details:", error);
+                    console.error("Error fetching full RFP details for editing:", error);
                     if(editRfpStatusArea) showLoadingMessage(editRfpStatusArea, `Error: ${error.message}`, false);
                     if(editRfpStatusArea) hideLoadingMessage(editRfpStatusArea, 3000);
                     return;
                 } finally {
-                     if (editRfpStatusArea && editRfpStatusArea.innerHTML.includes('Loading full RFP details...')) {
+                     if (editRfpStatusArea && editRfpStatusArea.innerHTML.includes('Loading full RFP details for editing...')) {
                         hideLoadingMessage(editRfpStatusArea);
                     }
                 }
@@ -686,6 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editRfpTypeSelect) editRfpTypeSelect.value = analysis.rfpType || 'Other';
             if (editSubmittedBySelect) editSubmittedBySelect.value = analysis.submittedBy || 'Other';
             if (editRfpStatusSelect) editRfpStatusSelect.value = analysis.status || 'analyzed';
+            
             if (editRfpSummaryTextarea) editRfpSummaryTextarea.value = analysis.rfpSummary || '';
             if (editGeneratedQuestionsTextarea) editGeneratedQuestionsTextarea.value = analysis.generatedQuestions || '';
             if (editRfpDeadlinesTextarea) editRfpDeadlinesTextarea.value = analysis.rfpDeadlines || '';
@@ -696,8 +758,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editRfpRegistrationTextarea) editRfpRegistrationTextarea.value = analysis.rfpRegistration || '';
             if (editRfpLicensesTextarea) editRfpLicensesTextarea.value = analysis.rfpLicenses || '';
             if (editRfpBudgetTextarea) editRfpBudgetTextarea.value = analysis.rfpBudget || '';
+
             if (editRfpModalTitle) editRfpModalTitle.textContent = `Edit RFP: ${analysis.rfpTitle || analysis.rfpFileName}`;
             
+            closeModal(viewSavedRfpDetailsSection); // Close view modal if open
             openModal(editRfpModal);
         }
         
@@ -749,17 +813,75 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // --- Helper to add dropdown items for actions (generic) ---
+        function addDropdownItemToMenu(menuElement, iconClass, text, clickHandler) {
+            const item = document.createElement('button');
+            item.className = 'dropdown-item';
+            item.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clickHandler();
+                menuElement.style.display = 'none'; // Hide menu after action
+            });
+            menuElement.appendChild(item);
+        }
+        
+        // --- Populate Actions for RFP View Modal ---
+        function populateViewModalRfpActions(analysis) {
+            if (!viewRfpModalActionsMenu || !analysis) return;
+            viewRfpModalActionsMenu.innerHTML = ''; // Clear previous items
+            const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
+
+            addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-edit', 'Edit Details', () => openEditRfpModal(analysis));
+            viewRfpModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
+
+            // Status change actions
+            if (analysis.status === 'analyzed') {
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'active') {
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'not_pursuing') {
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'archived') {
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+            } else { // Default set if status is unknown
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+            }
+            viewRfpModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
+            addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-trash-alt', 'Delete RFP', () => deleteRfp(analysis.id, displayTitle));
+        }
+
+        // Event listener for the action trigger in the "View RFP Details" modal
+        if (viewRfpModalActionTrigger) {
+            viewRfpModalActionTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (viewRfpModalActionsMenu) {
+                    if (currentlyViewedRfpAnalysis) { // Ensure we have an item to act upon
+                        populateViewModalRfpActions(currentlyViewedRfpAnalysis); // Populate/Re-populate before showing
+                    }
+                    viewRfpModalActionsMenu.style.display = viewRfpModalActionsMenu.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        }
+
+
         function renderAnalysesList() {
             if (!savedAnalysesListDiv || !noSavedAnalysesP) return;
             savedAnalysesListDiv.innerHTML = '';
             let filteredAnalyses = [...allFetchedAnalyses];
 
-            if (currentStatusFilter === 'active' || currentStatusFilter === 'not_pursuing' || currentStatusFilter === 'archived') {
+            if (currentStatusFilter !== 'all_statuses') {
                 filteredAnalyses = filteredAnalyses.filter(a => a.status === currentStatusFilter);
-            } else if (currentStatusFilter === 'all_statuses') {
-                // No filter for 'all_statuses'
             }
-
 
             filteredAnalyses.sort((a, b) => {
                 let valA = a[currentSortKey];
@@ -778,11 +900,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (filteredAnalyses.length === 0) {
                 noSavedAnalysesP.style.display = 'block';
-                if (currentStatusFilter === 'all_statuses') {
-                    noSavedAnalysesP.textContent = `No analyses found.`;
-                } else {
-                    noSavedAnalysesP.textContent = `No analyses found for "${currentStatusFilter}" category.`;
-                }
+                noSavedAnalysesP.textContent = currentStatusFilter === 'all_statuses' ? 
+                    `No analyses found.` : `No analyses found for "${currentStatusFilter}" category.`;
             } else {
                 noSavedAnalysesP.style.display = 'none';
                 filteredAnalyses.forEach(analysis => {
@@ -793,12 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') {
                         const date = new Date(analysis.analysisDate._seconds * 1000);
                         if (!isNaN(date.valueOf())) {
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const hours = String(date.getHours()).padStart(2, '0');
-                            const minutes = String(date.getMinutes()).padStart(2, '0');
-                            formattedDateTime = `${year}/${month}/${day} ${hours}:${minutes}`;
+                            formattedDateTime = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
                         }
                     }
                     const statusDotClass = analysis.status === 'active' ? 'green' :
@@ -822,37 +936,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
+                        currentlyViewedRfpAnalysis = allFetchedAnalyses.find(item => item.id === analysisId); // Store the current RFP
+                         if (!currentlyViewedRfpAnalysis) {
+                            console.error("Could not find RFP item in local cache for ID:", analysisId);
+                            return;
+                        }
+
                         const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
                         const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
                         const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected RFP';
+                        
                         openModal(viewSavedRfpDetailsSection);
                         if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.dataset.currentViewingId = analysisId;
                         if (viewRfpMainTitleHeading) viewRfpMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
                         if(viewRfpStatusArea) showLoadingMessage(viewRfpStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
                         if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'none';
                         clearViewAnalysisResultTabs();
+                        populateViewModalRfpActions(currentlyViewedRfpAnalysis); // Populate actions for the opened modal
+
                         let loadErrorOccurred = false;
                         try {
                             const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
                             if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch details.');
                             const detailedAnalysis = await detailResponse.json();
+                            currentlyViewedRfpAnalysis = detailedAnalysis; // Update with full details
+                            populateViewModalRfpActions(currentlyViewedRfpAnalysis); // Re-populate with full details
+
                             const savedPrompts = detailedAnalysis.analysisPrompts || {};
                             Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
                                 const contentDiv = viewTabContentMap[keySuffix];
-                                let sectionDataField;
-                                if (keySuffix === 'questions') {
-                                    sectionDataField = 'generatedQuestions';
-                                } else if (keySuffix === 'summary') {
-                                    sectionDataField = 'rfpSummary';
-                                } else if (keySuffix === 'requirements') {
-                                    sectionDataField = 'rfpKeyRequirements'; // This is the corrected line for requirements
-                                } else {
-                                    sectionDataField = `rfp${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
-                                }
-                                const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
+                                const dbKey = PROMPT_CONFIG[keySuffix].databaseKey;
+                                const sectionContent = detailedAnalysis[dbKey] || "N/A";
                                 const promptTextForThisAnalysis = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
                                 if (contentDiv) {
                                     formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptTextForThisAnalysis, sectionContent);
+                                } else {
+                                    console.warn(`View tab content div for RFP key "${keySuffix}" (mapped to DB key ${dbKey}) not found.`);
                                 }
                             });
                             if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'block';
@@ -860,8 +979,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (firstViewTabLink) {
                                 document.querySelectorAll('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
                                 firstViewTabLink.classList.add('active');
-                                const tabNameToOpen = firstViewTabLink.getAttribute('onclick').match(/'([^']*)'/)[1];
-                                if (window.openViewTab) window.openViewTab(null, tabNameToOpen); 
+                                const tabNameMatch = firstViewTabLink.getAttribute('onclick').match(/'(view-[^']+-tab)'/);
+                                if (tabNameMatch && tabNameMatch[1] && window.openViewTab) {
+                                    window.openViewTab(null, tabNameMatch[1]); 
+                                }
                             }
                             const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
                             if(viewRfpStatusArea) showLoadingMessage(viewRfpStatusArea, `Displaying: ${titleForStatus}`, false);
@@ -889,41 +1010,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
                     });
-                    function addDropdownItem(iconClass, text, clickHandler) {
-                        const item = document.createElement('button');
-                        item.className = 'dropdown-item';
-                        item.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            clickHandler();
-                            dropdownMenu.style.display = 'none';
-                        });
-                        dropdownMenu.appendChild(item);
-                    }
-                    addDropdownItem('fa-edit', 'Edit Details', () => openEditRfpModal(analysis));
+                    addDropdownItemToMenu(dropdownMenu, 'fa-edit', 'Edit Details', () => openEditRfpModal(analysis));
                     dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
                     if (analysis.status === 'analyzed') {
-                        addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
-                        addDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
-                        addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'active') {
-                        addDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
-                        addDropdownItem('fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
-                        addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'not_pursuing') {
-                        addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
-                        addDropdownItem('fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
-                        addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-inbox', 'Move to Analyzed', () => updateRfpStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'archived') {
-                        addDropdownItem('fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
-                        addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
                     } else { 
-                        addDropdownItem('fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
-                        addDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
-                        addDropdownItem('fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
                     }
                     dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
-                    addDropdownItem('fa-trash-alt', 'Delete RFP', () => deleteRfp(analysis.id, displayTitle));
+                    addDropdownItemToMenu(dropdownMenu, 'fa-trash-alt', 'Delete RFP', () => deleteRfp(analysis.id, displayTitle));
                     dropdownContainer.appendChild(dropdownTrigger);
                     dropdownContainer.appendChild(dropdownMenu);
                     actionsSpan.appendChild(dropdownContainer);
@@ -997,7 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const file = filesToProcess[i];
                         if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `Extracting text from ${file.name} (${i + 1}/${filesToProcess.length})...`);
                         const text = await extractTextFromPdf(file);
-                        combinedRfpText += text + "\n\n";
+                        combinedRfpText += `--- START OF DOCUMENT: ${file.name} ---\n${text}\n--- END OF DOCUMENT: ${file.name} ---\n\n`;
                         if (!text || text.trim().length < 10) {
                             console.warn(`Minimal text extracted from ${file.name}.`);
                         }
@@ -1057,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (contentDiv) {
                              formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent);
                         } else {
-                            console.warn(`Modal Tab Content Div not found for key: ${keySuffix}`);
+                            console.warn(`Modal Tab Content Div for RFP key: ${keySuffix} not found.`);
                         }
                     });
                     if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'block';
@@ -1065,27 +1175,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activeModalResultTab) {
                         document.querySelectorAll('#new-rfp-modal .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
                         activeModalResultTab.classList.add('active');
-                        const tabNameToOpen = activeModalResultTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-                        if (window.openModalTab) window.openModalTab(null, tabNameToOpen); 
+                        const tabNameMatch = activeModalResultTab.getAttribute('onclick').match(/'(modal-[^']+-tab)'/);
+                        if (tabNameMatch && tabNameMatch[1] && window.openModalTab) {
+                             window.openModalTab(null, tabNameMatch[1]); 
+                        }
                     }
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "RFP analysis complete! Saving results...", false);
                     try {
                         const savePayload = {
                             rfpTitle: rfpTitleValue || "", rfpType: rfpTypeValue, submittedBy: submittedByValue,
                             rfpFileName: rfpFileNameValue,
-                            rfpSummary: parsedAISections.summary,
-                            generatedQuestions: parsedAISections.questions,
-                            rfpDeadlines: parsedAISections.deadlines,
-                            rfpSubmissionFormat: parsedAISections.submissionFormat,
-                            rfpKeyRequirements: parsedAISections.requirements,
-                            rfpStakeholders: parsedAISections.stakeholders,
-                            rfpRisks: parsedAISections.risks,
-                            rfpRegistration: parsedAISections.registration,
-                            rfpLicenses: parsedAISections.licenses,
-                            rfpBudget: parsedAISections.budget,
                             status: 'analyzed',
                             analysisPrompts: currentAnalysisPrompts 
                         };
+                        // Add parsed sections to payload using databaseKey
+                        Object.keys(PROMPT_CONFIG).forEach(key => {
+                             const dbKey = PROMPT_CONFIG[key].databaseKey;
+                             if(dbKey) {
+                                savePayload[dbKey] = parsedAISections[key];
+                             } else {
+                                console.warn(`Database key not defined for RFP prompt config key: ${key}`);
+                             }
+                        });
+
                         const saveResponse = await fetch('/api/rfp-analysis', {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(savePayload)
                         });
@@ -1122,10 +1234,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const firstActiveViewTab = document.querySelector('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link');
         if (firstActiveViewTab && viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active')) {
-            const tabNameToOpen = firstActiveViewTab.getAttribute('onclick').match(/'([^']*)'/)[1];
-            const tabElement = document.getElementById(tabNameToOpen);
-            if (window.openViewTab && tabElement && tabElement.style.display !== 'block') { 
-                window.openViewTab(null, tabNameToOpen);
+            const tabNameMatch = firstActiveViewTab.getAttribute('onclick').match(/'(view-[^']+-tab)'/);
+            if (tabNameMatch && tabNameMatch[1]) {
+                const tabNameToOpen = tabNameMatch[1];
+                const tabElement = document.getElementById(tabNameToOpen);
+                if (window.openViewTab && tabElement && tabElement.style.display !== 'block') { 
+                    window.openViewTab(null, tabNameToOpen);
+                }
             }
         }
 
@@ -1142,10 +1257,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', (e) => {
             const openDropdowns = document.querySelectorAll('.actions-dropdown-menu');
             let clickedInsideADropdownOrTrigger = false;
-            const triggerElement = e.target.closest('.actions-dropdown-trigger');
+            const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger'); // Include view modal trigger class
 
             openDropdowns.forEach(menu => {
-                if (menu.contains(e.target) || (triggerElement && menu.previousElementSibling === triggerElement) ) {
+                // Check if click is on the trigger for THIS menu, or inside THIS menu
+                 if (menu.contains(e.target) || (actionTriggerClicked && (menu.previousElementSibling === actionTriggerClicked || menu.id === actionTriggerClicked.nextElementSibling?.id))) {
                     clickedInsideADropdownOrTrigger = true;
                 }
             });
