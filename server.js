@@ -6,8 +6,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const db = new Firestore({
-    // Ensure your Google Cloud project ID is set correctly,
-    // either here or via environment variables (GCLOUD_PROJECT)
     projectId: process.env.GCLOUD_PROJECT || 'cendien-sales-support-ai',
 });
 
@@ -61,11 +59,11 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
 });
 
 // --- FOIA Prompt Settings ---
-const FOIA_PROMPT_SETTINGS_DOC_ID = 'globalFoiaPrompts'; // Distinct ID for FOIA prompts
+const FOIA_PROMPT_SETTINGS_DOC_ID = 'globalFoiaPrompts'; 
 
 app.get('/api/foia-prompt-settings', async (req, res) => {
     try {
-        const docRef = db.collection('promptSettings').doc(FOIA_PROMPT_SETTINGS_DOC_ID); // Using same collection, different doc
+        const docRef = db.collection('promptSettings').doc(FOIA_PROMPT_SETTINGS_DOC_ID); 
         const doc = await docRef.get();
         if (!doc.exists) {
             console.log('No FOIA prompt settings found in Firestore. Client should use local defaults.');
@@ -85,15 +83,14 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
         if (!prompts || typeof prompts !== 'object') {
             return res.status(400).json({ error: 'Invalid FOIA prompts data. Expecting an object.' });
         }
-        // Define expected keys based on PROMPT_CONFIG_FOIA from foia-script.js
+        // Updated expected keys for FOIA prompts
         const EXPECTED_FOIA_PROMPT_KEYS = [
-            'summary', 'questions', 'deadlines', 'submissionFormat',
-            'requirements', 'stakeholders', 'risks'
-            // Add/remove keys here if PROMPT_CONFIG_FOIA changes
+            'summary', 'proposalComparison', 'insightsAnalysis', 
+            'pricingIntelligence', 'marketTrends', 'tasksWorkPlan'
         ];
         for (const key of EXPECTED_FOIA_PROMPT_KEYS) {
             if (!prompts.hasOwnProperty(key) || typeof prompts[key] !== 'string') {
-                 return res.status(400).json({ error: `Invalid or missing FOIA prompt for section: ${key}.` });
+                 return res.status(400).json({ error: `Invalid or missing FOIA prompt for section: ${key}. All sections must be provided with string values.` });
             }
         }
         const docRef = db.collection('promptSettings').doc(FOIA_PROMPT_SETTINGS_DOC_ID);
@@ -117,7 +114,6 @@ app.post('/api/generate', async (req, res) => {
         console.error('Error: GEMINI_API_KEY environment variable is not set.');
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
-    // Consider making the model name configurable if you plan to use different Gemini models
     const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
@@ -127,7 +123,7 @@ app.post('/api/generate', async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
         });
-        const responseDataText = await geminiResponse.text(); // Get text first for robust parsing
+        const responseDataText = await geminiResponse.text(); 
         let data;
         try {
             data = JSON.parse(responseDataText);
@@ -148,7 +144,7 @@ app.post('/api/generate', async (req, res) => {
             const blockMessage = `Prompt blocked by Gemini API. Reason: ${data.promptFeedback.blockReason}.`;
             console.warn(blockMessage, 'Safety Ratings:', data.promptFeedback.safetyRatings);
             res.status(400).json({ error: blockMessage, details: data.promptFeedback.safetyRatings });
-        } else if (data.error) { // Handle explicit error structure from Gemini
+        } else if (data.error) { 
             console.error('Gemini API returned an error structure:', JSON.stringify(data.error, null, 2));
             res.status(500).json({ error: `Error from Gemini API: ${data.error.message}`, details: data.error });
         } else {
@@ -169,7 +165,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
             rfpTitle, rfpType, submittedBy,
             rfpSubmissionFormat, rfpRegistration, rfpLicenses, rfpBudget,
-            analysisPrompts // Prompts used for this specific analysis
+            analysisPrompts 
         } = req.body;
 
         if (!rfpFileName || !rfpSummary || !generatedQuestions) {
@@ -190,7 +186,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpRegistration: rfpRegistration || "Not specified",
             rfpLicenses: rfpLicenses || "Not specified",
             rfpBudget: rfpBudget || "Not specified",
-            analysisPrompts: analysisPrompts || {} // Store the prompts
+            analysisPrompts: analysisPrompts || {} 
         };
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
         console.log('RFP Analysis saved with ID:', docRef.id);
@@ -234,7 +230,6 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
             'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
             'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
             'rfpRegistration', 'rfpLicenses', 'rfpBudget'
-            // 'analysisPrompts' could be updatable if needed, but usually set at creation.
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
         for (const field of allowedRFPFields) {
@@ -300,47 +295,44 @@ app.get('/api/rfp-analysis/:id', async (req, res) => {
 
 
 // --- FOIA Analysis Endpoints ---
-const FOIA_COLLECTION_NAME = 'foiaAnalyses'; // New collection for FOIA
+const FOIA_COLLECTION_NAME = 'foiaAnalyses'; 
 
 app.post('/api/foia-analysis', async (req, res) => {
     try {
-        // Destructure expected fields for FOIA analysis
         const {
-            foiaFileNames, // Array of filenames
+            foiaFileNames, 
             foiaSummary,
-            generatedQuestionsFoia, // FOIA specific field name for questions
+            foiaProposalComparison, // New field
+            foiaInsightsAnalysis,   // New field
+            foiaPricingIntelligence,// New field
+            foiaMarketTrends,       // New field
+            foiaTasksWorkPlan,      // New field
             status,
-            foiaDeadlines,         // For dates
-            foiaSubmissionFormat,  // For format/channel
-            foiaKeyRequirements,   // Key info
-            foiaStakeholders,      // Entities/contacts
-            foiaRisks,             // Exemptions/redactions
             foiaTitle,
             foiaType,
             submittedBy,
-            analysisPrompts        // Prompts used for this specific FOIA analysis
+            analysisPrompts        
         } = req.body;
 
-        // Basic validation for essential fields
-        if (!foiaFileNames || !Array.isArray(foiaFileNames) || foiaFileNames.length === 0 || !foiaSummary || !generatedQuestionsFoia) {
-            return res.status(400).json({ error: 'Missing required fields for FOIA analysis: foiaFileNames (array), foiaSummary, generatedQuestionsFoia.' });
+        // Basic validation for essential fields - adjust as needed
+        if (!foiaFileNames || !Array.isArray(foiaFileNames) || foiaFileNames.length === 0 || !foiaSummary) {
+            return res.status(400).json({ error: 'Missing required fields for FOIA analysis: foiaFileNames (array) and foiaSummary are essential.' });
         }
 
         const foiaAnalysisData = {
             foiaFileNames,
-            foiaSummary,
-            generatedQuestionsFoia,
-            foiaDeadlines: foiaDeadlines || "Not specified",
-            foiaSubmissionFormat: foiaSubmissionFormat || "Not specified",
-            foiaKeyRequirements: foiaKeyRequirements || "Not specified",
-            foiaStakeholders: foiaStakeholders || "Not specified",
-            foiaRisks: foiaRisks || "Not specified",
+            foiaSummary: foiaSummary || "Not specified",
+            foiaProposalComparison: foiaProposalComparison || "Not specified",
+            foiaInsightsAnalysis: foiaInsightsAnalysis || "Not specified",
+            foiaPricingIntelligence: foiaPricingIntelligence || "Not specified",
+            foiaMarketTrends: foiaMarketTrends || "Not specified",
+            foiaTasksWorkPlan: foiaTasksWorkPlan || "Not specified",
             analysisDate: Timestamp.now(),
-            status: status || 'analyzed', // Default status
-            foiaTitle: foiaTitle || "",   // Optional title
-            foiaType: foiaType || "N/A", // Type of FOIA document
+            status: status || 'analyzed', 
+            foiaTitle: foiaTitle || "",   
+            foiaType: foiaType || "N/A", 
             submittedBy: submittedBy || "N/A",
-            analysisPrompts: analysisPrompts || {} // Store the prompts used for this analysis
+            analysisPrompts: analysisPrompts || {} 
         };
 
         const docRef = await db.collection(FOIA_COLLECTION_NAME).add(foiaAnalysisData);
@@ -392,7 +384,7 @@ app.put('/api/foia-analysis/:id/status', async (req, res) => {
         const { status } = req.body;
         if (!status) return res.status(400).json({ error: 'New status for FOIA analysis is required.' });
         
-        const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived']; // Consistent statuses
+        const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived']; 
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
         }
@@ -417,13 +409,15 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
         if (!doc.exists) return res.status(404).json({ error: 'FOIA analysis not found.' });
 
         const updates = {};
-        // Define fields that can be updated for a FOIA analysis
+        // Updated list of allowed fields for FOIA analysis
         const allowedFoiaFields = [
             'foiaTitle', 'foiaType', 'submittedBy', 'status',
-            'foiaSummary', 'generatedQuestionsFoia', 'foiaDeadlines', 'foiaSubmissionFormat',
-            'foiaKeyRequirements', 'foiaStakeholders', 'foiaRisks'
-            // 'foiaFileNames' are generally not updated post-creation this way
-            // 'analysisPrompts' could be updatable if a re-analysis feature is added.
+            'foiaSummary', 
+            'foiaProposalComparison', 
+            'foiaInsightsAnalysis',
+            'foiaPricingIntelligence',
+            'foiaMarketTrends',
+            'foiaTasksWorkPlan'
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
 
@@ -439,10 +433,10 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for FOIA analysis update.' });
         }
-        updates.lastModified = Timestamp.now(); // Update last modified timestamp
+        updates.lastModified = Timestamp.now(); 
 
         await docRef.update(updates);
-        const updatedDoc = await docRef.get(); // Get the updated document to return
+        const updatedDoc = await docRef.get(); 
         res.status(200).json({ id: updatedDoc.id, message: 'FOIA analysis updated successfully.', ...updatedDoc.data() });
     } catch (error) {
         console.error('Error updating FOIA analysis details:', error);
@@ -466,10 +460,7 @@ app.delete('/api/foia-analysis/:id', async (req, res) => {
 });
 
 
-// Fallback for SPA - Serves index.html for any unmatched GET routes
-// This should ideally be specific to avoid interfering with API routes if one is mistyped.
-// For example, serve index.html for non-API routes.
-app.get(/^\/(?!api).*/, (req, res) => { // Regex to serve index.html for routes NOT starting with /api
+app.get(/^\/(?!api).*/, (req, res) => { 
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
