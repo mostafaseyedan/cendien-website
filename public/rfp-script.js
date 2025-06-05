@@ -1,4 +1,6 @@
-// pdf.js import and worker setup are REMOVED
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- START OF MODAL AUTHENTICATION ---
@@ -11,14 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const correctUsername = "Cendien";
     const correctPassword = "rfpanalyzer";
-    const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const sessionDuration = 24 * 60 * 60 * 1000; 
     const loginTimestampKey = 'rfpAnalyzerLoginTimestamp';
 
     function isSessionValid() {
         const storedTimestamp = localStorage.getItem(loginTimestampKey);
-        if (!storedTimestamp) {
-            return false;
-        }
+        if (!storedTimestamp) return false;
         const lastLoginTime = parseInt(storedTimestamp, 10);
         if (isNaN(lastLoginTime)) {
             localStorage.removeItem(loginTimestampKey);
@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
             pageContentWrapper.classList.remove('content-hidden');
             pageContentWrapper.style.display = '';
         }
-
         initializeAppLogic();
     }
 
@@ -51,10 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (isSessionValid()) {
-        console.log("RFP Analyzer: Valid session found.");
         handleSuccessfulLogin();
     } else {
-        console.log("RFP Analyzer: No valid session or session expired. Showing login modal.");
         if (authModalOverlay) {
             authModalOverlay.classList.remove('auth-modal-hidden');
             authModalOverlay.style.display = 'flex';
@@ -63,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
             pageContentWrapper.classList.add('content-hidden');
             pageContentWrapper.style.display = 'none';
         }
-
         if (authForm) {
             authForm.addEventListener('submit', (event) => {
                 event.preventDefault();
@@ -73,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const username = authUsernameInput.value.trim();
                 const password = authPasswordInput.value;
-
                 if (username === correctUsername && password === correctPassword) {
                     if (authErrorMessage) authErrorMessage.style.display = 'none';
                     handleSuccessfulLogin();
@@ -82,15 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } else {
-             console.error("RFP Analyzer: Login form (auth-form) not found in the DOM.");
-             if(document.body) document.body.innerHTML = "<div style='text-align:center; padding: 50px; font-family: sans-serif;'><h1>Configuration Error</h1><p>Login form not found. Page cannot load.</p></div>";
+            if (document.body) document.body.innerHTML = "<div style='text-align:center; padding: 50px; font-family: sans-serif;'><h1>Configuration Error</h1><p>Login form not found. Page cannot load.</p></div>";
         }
     }
     // --- END OF MODAL AUTHENTICATION ---
 
     function initializeAppLogic() {
         console.log("RFP Analyzer: Initializing app logic...");
-
+        
         const newRfpModal = document.getElementById('new-rfp-modal');
         const openNewRfpModalButton = document.getElementById('open-new-rfp-modal-button');
         const modalCloseButton = document.getElementById('modal-close-button');
@@ -106,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalTabContentMap = {
             summary: document.getElementById('modal-summary-result-content'),
             questions: document.getElementById('modal-questions-result-content'),
-            deadlines: null, // Populated by clearTabContent
-            submissionFormat: null, // Populated by clearTabContent
+            deadlines: null, 
+            submissionFormat: null, 
             requirements: document.getElementById('modal-requirements-result-content'),
             stakeholders: document.getElementById('modal-stakeholders-result-content'),
             risks: document.getElementById('modal-risks-result-content'),
@@ -122,14 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeViewRfpDetailsButton = document.getElementById('close-view-rfp-details-button');
         const viewRfpStatusArea = document.getElementById('view-rfp-status-area');
         const viewAnalysisResultsArea = document.getElementById('view-analysis-results-area');
-        const viewRfpModalActionTrigger = document.getElementById('view-rfp-modal-action-trigger');
-        const viewRfpModalActionsMenu = document.getElementById('view-rfp-modal-actions-menu');
-
+        const viewRfpModalActionTrigger = document.getElementById('view-rfp-modal-action-trigger'); 
+        const viewRfpModalActionsMenu = document.getElementById('view-rfp-modal-actions-menu'); 
+        
         const viewTabContentMap = {
             summary: document.getElementById('view-summary-result-content'),
             questions: document.getElementById('view-questions-result-content'),
-            deadlines: null, // Populated by clearTabContent
-            submissionFormat: null, // Populated by clearTabContent
+            deadlines: null, 
+            submissionFormat: null, 
             requirements: document.getElementById('view-requirements-result-content'),
             stakeholders: document.getElementById('view-stakeholders-result-content'),
             risks: document.getElementById('view-risks-result-content'),
@@ -137,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             licenses: document.getElementById('view-licenses-result-content'),
             budget: document.getElementById('view-budget-result-content')
         };
-        const viewDeadlinesTabContentDiv = document.getElementById('view-deadlines-tab');
+        const viewDeadlinesTabContentDiv = document.getElementById('view-deadlines-tab'); 
 
         const editRfpModal = document.getElementById('edit-rfp-modal');
         const editRfpModalCloseButton = document.getElementById('edit-rfp-modal-close-button');
@@ -183,9 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentSortKey = 'analysisDate';
         let currentSortOrder = 'desc';
         let currentStatusFilter = 'all_statuses';
-        let serverRfpPrompts = null;
-        let promptsLastFetchedFromServer = false;
-        let currentlyViewedRfpAnalysis = null;
+        let serverRfpPrompts = null; 
+        let promptsLastFetchedFromServer = false; 
+        let currentlyViewedRfpAnalysis = null; 
+        let originalRfpTextForReanalysis = ""; // Store original RFP text for re-analysis
 
         const RFP_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Request for Proposal (RFP) text.\nProvide the following distinct sections in your response, each clearly delimited:";
         const RFP_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
@@ -195,52 +190,62 @@ document.addEventListener('DOMContentLoaded', () => {
             summary: {
                 defaultText: "You will be provided with the content of the RFP. Follow these guidelines to create a summary: Focus on extracting and condensing key information from the RFP. Ensure the summary captures all essential aspects, including: Project objectives, Scope of work, Requirements and specifications, Evaluation criteria,  Submission guidelines, Deadlines. Maintain a balance between conciseness and comprehensiveness. The summary should be no more 2 pages in length.",
                 delimiterKey: "SUMMARY",
-                databaseKey: "rfpSummary"
+                databaseKey: "rfpSummary",
+                title: "RFP Summary"
             },
-            questions: {
+            questions: { 
                 defaultText: "Generate a list of 20 critical and insightful clarification questions to ask regarding an RFP. These questions should be designed to uncover hidden requirements, ambiguous statements, or areas where more detail is needed to create a comprehensive and competitive proposal. The goal is to ensure a thorough understanding of the client's needs and expectations.",
                 delimiterKey: "QUESTIONS",
-                databaseKey: "generatedQuestions"
+                databaseKey: "generatedQuestions",
+                title: "Generated Clarification Questions"
             },
             deadlines: {
-                defaultText: "Carefully read the entire RFP document to iIdentify all key deadlines, including dates and times for each deadline. Output the information in a well-organized list with clear labels for each deadline",
-                delimiterKey: "DEADLINES",
-                databaseKey: "rfpDeadlines"
+                defaultText: "You are an expert in analyzing Request for Proposal (RFP) documents. Your task is to identify key deadlines and the submission format for the RFP. Follow these steps to extract the required information: 1. Carefully read the entire RFP document. 2. Identify all key deadlines, including dates and times for each deadline. 3. Identify the required submission format for the RFP (e.g., electronic submission, hard copy submission, online portal submission). 4. Output the information in a well-organized list with clear labels for each deadline and the submission format.",
+                delimiterKey: "DEADLINES", 
+                databaseKey: "rfpDeadlines",
+                title: "Key Deadlines"
             },
-            submissionFormat: {
+            submissionFormat: { 
                 defaultText: "Carefully review the RFP document to identify the specified submission format for the proposal (e.g., mail, email, online portal, usb, fax). Identify all people related to the RFP. 3. Extract all relevant contact information, including: Addresses for mail submissions. Email addresses for electronic submissions. Links to online portals or websites for online submissions. Phone numbers for contact persons. Names and titles of contact persons. 4. Present the extracted information in a clear and organized manner.",
-                delimiterKey: "SUBMISSION_FORMAT",
-                databaseKey: "rfpSubmissionFormat"
+                delimiterKey: "SUBMISSION_FORMAT", 
+                databaseKey: "rfpSubmissionFormat",
+                title: "Submission Format"
             },
-            requirements: {
-                defaultText: "A list of Requirements (e.g., mandatory, highly desirable).",
+            requirements: { 
+                defaultText: "5. A list of Requirements (e.g., mandatory, highly desirable).", 
                 delimiterKey: "REQUIREMENTS",
-                databaseKey: "rfpKeyRequirements"
+                databaseKey: "rfpKeyRequirements",
+                title: "Requirements"
             },
-            stakeholders: {
-                defaultText: "Mentioned Stakeholders or Key Contacts.",
+            stakeholders: { 
+                defaultText: "6. Mentioned Stakeholders or Key Contacts.", 
                 delimiterKey: "STAKEHOLDERS",
-                databaseKey: "rfpStakeholders"
+                databaseKey: "rfpStakeholders",
+                title: "Mentioned Stakeholders"
             },
-            risks: {
-                defaultText: "Potential Risks or Red Flags identified in the RFP.",
+            risks: { 
+                defaultText: "7. Potential Risks or Red Flags identified in the RFP.", 
                 delimiterKey: "RISKS",
-                databaseKey: "rfpRisks"
+                databaseKey: "rfpRisks",
+                title: "Potential Risks/Red Flags" 
             },
-            registration: {
-                defaultText: "Registration requirements or details for bidders.",
+            registration: { 
+                defaultText: "8. Registration requirements or details for bidders.", 
                 delimiterKey: "REGISTRATION",
-                databaseKey: "rfpRegistration"
+                databaseKey: "rfpRegistration",
+                title: "Registration Details"
             },
-            licenses: {
-                defaultText: "Required Licenses or Certifications for bidders.",
+            licenses: { 
+                defaultText: "9. Required Licenses or Certifications for bidders.", 
                 delimiterKey: "LICENSES",
-                databaseKey: "rfpLicenses"
+                databaseKey: "rfpLicenses",
+                title: "Licenses & Certifications"
             },
-            budget: {
-                defaultText: "Any mentioned Budget constraints or financial information.",
+            budget: { 
+                defaultText: "10. Any mentioned Budget constraints or financial information.", 
                 delimiterKey: "BUDGET",
-                databaseKey: "rfpBudget"
+                databaseKey: "rfpBudget",
+                title: "Budget Information"
             }
         };
 
@@ -250,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function fetchPromptsFromServer() {
             if (promptsLastFetchedFromServer && serverRfpPrompts) {
-                console.log("Using already fetched server prompts.");
                 return serverRfpPrompts;
             }
             if(promptSaveStatus) showLoadingMessage(promptSaveStatus, 'Loading prompt settings from server...', true);
@@ -261,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(errData.error || `HTTP error ${response.status}`);
                 }
                 const data = await response.json();
-                serverRfpPrompts = data.prompts;
+                serverRfpPrompts = data.prompts; 
                 promptsLastFetchedFromServer = true;
                 if(promptSaveStatus) {
                     showLoadingMessage(promptSaveStatus, 'Prompts loaded from server!', false);
@@ -282,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     serverRfpPrompts[key] = PROMPT_CONFIG[key].defaultText;
                 });
                 if(promptSaveStatus) hideLoadingMessage(promptSaveStatus, 3000);
-                return serverRfpPrompts;
+                return serverRfpPrompts; 
             }
         }
 
@@ -299,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(errData.error || `HTTP error ${response.status}`);
                 }
                 const data = await response.json();
-                serverRfpPrompts = data.prompts;
+                serverRfpPrompts = data.prompts; 
                 if(promptSaveStatus){
                     showLoadingMessage(promptSaveStatus, data.message || 'Prompts saved to server!', false);
                     hideLoadingMessage(promptSaveStatus, 2000);
@@ -312,8 +316,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-
-        function getStoredSectionPrompt(sectionKeySuffix) {
+        
+        function getStoredSectionPrompt(sectionKeySuffix, analysisPrompts) {
+            // Use prompt from this specific analysis if available, else global/default
+            if (analysisPrompts && analysisPrompts[sectionKeySuffix]) {
+                return analysisPrompts[sectionKeySuffix];
+            }
             if (serverRfpPrompts && serverRfpPrompts[sectionKeySuffix]) {
                 return serverRfpPrompts[sectionKeySuffix];
             }
@@ -323,35 +331,31 @@ document.addEventListener('DOMContentLoaded', () => {
         function loadSelectedSectionPromptToTextarea() {
             if (promptSectionSelector && rfpIndividualPromptTextarea) {
                 const selectedKeySuffix = promptSectionSelector.value;
-                if (selectedKeySuffix && PROMPT_CONFIG[selectedKeySuffix]) {
+                if (selectedKeySuffix && PROMPT_CONFIG[selectedKeySuffix]) { 
                     if (!serverRfpPrompts) {
-                        fetchPromptsFromServer().then(() => {
-                            rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKeySuffix);
+                        fetchPromptsFromServer().then(() => { 
+                            rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKeySuffix, null); // Use global for settings modal
                         });
                     } else {
-                        rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKeySuffix);
+                        rfpIndividualPromptTextarea.value = getStoredSectionPrompt(selectedKeySuffix, null); // Use global for settings modal
                     }
                 }
             }
         }
 
-        async function saveCurrentSectionPrompt() {
+        async function saveCurrentSectionPrompt() { 
             if (promptSectionSelector && rfpIndividualPromptTextarea && promptSaveStatus) {
                 const selectedKeySuffix = promptSectionSelector.value;
                 const userPrompt = rfpIndividualPromptTextarea.value.trim();
 
-                if (!serverRfpPrompts) {
-                    await fetchPromptsFromServer();
-                }
-                 if (!serverRfpPrompts) {
+                if (!serverRfpPrompts) await fetchPromptsFromServer(); 
+                 if (!serverRfpPrompts) { 
                     showLoadingMessage(promptSaveStatus, 'Error: Cannot save, base prompts not loaded.', false);
-                    hideLoadingMessage(promptSaveStatus, 3000);
-                    return;
+                    hideLoadingMessage(promptSaveStatus, 3000); return;
                 }
-
                 if (userPrompt) {
-                    serverRfpPrompts[selectedKeySuffix] = userPrompt;
-                    await savePromptsToServer(serverRfpPrompts);
+                    serverRfpPrompts[selectedKeySuffix] = userPrompt; 
+                    await savePromptsToServer(serverRfpPrompts); 
                 } else {
                     showLoadingMessage(promptSaveStatus, 'Section prompt cannot be empty.', false);
                     hideLoadingMessage(promptSaveStatus, 3000);
@@ -359,26 +363,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        async function resetCurrentSectionPromptToDefault() {
+        async function resetCurrentSectionPromptToDefault() { 
             if (promptSectionSelector && rfpIndividualPromptTextarea && promptSaveStatus) {
                 const selectedKeySuffix = promptSectionSelector.value;
                 const selectedOptionText = promptSectionSelector.options[promptSectionSelector.selectedIndex].text;
-
-                if (!serverRfpPrompts) {
-                    await fetchPromptsFromServer();
-                }
-                 if (!serverRfpPrompts) {
+                if (!serverRfpPrompts) await fetchPromptsFromServer(); 
+                 if (!serverRfpPrompts) { 
                     showLoadingMessage(promptSaveStatus, 'Error: Cannot reset, base prompts not loaded.', false);
-                    hideLoadingMessage(promptSaveStatus, 3000);
-                    return;
+                    hideLoadingMessage(promptSaveStatus, 3000); return;
                 }
-
                 if (confirm(`Are you sure you want to reset the prompt for "${selectedOptionText}" to its default and save to server?`)) {
                     const defaultPromptText = PROMPT_CONFIG[selectedKeySuffix]?.defaultText;
                     if (defaultPromptText) {
-                        serverRfpPrompts[selectedKeySuffix] = defaultPromptText;
-                        rfpIndividualPromptTextarea.value = defaultPromptText;
-                        await savePromptsToServer(serverRfpPrompts);
+                        serverRfpPrompts[selectedKeySuffix] = defaultPromptText; 
+                        rfpIndividualPromptTextarea.value = defaultPromptText; 
+                        await savePromptsToServer(serverRfpPrompts); 
                     } else {
                          showLoadingMessage(promptSaveStatus, `Error: No default prompt found for ${selectedOptionText}.`, false);
                          hideLoadingMessage(promptSaveStatus, 3000);
@@ -387,24 +386,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        async function resetAllPromptsToDefault() {
+        async function resetAllPromptsToDefault() { 
             if (promptSaveStatus && promptSectionSelector) {
                 if (confirm("Are you sure you want to reset ALL section prompts to their defaults and save to server? This action cannot be undone.")) {
                     const newDefaults = {};
                     Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
                         newDefaults[keySuffix] = PROMPT_CONFIG[keySuffix].defaultText;
                     });
-                    serverRfpPrompts = newDefaults;
-                    await savePromptsToServer(serverRfpPrompts);
-                    loadSelectedSectionPromptToTextarea();
+                    serverRfpPrompts = newDefaults; 
+                    await savePromptsToServer(serverRfpPrompts); 
+                    loadSelectedSectionPromptToTextarea(); 
                 }
             }
         }
 
-        function constructFullRfpAnalysisPrompt(rfpText) {
+        function constructFullRfpAnalysisPrompt(rfpText, analysisPrompts = null) {
             let fullPrompt = RFP_PROMPT_MAIN_INSTRUCTION;
             Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
-                const sectionInstruction = getStoredSectionPrompt(keySuffix);
+                // For initial analysis, analysisPrompts will be null, so getStoredSectionPrompt uses global/default
+                // For re-analysis, analysisPrompts might be passed if we want to base it on previously used prompts
+                // However, the global settings modal always edits the serverRfpPrompts.
+                const sectionInstruction = getStoredSectionPrompt(keySuffix, analysisPrompts); 
                 fullPrompt += `\n${sectionInstruction}`;
             });
             fullPrompt += "\n\nUse the following format strictly for each section:";
@@ -440,12 +442,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalElement.style.display = 'none';
                 if (modalElement.id === 'view-saved-rfp-details-section') {
                     modalElement.classList.remove('modal-active');
-                    currentlyViewedRfpAnalysis = null;
+                    currentlyViewedRfpAnalysis = null; 
+                    originalRfpTextForReanalysis = ""; // Clear stored RFP text
                 }
                 document.body.style.overflow = '';
             }
         }
-
+        
         if (openNewRfpModalButton) {
             openNewRfpModalButton.addEventListener('click', () => {
                 if (rfpForm) rfpForm.reset();
@@ -466,11 +469,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (openPromptSettingsButton) {
-            openPromptSettingsButton.addEventListener('click', async () => {
-                if (!promptsLastFetchedFromServer || !serverRfpPrompts) {
+            openPromptSettingsButton.addEventListener('click', async () => { 
+                if (!promptsLastFetchedFromServer || !serverRfpPrompts) { 
                     await fetchPromptsFromServer();
                 }
-                loadSelectedSectionPromptToTextarea();
+                loadSelectedSectionPromptToTextarea(); 
                 openModal(promptSettingsModal);
             });
         }
@@ -482,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (event.target === promptSettingsModal) closeModal(promptSettingsModal);
             });
         }
-
+        
         if (promptSectionSelector) {
             promptSectionSelector.addEventListener('change', loadSelectedSectionPromptToTextarea);
         }
@@ -516,46 +519,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (event.target === editRfpModal) closeModal(editRfpModal);
             });
         }
-
+        
         function clearTabContent(tabContentMap, isModalView) {
             Object.keys(tabContentMap).forEach(key => {
                 const div = tabContentMap[key];
-                if (div) div.innerHTML = '';
+                // Only clear if it's not one of the dynamically created inner divs for deadlines/submissionFormat
+                // or if it's a direct mapping.
+                if (div && (key !== 'deadlines' && key !== 'submissionFormat')) {
+                     div.innerHTML = '';
+                }
             });
+        
             let targetParentDiv = isModalView ? modalDeadlinesTabContentDiv : viewDeadlinesTabContentDiv;
             let deadlinesContentId = isModalView ? 'modal-deadlines-only-content' : 'view-deadlines-only-content';
             let submissionFormatContentId = isModalView ? 'modal-submission-format-content' : 'view-submission-format-content';
-
+        
             if (targetParentDiv) {
                 const resultContainer = !isModalView ? targetParentDiv.querySelector('#view-deadlines-result-content') : targetParentDiv;
                 if (resultContainer) {
-                     resultContainer.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesContentId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionFormatContentId}"></div>`;
-                    tabContentMap.deadlines = document.getElementById(deadlinesContentId);
-                    tabContentMap.submissionFormat = document.getElementById(submissionFormatContentId);
-                } else if (isModalView) {
-                     targetParentDiv.innerHTML = `<h4>Deadlines:</h4><div id="${deadlinesContentId}"></div><h4 style="margin-top: 1rem;">Submission Format:</h4><div id="${submissionFormatContentId}"></div>`;
-                    tabContentMap.deadlines = document.getElementById(deadlinesContentId);
-                    tabContentMap.submissionFormat = document.getElementById(submissionFormatContentId);
-                } else {
-                    console.warn(`Could not find result container for combined deadlines/format tab in ${isModalView ? 'modal' : 'view'}.`);
+                    resultContainer.innerHTML = `
+                        <div class="prompt-editor-container" id="prompt-editor-container-deadlines">
+                            <!-- Populated by formatAndDisplayContentWithPrompt -->
+                        </div>
+                        <div class="section-content-display" id="section-content-display-deadlines">
+                            <!-- Populated by formatAndDisplayContentWithPrompt -->
+                        </div>
+                        <hr class="section-divider">
+                        <div class="prompt-editor-container" id="prompt-editor-container-submissionFormat">
+                            <!-- Populated by formatAndDisplayContentWithPrompt -->
+                        </div>
+                        <div class="section-content-display" id="section-content-display-submissionFormat">
+                            <!-- Populated by formatAndDisplayContentWithPrompt -->
+                        </div>`;
+                    // These specific inner divs are now part of the structure created by formatAndDisplay...
+                    // So, we don't map them here directly in the tabContentMap anymore.
+                    // formatAndDisplayContentWithPrompt will target the correct sub-divs.
+                } else if (isModalView) { // Fallback for modal structure
+                     targetParentDiv.innerHTML = `
+                        <div class="prompt-editor-container" id="prompt-editor-container-deadlines-modal"></div>
+                        <div class="section-content-display" id="section-content-display-deadlines-modal"></div>
+                        <hr class="section-divider">
+                        <div class="prompt-editor-container" id="prompt-editor-container-submissionFormat-modal"></div>
+                        <div class="section-content-display" id="section-content-display-submissionFormat-modal"></div>`;
                 }
-            } else {
-                 console.warn(`Parent div for combined deadlines/format tab not found for ${isModalView ? 'modal' : 'view'}.`);
             }
         }
+        
         function clearModalAnalysisResultTabs() { clearTabContent(modalTabContentMap, true); }
         function clearViewAnalysisResultTabs() { clearTabContent(viewTabContentMap, false); }
 
         function showLoadingMessage(areaElement, message = "Processing...", showSpinner = true) {
             if (!areaElement) return;
-            areaElement.style.display = 'flex';
+            areaElement.style.display = 'flex'; 
             areaElement.innerHTML = `${showSpinner ? '<div class="spinner"></div>' : ''}<p class="loading-text">${message}</p>`;
             if ((areaElement === modalAnalysisStatusArea && generateAnalysisButton) || (areaElement === editRfpStatusArea && saveEditedRfpButton)) {
                 if(generateAnalysisButton && areaElement === modalAnalysisStatusArea && showSpinner) generateAnalysisButton.disabled = true;
                 if(saveEditedRfpButton && areaElement === editRfpStatusArea && showSpinner) saveEditedRfpButton.disabled = true;
             }
-            if (areaElement === promptSaveStatus) {
+            if (areaElement && areaElement.classList.contains('reanalyze-status-area')) { // For section re-analyze status
                 areaElement.style.display = 'flex';
+            }
+            if (areaElement === promptSaveStatus) {
+                areaElement.style.display = 'flex'; 
             }
         }
         function hideLoadingMessage(areaElement, delay = 0) {
@@ -566,40 +591,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (generateAnalysisButton && areaElement === modalAnalysisStatusArea) generateAnalysisButton.disabled = false;
                 if (saveEditedRfpButton && areaElement === editRfpStatusArea) saveEditedRfpButton.disabled = false;
+                 if (areaElement && areaElement.classList.contains('reanalyze-status-area')) {
+                    areaElement.style.display = 'none';
+                    areaElement.innerHTML = '';
+                }
             }, delay);
         }
 
-        // extractTextFromPdf function is REMOVED
-
-        function formatAndDisplayContentWithPrompt(parentElement, sectionKeySuffix, sectionPromptText, sectionContentText) {
+        async function extractTextFromPdf(file) { // No changes needed here
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const pdfData = new Uint8Array(event.target.result);
+                        const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                        let fullText = '';
+                        for (let i = 1; i <= pdfDoc.numPages; i++) {
+                            const page = await pdfDoc.getPage(i);
+                            const textContent = await page.getTextContent();
+                            fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+                        }
+                        resolve(fullText.trim());
+                    } catch (err) {
+                        reject(new Error(`Failed to extract text from PDF '${file.name}': ${err.message}`));
+                    }
+                };
+                reader.onerror = (err) => reject(new Error(`FileReader error for '${file.name}': ${err.message}`));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // Updated to handle new structure for editable prompts
+        function formatAndDisplayContentWithPrompt(parentElement, sectionKeySuffix, sectionPromptText, sectionContentText, rfpId, isViewModal = false) {
             if (!parentElement) {
                 console.warn("formatAndDisplayContentWithPrompt: parentElement is null for sectionKeySuffix:", sectionKeySuffix);
                 return;
             }
-            parentElement.innerHTML = '';
+            parentElement.innerHTML = ''; // Clear previous content
+        
+            const promptTitle = PROMPT_CONFIG[sectionKeySuffix]?.title || sectionKeySuffix.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        
+            // Container for prompt editor
+            const promptEditorContainer = document.createElement('div');
+            promptEditorContainer.className = 'prompt-editor-container';
+            promptEditorContainer.id = `prompt-editor-container-${sectionKeySuffix}${isViewModal ? '-view' : '-modal'}`;
+        
+            const promptLabel = document.createElement('label');
+            promptLabel.htmlFor = `prompt-edit-${sectionKeySuffix}${isViewModal ? '-view' : ''}`;
+            promptLabel.textContent = `Prompt for ${promptTitle}:`;
+            promptEditorContainer.appendChild(promptLabel);
+        
+            const promptTextarea = document.createElement('textarea');
+            promptTextarea.id = `prompt-edit-${sectionKeySuffix}${isViewModal ? '-view' : ''}`;
+            promptTextarea.className = 'prompt-edit-textarea';
+            promptTextarea.value = sectionPromptText || getStoredSectionPrompt(sectionKeySuffix, currentlyViewedRfpAnalysis?.analysisPrompts);
+            promptEditorContainer.appendChild(promptTextarea);
+        
+            const reanalyzeButton = document.createElement('button');
+            reanalyzeButton.className = 'reanalyze-section-button btn btn-sm btn-info'; // Added Bootstrap classes
+            reanalyzeButton.dataset.sectionKey = sectionKeySuffix;
+            reanalyzeButton.dataset.rfpId = rfpId;
+            reanalyzeButton.textContent = `Re-analyze ${promptTitle}`;
+            reanalyzeButton.addEventListener('click', handleReanalyzeSection);
+            promptEditorContainer.appendChild(reanalyzeButton);
 
-            if (sectionPromptText) {
-                const promptDisplayDiv = document.createElement('div');
-                promptDisplayDiv.className = 'prompt-display-box';
-                const promptLabel = document.createElement('strong');
-                promptLabel.textContent = "Prompt Used: ";
-                promptDisplayDiv.appendChild(promptLabel);
-                const promptTextNode = document.createTextNode(sectionPromptText);
-                promptDisplayDiv.appendChild(promptTextNode);
-
-                const currentDefaultPromptFromConfig = PROMPT_CONFIG[sectionKeySuffix]?.defaultText;
-                if (currentDefaultPromptFromConfig && sectionPromptText === currentDefaultPromptFromConfig) {
-                    const defaultIndicator = document.createElement('em');
-                    defaultIndicator.textContent = " (This is the current default prompt)";
-                    defaultIndicator.style.fontSize = '0.9em';
-                    defaultIndicator.style.marginLeft = '5px';
-                    promptDisplayDiv.appendChild(defaultIndicator);
-                }
-                parentElement.appendChild(promptDisplayDiv);
-            }
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'ai-generated-section-content';
+            const reanalyzeStatusArea = document.createElement('div');
+            reanalyzeStatusArea.id = `reanalyze-status-${sectionKeySuffix}${isViewModal ? '-view' : ''}`;
+            reanalyzeStatusArea.className = 'loading-container reanalyze-status-area';
+            reanalyzeStatusArea.style.display = 'none';
+            promptEditorContainer.appendChild(reanalyzeStatusArea);
+        
+            parentElement.appendChild(promptEditorContainer);
+        
+            // Container for AI-generated content
+            const contentDisplayContainer = document.createElement('div');
+            contentDisplayContainer.className = 'section-content-display';
+            contentDisplayContainer.id = `section-content-display-${sectionKeySuffix}${isViewModal ? '-view' : ''}`;
+        
             const lines = (sectionContentText || "N/A").split('\n');
             let currentList = null;
             lines.forEach(line => {
@@ -612,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!currentList) {
                             currentList = isQuestionsList ? document.createElement('ol') : document.createElement('ul');
                             if (isQuestionsList) currentList.className = 'numbered-list';
-                            contentDiv.appendChild(currentList);
+                            contentDisplayContainer.appendChild(currentList);
                         }
                         const listItem = document.createElement('li');
                         listItem.innerHTML = formattedLine.substring(listMatch[0].length);
@@ -621,14 +689,234 @@ document.addEventListener('DOMContentLoaded', () => {
                         currentList = null;
                         const p = document.createElement('p');
                         p.innerHTML = formattedLine;
-                        contentDiv.appendChild(p);
+                        contentDisplayContainer.appendChild(p);
                     }
                 } else {
                     currentList = null;
                 }
             });
-            parentElement.appendChild(contentDiv);
+            parentElement.appendChild(contentDisplayContainer);
+        
+            // "Save Changes to this Section" button (initially hidden)
+            // This will require backend logic to save individual section changes
+            const saveSectionButton = document.createElement('button');
+            saveSectionButton.className = 'save-section-button btn btn-sm btn-success';
+            saveSectionButton.dataset.sectionKey = sectionKeySuffix;
+            saveSectionButton.dataset.rfpId = rfpId;
+            saveSectionButton.textContent = `Save Changes to ${promptTitle}`;
+            saveSectionButton.style.display = 'none'; // Initially hidden
+            saveSectionButton.style.marginTop = '10px';
+            saveSectionButton.addEventListener('click', handleSaveSectionChanges);
+            parentElement.appendChild(saveSectionButton);
         }
+
+
+        async function handleReanalyzeSection(event) {
+            const button = event.currentTarget;
+            const sectionKey = button.dataset.sectionKey;
+            const rfpId = button.dataset.rfpId; // This should be the ID of the current RFP analysis
+        
+            if (!sectionKey || !rfpId || !currentlyViewedRfpAnalysis || !originalRfpTextForReanalysis) {
+                console.error("Missing data for re-analysis:", { sectionKey, rfpId, currentlyViewedRfpAnalysisExists: !!currentlyViewedRfpAnalysis, originalRfpTextExists: !!originalRfpTextForReanalysis });
+                alert("Error: Could not re-analyze section due to missing data. Ensure RFP text is loaded.");
+                return;
+            }
+        
+            const promptTextareaId = `prompt-edit-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`; // Determine if in view or modal
+            const promptTextarea = document.getElementById(promptTextareaId);
+            const newSectionPrompt = promptTextarea ? promptTextarea.value : null;
+        
+            if (!newSectionPrompt) {
+                alert("Prompt for the section cannot be empty.");
+                return;
+            }
+        
+            const statusAreaId = `reanalyze-status-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`;
+            const statusArea = document.getElementById(statusAreaId);
+            if (statusArea) showLoadingMessage(statusArea, `Re-analyzing ${PROMPT_CONFIG[sectionKey]?.title || sectionKey}...`);
+            button.disabled = true;
+        
+            // Construct a highly targeted prompt for the AI
+            const targetedAiPrompt = `
+You are an expert RFP analyzer. You will be given the full text of an RFP and a specific instruction for one section.
+Your task is to regenerate ONLY the content for the section: "${PROMPT_CONFIG[sectionKey]?.title || sectionKey}".
+Use the following specific prompt for this section: "${newSectionPrompt}"
+The full RFP text is provided below for context.
+Ensure your output for this section is wrapped ONLY with the delimiters: ###${PROMPT_CONFIG[sectionKey].delimiterKey}_START### and ###${PROMPT_CONFIG[sectionKey].delimiterKey}_END###. Do not include any other text or delimiters.
+
+Full RFP Text:
+---
+${originalRfpTextForReanalysis}
+---
+            `;
+        
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: targetedAiPrompt })
+                });
+        
+                if (!response.ok) {
+                    const errorResult = await response.json().catch(() => ({ error: "Failed to parse error from AI service."}));
+                    throw new Error(errorResult.error || `AI service error: ${response.status}`);
+                }
+        
+                const data = await response.json();
+                let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
+                
+                // Extract only the relevant section
+                const delimiter = PROMPT_CONFIG[sectionKey].delimiterKey;
+                const sectionRegex = new RegExp(`###${delimiter}_START###([\\s\\S]*?)###${delimiter}_END###`);
+                const match = rawAiOutput.match(sectionRegex);
+                const newSectionContent = match && match[1] ? match[1].trim() : `Failed to extract ${delimiter} section. AI Raw: ${rawAiOutput.substring(0,200)}`;
+        
+                // Update the display
+                const contentDisplayId = `section-content-display-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`;
+                const contentDisplayDiv = document.getElementById(contentDisplayId);
+                if (contentDisplayDiv) {
+                    // Re-format and display the new content (simplified, direct HTML for now)
+                    const lines = (newSectionContent || "N/A").split('\n');
+                    let currentList = null;
+                    contentDisplayDiv.innerHTML = ''; // Clear old content
+                    lines.forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine) {
+                            let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                            const isQuestionsList = sectionKey === 'questions';
+                            const listMatch = formattedLine.match(/^(\*|-|\d+\.)\s+/);
+                            if (listMatch) {
+                                if (!currentList) {
+                                    currentList = isQuestionsList ? document.createElement('ol') : document.createElement('ul');
+                                    if (isQuestionsList) currentList.className = 'numbered-list';
+                                    contentDisplayDiv.appendChild(currentList);
+                                }
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = formattedLine.substring(listMatch[0].length);
+                                currentList.appendChild(listItem);
+                            } else {
+                                currentList = null;
+                                const p = document.createElement('p');
+                                p.innerHTML = formattedLine;
+                                contentDisplayDiv.appendChild(p);
+                            }
+                        } else {
+                            currentList = null;
+                        }
+                    });
+                }
+        
+                // Update the stored analysis object (in memory for now)
+                if (currentlyViewedRfpAnalysis) {
+                    const dbKey = PROMPT_CONFIG[sectionKey].databaseKey;
+                    if (dbKey) {
+                        currentlyViewedRfpAnalysis[dbKey] = newSectionContent;
+                    }
+                    if (!currentlyViewedRfpAnalysis.analysisPrompts) {
+                        currentlyViewedRfpAnalysis.analysisPrompts = {};
+                    }
+                    currentlyViewedRfpAnalysis.analysisPrompts[sectionKey] = newSectionPrompt; // Store the prompt used
+                }
+        
+                if (statusArea) showLoadingMessage(statusArea, "Section re-analyzed!", false);
+                const saveButton = parentElement.querySelector(`.save-section-button[data-section-key="${sectionKey}"]`);
+                if(saveButton) saveButton.style.display = 'inline-block';
+
+
+            } catch (error) {
+                console.error("Error re-analyzing section:", error);
+                if (statusArea) showLoadingMessage(statusArea, `Error: ${error.message}`, false);
+            } finally {
+                if (statusArea) hideLoadingMessage(statusArea, 3000);
+                button.disabled = false;
+            }
+        }
+
+        async function handleSaveSectionChanges(event) {
+            const button = event.currentTarget;
+            const sectionKey = button.dataset.sectionKey;
+            const rfpId = button.dataset.rfpId;
+        
+            if (!sectionKey || !rfpId || !currentlyViewedRfpAnalysis) {
+                alert("Cannot save: Missing information.");
+                return;
+            }
+        
+            const promptTextareaId = `prompt-edit-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`;
+            const promptTextarea = document.getElementById(promptTextareaId);
+            const newPromptForSection = promptTextarea ? promptTextarea.value : null;
+        
+            const contentDisplayId = `section-content-display-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`;
+            const contentDisplayDiv = document.getElementById(contentDisplayId);
+            // This is a simplified way to get content; might need refinement if content has complex HTML
+            const newContentForSection = contentDisplayDiv ? contentDisplayDiv.innerText : null; 
+        
+            if (newPromptForSection === null || newContentForSection === null) {
+                alert("Cannot save: Content or prompt missing.");
+                return;
+            }
+        
+            const statusAreaId = `reanalyze-status-${sectionKey}${viewSavedRfpDetailsSection.style.display === 'block' ? '-view' : ''}`;
+            const statusArea = document.getElementById(statusAreaId);
+        
+            if (statusArea) showLoadingMessage(statusArea, `Saving changes for ${PROMPT_CONFIG[sectionKey]?.title || sectionKey}...`);
+            button.disabled = true;
+        
+            try {
+                const payload = {
+                    analysisPrompts: {
+                        ...(currentlyViewedRfpAnalysis.analysisPrompts || {}), // Keep existing prompts
+                        [sectionKey]: newPromptForSection // Update the specific section's prompt
+                    }
+                };
+                // Add the updated content for the specific section
+                const dbKey = PROMPT_CONFIG[sectionKey].databaseKey;
+                if (dbKey) {
+                    payload[dbKey] = newContentForSection;
+                } else {
+                    throw new Error(`Database key for section ${sectionKey} is not defined in PROMPT_CONFIG.`);
+                }
+        
+                // Use the main PUT endpoint for updating the RFP analysis
+                const response = await fetch(`/api/rfp-analysis/${rfpId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+        
+                if (!response.ok) {
+                    const errorResult = await response.json().catch(() => ({ error: "Failed to save section changes." }));
+                    throw new Error(errorResult.error || `Server error: ${response.status}`);
+                }
+        
+                const result = await response.json();
+                if (statusArea) showLoadingMessage(statusArea, result.message || "Section changes saved!", false);
+                
+                // Update the local cache
+                const rfpInList = allFetchedAnalyses.find(a => a.id === rfpId);
+                if (rfpInList) {
+                    if (dbKey) rfpInList[dbKey] = newContentForSection;
+                    rfpInList.analysisPrompts = payload.analysisPrompts;
+                    rfpInList.lastModified = result.lastModified || new Date().toISOString(); // Assuming server sends back lastModified
+                }
+                if(currentlyViewedRfpAnalysis && currentlyViewedRfpAnalysis.id === rfpId){
+                     if (dbKey) currentlyViewedRfpAnalysis[dbKey] = newContentForSection;
+                    currentlyViewedRfpAnalysis.analysisPrompts = payload.analysisPrompts;
+                }
+
+
+                button.style.display = 'none'; // Hide save button after successful save
+        
+            } catch (error) {
+                console.error("Error saving section changes:", error);
+                if (statusArea) showLoadingMessage(statusArea, `Save error: ${error.message}`, false);
+            } finally {
+                if (statusArea) hideLoadingMessage(statusArea, 4000);
+                button.disabled = false;
+            }
+        }
+        
+
         async function updateRfpStatus(rfpId, newStatus) {
             const rfpToUpdate = allFetchedAnalyses.find(a => a.id === rfpId) || currentlyViewedRfpAnalysis;
             const rfpTitleForMessage = rfpToUpdate ? (rfpToUpdate.rfpTitle || rfpToUpdate.rfpFileName || 'this RFP') : 'this RFP';
@@ -640,21 +928,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
                 });
                 if (!response.ok) throw new Error((await response.json()).error || 'Failed to update status.');
-                const result = await response.json();
-
+                const result = await response.json(); 
+                
                 const listItemInAllFetched = allFetchedAnalyses.find(a => a.id === rfpId);
                 if (listItemInAllFetched) listItemInAllFetched.status = result.newStatus || newStatus;
-
+                
                 if (currentlyViewedRfpAnalysis && currentlyViewedRfpAnalysis.id === rfpId) {
                     currentlyViewedRfpAnalysis.status = result.newStatus || newStatus;
-                    populateViewModalRfpActions(currentlyViewedRfpAnalysis);
+                    populateViewModalRfpActions(currentlyViewedRfpAnalysis); 
                 }
                 renderAnalysesList();
                 if(statusArea) showLoadingMessage(statusArea, `"${rfpTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
-            } catch (error) {
+            } catch (error) { 
                 if(statusArea) showLoadingMessage(statusArea, `Error updating status: ${error.message}`, false);
-            } finally {
-                if(statusArea) hideLoadingMessage(statusArea, 3000);
+            } finally { 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
@@ -668,26 +956,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error((await response.json()).error || `Failed to delete ${rfpTitleForConfirm}.`);
                 allFetchedAnalyses = allFetchedAnalyses.filter(a => a.id !== rfpId);
                 renderAnalysesList();
-                if (viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active') &&
+                if (viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active') && 
                     currentlyViewedRfpAnalysis && currentlyViewedRfpAnalysis.id === rfpId) {
                     closeModal(viewSavedRfpDetailsSection);
                 }
                 if(statusArea) showLoadingMessage(statusArea, `"${rfpTitleForConfirm}" deleted successfully!`, false);
-            } catch (error) {
+            } catch (error) { 
                 if(statusArea) showLoadingMessage(statusArea, `Error deleting: ${error.message}`, false);
-            } finally {
-                if(statusArea) hideLoadingMessage(statusArea, 3000);
+            } finally { 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
         async function openEditRfpModal(analysisFullDetails) {
             if (!editRfpModal || !editRfpForm) return;
             let analysis = analysisFullDetails;
-
+            
             const requiredDbKeys = Object.values(PROMPT_CONFIG).map(config => config.databaseKey);
             let needsFetch = false;
             for (const dbKey of requiredDbKeys) {
-                if (PROMPT_CONFIG[Object.keys(PROMPT_CONFIG).find(key => PROMPT_CONFIG[key].databaseKey === dbKey)]) {
+                if (PROMPT_CONFIG[Object.keys(PROMPT_CONFIG).find(key => PROMPT_CONFIG[key].databaseKey === dbKey)]) { 
                     if (!analysis.hasOwnProperty(dbKey)) {
                         needsFetch = true;
                         break;
@@ -695,7 +983,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            if (needsFetch) {
+            if (needsFetch) { 
                 if(editRfpStatusArea) showLoadingMessage(editRfpStatusArea, 'Loading full RFP details for editing...');
                 try {
                     const response = await fetch(`/api/rfp-analysis/${analysisFullDetails.id}`);
@@ -719,7 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editRfpTypeSelect) editRfpTypeSelect.value = analysis.rfpType || 'Other';
             if (editSubmittedBySelect) editSubmittedBySelect.value = analysis.submittedBy || 'Other';
             if (editRfpStatusSelect) editRfpStatusSelect.value = analysis.status || 'analyzed';
-
+            
             if (editRfpSummaryTextarea) editRfpSummaryTextarea.value = analysis.rfpSummary || '';
             if (editGeneratedQuestionsTextarea) editGeneratedQuestionsTextarea.value = analysis.generatedQuestions || '';
             if (editRfpDeadlinesTextarea) editRfpDeadlinesTextarea.value = analysis.rfpDeadlines || '';
@@ -732,11 +1020,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editRfpBudgetTextarea) editRfpBudgetTextarea.value = analysis.rfpBudget || '';
 
             if (editRfpModalTitle) editRfpModalTitle.textContent = `Edit RFP: ${analysis.rfpTitle || analysis.rfpFileName}`;
-
-            closeModal(viewSavedRfpDetailsSection);
+            
+            closeModal(viewSavedRfpDetailsSection); 
             openModal(editRfpModal);
         }
-
+        
         if (editRfpForm) {
             editRfpForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -775,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     const result = await response.json();
                     if(editRfpStatusArea) showLoadingMessage(editRfpStatusArea, result.message || 'Changes saved successfully!', false);
-                    await loadSavedAnalysesInitial();
+                    await loadSavedAnalysesInitial(); 
                     setTimeout(() => closeModal(editRfpModal), 2000);
                 } catch (error) {
                     console.error('Error saving RFP details:', error);
@@ -792,14 +1080,14 @@ document.addEventListener('DOMContentLoaded', () => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 clickHandler();
-                menuElement.style.display = 'none';
+                menuElement.style.display = 'none'; 
             });
             menuElement.appendChild(item);
         }
-
+        
         function populateViewModalRfpActions(analysis) {
             if (!viewRfpModalActionsMenu || !analysis) return;
-            viewRfpModalActionsMenu.innerHTML = '';
+            viewRfpModalActionsMenu.innerHTML = ''; 
             const displayTitle = analysis.rfpTitle || analysis.rfpFileName || 'N/A';
 
             addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-edit', 'Edit Details', () => openEditRfpModal(analysis));
@@ -820,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (analysis.status === 'archived') {
                 addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
                 addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
-            } else {
+            } else { 
                 addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
                 addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
                 addDropdownItemToMenu(viewRfpModalActionsMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
@@ -833,8 +1121,8 @@ document.addEventListener('DOMContentLoaded', () => {
             viewRfpModalActionTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (viewRfpModalActionsMenu) {
-                    if (currentlyViewedRfpAnalysis) {
-                        populateViewModalRfpActions(currentlyViewedRfpAnalysis);
+                    if (currentlyViewedRfpAnalysis) { 
+                        populateViewModalRfpActions(currentlyViewedRfpAnalysis); 
                     }
                     viewRfpModalActionsMenu.style.display = viewRfpModalActionsMenu.style.display === 'block' ? 'none' : 'block';
                 }
@@ -867,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (filteredAnalyses.length === 0) {
                 noSavedAnalysesP.style.display = 'block';
-                noSavedAnalysesP.textContent = currentStatusFilter === 'all_statuses' ?
+                noSavedAnalysesP.textContent = currentStatusFilter === 'all_statuses' ? 
                     `No analyses found.` : `No analyses found for "${currentStatusFilter}" category.`;
             } else {
                 noSavedAnalysesP.style.display = 'none';
@@ -885,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const statusDotClass = analysis.status === 'active' ? 'green' :
                                        analysis.status === 'not_pursuing' ? 'red' :
                                        analysis.status === 'archived' ? 'grey' :
-                                       'orange';
+                                       'orange'; 
                     itemDiv.innerHTML = `
                         <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
                         <span class="rfp-col-type">${analysis.rfpType || 'N/A'}</span>
@@ -903,7 +1191,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
-                        currentlyViewedRfpAnalysis = allFetchedAnalyses.find(item => item.id === analysisId);
+                        originalRfpTextForReanalysis = ""; // Reset before loading new one
+                        currentlyViewedRfpAnalysis = allFetchedAnalyses.find(item => item.id === analysisId); 
                          if (!currentlyViewedRfpAnalysis) {
                             console.error("Could not find RFP item in local cache for ID:", analysisId);
                             return;
@@ -912,35 +1201,85 @@ document.addEventListener('DOMContentLoaded', () => {
                         const rfpItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
                         const titleElement = rfpItemDiv ? rfpItemDiv.querySelector('.rfp-col-title') : null;
                         const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected RFP';
-
+                        
                         openModal(viewSavedRfpDetailsSection);
                         if (viewSavedRfpDetailsSection) viewSavedRfpDetailsSection.dataset.currentViewingId = analysisId;
                         if (viewRfpMainTitleHeading) viewRfpMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
                         if(viewRfpStatusArea) showLoadingMessage(viewRfpStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
                         if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'none';
-                        clearViewAnalysisResultTabs();
-                        populateViewModalRfpActions(currentlyViewedRfpAnalysis);
+                        clearViewAnalysisResultTabs(); // This will setup structure for deadlines/submissionFormat too
+                        populateViewModalRfpActions(currentlyViewedRfpAnalysis); 
 
                         let loadErrorOccurred = false;
                         try {
                             const detailResponse = await fetch(`/api/rfp-analysis/${analysisId}`);
                             if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch details.');
                             const detailedAnalysis = await detailResponse.json();
-                            currentlyViewedRfpAnalysis = detailedAnalysis;
-                            populateViewModalRfpActions(currentlyViewedRfpAnalysis);
+                            currentlyViewedRfpAnalysis = detailedAnalysis; 
+                            originalRfpTextForReanalysis = detailedAnalysis.originalRfpFullText || ""; // Assuming this field exists or is fetched
+                             if (!originalRfpTextForReanalysis && detailedAnalysis.rfpFileName) {
+                                // Attempt to re-fetch or find original text if not stored with analysis.
+                                // This is a placeholder for more complex logic if needed.
+                                // For now, we assume it might be part of detailedAnalysis or we need another way
+                                console.warn("Original RFP full text not found in detailed analysis. Re-analysis might be limited or require re-upload mock.");
+                                // Mock re-fetch for demo if you had a separate endpoint or stored it somewhere else
+                                // originalRfpTextForReanalysis = await fetchOriginalRfpText(detailedAnalysis.rfpFileName); // Hypothetical
+                            }
+
+
+                            populateViewModalRfpActions(currentlyViewedRfpAnalysis); 
 
                             const savedPrompts = detailedAnalysis.analysisPrompts || {};
                             Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
-                                const contentDiv = viewTabContentMap[keySuffix];
+                                const parentContentDiv = viewTabContentMap[keySuffix]; // Get the main tab div
                                 const dbKey = PROMPT_CONFIG[keySuffix].databaseKey;
                                 const sectionContent = detailedAnalysis[dbKey] || "N/A";
-                                const promptTextForThisAnalysis = savedPrompts[keySuffix] || PROMPT_CONFIG[keySuffix]?.defaultText;
-                                if (contentDiv) {
-                                    formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptTextForThisAnalysis, sectionContent);
+                                const promptTextForThisAnalysis = getStoredSectionPrompt(keySuffix, savedPrompts);
+
+                                if (keySuffix === 'deadlines' || keySuffix === 'submissionFormat') {
+                                    // For these, formatAndDisplayContentWithPrompt will target specific inner divs
+                                    // Ensure the main parent (viewDeadlinesTabContentDiv) is ready
+                                    const combinedTabParent = viewDeadlinesTabContentDiv.querySelector('#view-deadlines-result-content');
+                                    if (combinedTabParent) {
+                                        // We need to pass the correct sub-container to formatAndDisplayContentWithPrompt
+                                        let targetSubDivId;
+                                        let targetSubDiv;
+                                        if (keySuffix === 'deadlines') {
+                                            targetSubDivId = `prompt-editor-container-deadlines-view`; // This needs to be the overall container for this section
+                                            targetSubDiv = document.getElementById(targetSubDivId)?.parentElement || combinedTabParent.querySelector(`#prompt-editor-container-deadlines`)?.parentElement || combinedTabParent;
+                                             // Clear existing content if any before re-populating specific parts
+                                            const deadlinesEditorContainer = combinedTabParent.querySelector('#prompt-editor-container-deadlines-view') || combinedTabParent.querySelector('#prompt-editor-container-deadlines');
+                                            const deadlinesContentDisplay = combinedTabParent.querySelector('#section-content-display-deadlines-view') || combinedTabParent.querySelector('#section-content-display-deadlines');
+                                            if(deadlinesEditorContainer) deadlinesEditorContainer.innerHTML = '';
+                                            if(deadlinesContentDisplay) deadlinesContentDisplay.innerHTML = '';
+                                            
+                                            if(deadlinesEditorContainer && deadlinesContentDisplay) {
+                                                formatAndDisplayContentWithPrompt(deadlinesEditorContainer.parentElement, keySuffix, promptTextForThisAnalysis, sectionContent, analysisId, true);
+                                            }
+
+
+                                        } else if (keySuffix === 'submissionFormat') {
+                                            targetSubDivId = `prompt-editor-container-submissionFormat-view`;
+                                            targetSubDiv = document.getElementById(targetSubDivId)?.parentElement || combinedTabParent.querySelector(`#prompt-editor-container-submissionFormat`)?.parentElement || combinedTabParent;
+
+                                            const submissionEditorContainer = combinedTabParent.querySelector('#prompt-editor-container-submissionFormat-view') || combinedTabParent.querySelector('#prompt-editor-container-submissionFormat');
+                                            const submissionContentDisplay = combinedTabParent.querySelector('#section-content-display-submissionFormat-view') || combinedTabParent.querySelector('#section-content-display-submissionFormat');
+                                            if(submissionEditorContainer) submissionEditorContainer.innerHTML = '';
+                                            if(submissionContentDisplay) submissionContentDisplay.innerHTML = '';
+                                            
+                                            if(submissionEditorContainer && submissionContentDisplay){
+                                                formatAndDisplayContentWithPrompt(submissionEditorContainer.parentElement, keySuffix, promptTextForThisAnalysis, sectionContent, analysisId, true);
+                                            }
+                                        }
+                                    }
+                                } else if (parentContentDiv) {
+                                     formatAndDisplayContentWithPrompt(parentContentDiv, keySuffix, promptTextForThisAnalysis, sectionContent, analysisId, true);
                                 } else {
                                     console.warn(`View tab content div for RFP key "${keySuffix}" (mapped to DB key ${dbKey}) not found.`);
                                 }
                             });
+
+
                             if (viewAnalysisResultsArea) viewAnalysisResultsArea.style.display = 'block';
                             const firstViewTabLink = document.querySelector('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link');
                             if (firstViewTabLink) {
@@ -948,7 +1287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 firstViewTabLink.classList.add('active');
                                 const tabNameMatch = firstViewTabLink.getAttribute('onclick').match(/'(view-[^']+-tab)'/);
                                 if (tabNameMatch && tabNameMatch[1] && window.openViewTab) {
-                                    window.openViewTab(null, tabNameMatch[1]);
+                                    window.openViewTab(null, tabNameMatch[1]); 
                                 }
                             }
                             const titleForStatus = detailedAnalysis.rfpTitle || detailedAnalysis.rfpFileName || 'N/A';
@@ -994,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (analysis.status === 'archived') {
                         addDropdownItemToMenu(dropdownMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateRfpStatus(analysis.id, 'analyzed'));
                         addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
-                    } else {
+                    } else { 
                         addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateRfpStatus(analysis.id, 'active'));
                         addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateRfpStatus(analysis.id, 'not_pursuing'));
                         addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateRfpStatus(analysis.id, 'archived'));
@@ -1026,14 +1365,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
                 } else {
                     currentSortKey = sortKey;
-                    currentSortOrder = 'asc';
+                    currentSortOrder = 'asc'; 
                 }
                 document.querySelectorAll('#saved-analyses-header .sortable-header').forEach(h => {
-                    let text = h.textContent.replace(/ [⇅↑↓]$/, '');
+                    let text = h.textContent.replace(/ [⇅↑↓]$/, ''); 
                     if (h.dataset.sortKey === currentSortKey) {
                         text += currentSortOrder === 'asc' ? ' ↑' : ' ↓';
                     } else {
-                        text += ' ⇅';
+                        text += ' ⇅'; 
                     }
                     h.textContent = text;
                 });
@@ -1050,9 +1389,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mainRfpFile = rfpFileUpload.files[0];
                 const addendumFiles = rfpAddendumUpload.files;
 
-                if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Validating RFP files...");
+                if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Starting analysis...");
                 if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'none';
-
                 if (!mainRfpFile) {
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Please upload the main RFP document.", false);
                     if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 3000); return;
@@ -1062,94 +1400,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Invalid main RFP file type. Please upload a PDF.", false);
                     if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 3000); return;
                 }
+                
+                let tempOriginalRfpText = ""; // Store combined text here first
+                let filesToProcess = [mainRfpFile];
                 for (let i = 0; i < addendumFiles.length; i++) {
-                    if (addendumFiles[i].type !== "application/pdf") {
-                         if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `Invalid addendum file type: ${addendumFiles[i].name}. Please upload PDFs only.`, false);
-                         if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 3000); return;
-                    }
-                }
-
-                // --- New: Prepare FormData for Python Backend ---
-                const formData = new FormData();
-                formData.append('main_rfp', mainRfpFile, mainRfpFile.name);
-                for (let i = 0; i < addendumFiles.length; i++) {
-                    formData.append('addendum_files', addendumFiles[i], addendumFiles[i].name);
-                }
-
-                let combinedRfpTextFromServer = "";
-                if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Uploading and processing PDF(s) on server...");
-
-                try {
-                    // Replace '/python-pdf-processor/process-rfp-pdf/' with your actual Python backend endpoint
-                    const pythonResponse = await fetch('/api/process-pdf/', { // Placeholder URL
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!pythonResponse.ok) {
-                        const errorData = await pythonResponse.json().catch(() => ({ error: "Unknown error from PDF processing service." , processing_details: [] }));
-                        console.error("Python backend error response:", errorData);
-                        let errorMsg = errorData.error || `PDF processing failed with status: ${pythonResponse.status}`;
-                        if (errorData.processing_details && errorData.processing_details.length > 0) {
-                            errorData.processing_details.forEach(detail => {
-                                if (detail.status === 'failure' && detail.error_message) {
-                                    errorMsg += `\nFile ${detail.file_name}: ${detail.error_message}`;
-                                }
-                            });
-                        }
-                        throw new Error(errorMsg);
-                    }
-
-                    const pythonResult = await pythonResponse.json();
-                    console.log("Python Backend Response:", pythonResult);
-
-                    if (pythonResult.status === 'success' && pythonResult.extracted_text) {
-                        combinedRfpTextFromServer = pythonResult.extracted_text;
-                        // Optionally display pythonResult.processing_details to the user in a non-modal way or log
-                        console.log("Text extraction details from Python backend:", pythonResult.processing_details);
-                         if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "PDFs processed successfully by server. Preparing AI analysis...", false);
-
-                    } else if (pythonResult.status === 'partial_success' && pythonResult.extracted_text) {
-                        combinedRfpTextFromServer = pythonResult.extracted_text;
-                        let warningMsg = "Partial success in PDF processing. Some files may have issues. Details:\n";
-                        pythonResult.processing_details.forEach(detail => {
-                            warningMsg += `File: ${detail.file_name}, Method: ${detail.method}, Status: ${detail.status}${detail.error_message ? ', Error: ' + detail.error_message : ''}\n`;
-                        });
-                        console.warn(warningMsg);
-                        // Display a non-blocking warning to the user if possible, or just proceed.
-                        if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Partial success in PDF processing. Continuing with available text...", false);
-
-
+                    if (addendumFiles[i].type === "application/pdf") {
+                        filesToProcess.push(addendumFiles[i]);
                     } else {
-                        let errorDetail = pythonResult.error_message || "Failed to extract text from PDFs via Python service.";
-                        if (pythonResult.processing_details && pythonResult.processing_details.length > 0) {
-                             pythonResult.processing_details.forEach(detail => {
-                                if (detail.status === 'failure' && detail.error_message) {
-                                    errorDetail += `\nFile ${detail.file_name}: ${detail.error_message}`;
-                                }
-                            });
-                        }
-                        throw new Error(errorDetail);
+                        console.warn(`Skipping non-PDF addendum: '${addendumFiles[i].name}'.`);
                     }
-
+                }
+                try {
+                    for (let i = 0; i < filesToProcess.length; i++) {
+                        const file = filesToProcess[i];
+                        if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `Extracting text from ${file.name} (${i + 1}/${filesToProcess.length})...`);
+                        const text = await extractTextFromPdf(file);
+                        tempOriginalRfpText += `--- START OF DOCUMENT: ${file.name} ---\n${text}\n--- END OF DOCUMENT: ${file.name} ---\n\n`;
+                        if (!text || text.trim().length < 10) {
+                            console.warn(`Minimal text extracted from ${file.name}.`);
+                        }
+                    }
+                    if (tempOriginalRfpText.trim().length < 50) {
+                        throw new Error("Insufficient total text extracted from PDF(s) for analysis.");
+                    }
                 } catch (error) {
-                    console.error('Error calling Python PDF processing backend:', error);
-                    if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `PDF Processing Error: ${error.message}`, false);
-                    if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 7000);
-                    if (generateAnalysisButton) generateAnalysisButton.disabled = false;
-                    return;
-                }
-                // --- End of New PDF Processing Logic ---
-
-
-                if (combinedRfpTextFromServer.trim().length < 50) { // Check text from server
-                    if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Insufficient total text extracted from PDF(s) by the server for analysis.", false);
-                    if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 5000);
-                    if (generateAnalysisButton) generateAnalysisButton.disabled = false;
-                     return;
+                    if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `PDF Error: ${error.message}`, false);
+                    if(modalAnalysisStatusArea) hideLoadingMessage(modalAnalysisStatusArea, 5000); return;
                 }
 
-                if (!serverRfpPrompts) {
+                originalRfpTextForReanalysis = tempOriginalRfpText; // Set for potential re-analysis later in the session
+
+                if (!serverRfpPrompts) { 
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Loading latest prompt settings...", true);
                     await fetchPromptsFromServer();
                     if (!serverRfpPrompts) {
@@ -1159,15 +1440,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                 }
+                
+                const aiPrompt = constructFullRfpAnalysisPrompt(originalRfpTextForReanalysis); // Use stored full text
+                console.log("Constructed AI Prompt for Submission (New RFP):\n", aiPrompt);
 
-                const aiPrompt = constructFullRfpAnalysisPrompt(combinedRfpTextFromServer); // Use server-extracted text
-                console.log("Constructed AI Prompt for Submission (using server-extracted text):\n", aiPrompt);
-
-                const currentAnalysisPrompts = {};
+                const currentAnalysisPrompts = {}; 
                 Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
-                    currentAnalysisPrompts[keySuffix] = getStoredSectionPrompt(keySuffix);
+                    currentAnalysisPrompts[keySuffix] = getStoredSectionPrompt(keySuffix, null); // Use global for new analysis
                 });
-
+                
                 let parsedAISections = {};
                 try {
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "AI is analyzing and generating content...");
@@ -1180,6 +1461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await response.json();
                     let rawAiOutput = data.generatedText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
                     console.log("Raw AI Output from Gemini (New RFP):\n", rawAiOutput);
+                    
                     const parseSection = (output, delimiterKey) => {
                         const regex = new RegExp(`###${delimiterKey}_START###([\\s\\S]*?)###${delimiterKey}_END###`);
                         const match = output.match(regex);
@@ -1188,17 +1470,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
                         parsedAISections[keySuffix] = parseSection(rawAiOutput, PROMPT_CONFIG[keySuffix].delimiterKey);
                     });
-                    clearModalAnalysisResultTabs();
+                    
+                    clearModalAnalysisResultTabs(); // This should set up structure for combined tabs
                     Object.keys(PROMPT_CONFIG).forEach(keySuffix => {
-                        const contentDiv = modalTabContentMap[keySuffix];
-                        const promptText = currentAnalysisPrompts[keySuffix];
+                        const parentContentDiv = modalTabContentMap[keySuffix];
+                        const promptText = currentAnalysisPrompts[keySuffix]; 
                         const sectionContent = parsedAISections[keySuffix];
-                        if (contentDiv) {
-                             formatAndDisplayContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent);
+                        
+                        if (keySuffix === 'deadlines' || keySuffix === 'submissionFormat') {
+                            const combinedTabParentModal = modalDeadlinesTabContentDiv; // Parent for combined tab
+                            if (combinedTabParentModal) {
+                                let targetEditorContainerId, targetContentDisplayId;
+                                if (keySuffix === 'deadlines') {
+                                    targetEditorContainerId = `prompt-editor-container-deadlines-modal`;
+                                    targetContentDisplayId = `section-content-display-deadlines-modal`;
+                                } else { // submissionFormat
+                                    targetEditorContainerId = `prompt-editor-container-submissionFormat-modal`;
+                                    targetContentDisplayId = `section-content-display-submissionFormat-modal`;
+                                }
+                                const editorContainer = combinedTabParentModal.querySelector(`#${targetEditorContainerId}`);
+                                const contentDisplay = combinedTabParentModal.querySelector(`#${targetContentDisplayId}`);
+
+                                if (editorContainer && contentDisplay) {
+                                    // We pass the parent of the editor container, which should be the combinedTabParentModal
+                                    // or a direct child of it that holds both editor and display for that section.
+                                    // For now, let's assume formatAndDisplay handles populating within these.
+                                     formatAndDisplayContentWithPrompt(editorContainer.parentElement, keySuffix, promptText, sectionContent, null, false); // rfpId is null for new
+                                } else {
+                                     console.warn(`Sub-containers for ${keySuffix} not found in modal combined tab.`);
+                                }
+                            }
+                        } else if (parentContentDiv) {
+                             formatAndDisplayContentWithPrompt(parentContentDiv, keySuffix, promptText, sectionContent, null, false); // rfpId is null for new
                         } else {
                             console.warn(`Modal Tab Content Div for RFP key: ${keySuffix} not found.`);
                         }
                     });
+
+
                     if (modalAnalysisResultsArea) modalAnalysisResultsArea.style.display = 'block';
                     const activeModalResultTab = document.querySelector('#new-rfp-modal .tabs-container .tab-link');
                     if (activeModalResultTab) {
@@ -1206,7 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         activeModalResultTab.classList.add('active');
                         const tabNameMatch = activeModalResultTab.getAttribute('onclick').match(/'(modal-[^']+-tab)'/);
                         if (tabNameMatch && tabNameMatch[1] && window.openModalTab) {
-                             window.openModalTab(null, tabNameMatch[1]);
+                             window.openModalTab(null, tabNameMatch[1]); 
                         }
                     }
                     if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "RFP analysis complete! Saving results...", false);
@@ -1214,8 +1523,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const savePayload = {
                             rfpTitle: rfpTitleValue || "", rfpType: rfpTypeValue, submittedBy: submittedByValue,
                             rfpFileName: rfpFileNameValue,
+                            originalRfpFullText: originalRfpTextForReanalysis, // Save the full text
                             status: 'analyzed',
-                            analysisPrompts: currentAnalysisPrompts
+                            analysisPrompts: currentAnalysisPrompts 
                         };
                         Object.keys(PROMPT_CONFIG).forEach(key => {
                              const dbKey = PROMPT_CONFIG[key].databaseKey;
@@ -1230,8 +1540,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(savePayload)
                         });
                         if (!saveResponse.ok) throw new Error((await saveResponse.json()).error || 'Failed to save analysis.');
+                        const savedAnalysisData = await saveResponse.json(); // Get the saved data with ID
                         if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, "Analysis complete and results saved!", false);
-                        await loadSavedAnalysesInitial();
+                        
+                        // Add to local list and re-render
+                        allFetchedAnalyses.unshift(savedAnalysisData); // Add to beginning
+                        renderAnalysesList(); 
+                        // No need to call loadSavedAnalysesInitial() if we just add it locally
+
                     } catch (saveError) {
                         if(modalAnalysisStatusArea) showLoadingMessage(modalAnalysisStatusArea, `Analysis complete, but failed to save: ${saveError.message}`, false);
                     }
@@ -1259,33 +1575,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(rfpListStatusArea) hideLoadingMessage(rfpListStatusArea);
             }
         }
-
+        
         const firstActiveViewTab = document.querySelector('#view-saved-rfp-details-section.modal-active .tabs-container .tab-link');
         if (firstActiveViewTab && viewSavedRfpDetailsSection && viewSavedRfpDetailsSection.classList.contains('modal-active')) {
             const tabNameMatch = firstActiveViewTab.getAttribute('onclick').match(/'(view-[^']+-tab)'/);
             if (tabNameMatch && tabNameMatch[1]) {
                 const tabNameToOpen = tabNameMatch[1];
                 const tabElement = document.getElementById(tabNameToOpen);
-                if (window.openViewTab && tabElement && tabElement.style.display !== 'block') {
+                if (window.openViewTab && tabElement && tabElement.style.display !== 'block') { 
                     window.openViewTab(null, tabNameToOpen);
                 }
             }
         }
 
         async function initializeRfpPage() {
-            await loadSavedAnalysesInitial();
-            await fetchPromptsFromServer();
-            if (promptSectionSelector) {
-                loadSelectedSectionPromptToTextarea();
+            await loadSavedAnalysesInitial(); 
+            await fetchPromptsFromServer();   
+            if (promptSectionSelector) {      
+                loadSelectedSectionPromptToTextarea(); 
             }
         }
 
-        initializeRfpPage();
+        initializeRfpPage(); 
 
         document.addEventListener('click', (e) => {
             const openDropdowns = document.querySelectorAll('.actions-dropdown-menu');
             let clickedInsideADropdownOrTrigger = false;
-            const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger');
+            const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger'); 
 
             openDropdowns.forEach(menu => {
                  if (menu.contains(e.target) || (actionTriggerClicked && (menu.previousElementSibling === actionTriggerClicked || menu.id === actionTriggerClicked.nextElementSibling?.id))) {
