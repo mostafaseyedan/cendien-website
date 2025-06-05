@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalAnalysisStatusAreaFoia = document.getElementById('modal-analysis-status-area-foia');
         const modalAnalysisResultsAreaFoia = document.getElementById('modal-analysis-results-area-foia');
 
-        // Updated modalTabContentMapFoia to match new HTML structure
+        // Updated modalTabContentMapFoia to match new HTML structure from foia-analysis.html (Canvas id="foia_analysis_html_v3")
         const modalTabContentMapFoia = {
             summary: document.getElementById('modal-summary-result-content-foia'),
             proposalComparison: document.getElementById('modal-comparison-rating-result-content-foia'), 
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editSubmittedBySelectFoia = document.getElementById('editSubmittedByFoia');
         const editFoiaStatusSelect = document.getElementById('editFoiaStatus');
         
-        // Updated textareas for edit modal
+        // Updated textareas for edit modal, ensure these IDs are in foia-analysis.html
         const editFoiaSummaryTextarea = document.getElementById('editFoiaSummary');
         const editFoiaProposalComparisonTextarea = document.getElementById('editFoiaProposalComparison'); 
         const editFoiaInsightsAnalysisTextarea = document.getElementById('editFoiaInsightsAnalysis'); 
@@ -178,13 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let serverFoiaPrompts = null; 
         let foiaPromptsLastFetchedFromServer = false; 
         let currentlyViewedFoiaAnalysis = null; 
-        let originalFoiaTextForReanalysis = ""; // Store original FOIA text for re-analysis
+        let originalFoiaTextForReanalysis = ""; 
 
         const FOIA_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Freedom of Information Act (FOIA) document(s).\nProvide the following distinct sections in your response, each clearly delimited:";
         const FOIA_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
         const FOIA_PROMPT_TEXT_SUFFIX = "\n\nFOIA Document Text:\n---\n{FOIA_TEXT_PLACEHOLDER}\n---";
 
-        // Updated PROMPT_CONFIG_FOIA with databaseKey for clarity
         const PROMPT_CONFIG_FOIA = {
             summary: {
                 defaultText: "Provide a concise overview of the FOIA document content, highlighting the main subject, key information disclosed or requested, and any immediate takeaways.",
@@ -492,14 +491,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Updated to clear content for new sections
         function clearModalFoiaAnalysisResultTabs() { 
             Object.keys(modalTabContentMapFoia).forEach(key => {
                 const div = modalTabContentMapFoia[key];
                 if (div) {
-                     div.innerHTML = '';
+                     div.innerHTML = ''; // This should target the inner content div
                 } else {
-                    console.warn(`Modal tab content div for key "${key}" not found during clear. Check modalTabContentMapFoia and HTML IDs.`);
+                    console.warn(`Modal tab content div for key "${key}" (ID: modal-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase()}-result-content-foia) not found during clear. Check modalTabContentMapFoia and HTML IDs.`);
                 }
             });
         }
@@ -507,10 +505,9 @@ document.addEventListener('DOMContentLoaded', () => {
              Object.keys(viewTabContentMapFoia).forEach(key => {
                 const div = viewTabContentMapFoia[key];
                 if (div) {
-                     // The content of these divs will be fully managed by formatAndDisplayFoiaContentWithPrompt
-                     div.innerHTML = ''; 
+                     div.innerHTML = '';  // This should target the inner content div
                 } else {
-                    console.warn(`View tab content div for key "${key}" not found during clear. Check viewTabContentMapFoia and HTML IDs.`);
+                    console.warn(`View tab content div for key "${key}" (ID: view-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase()}-result-content-foia) not found during clear. Check viewTabContentMapFoia and HTML IDs.`);
                 }
             });
         }
@@ -570,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Updated for re-analysis UI
         function formatAndDisplayFoiaContentWithPrompt(parentElement, sectionKeySuffix, sectionPromptText, sectionContentText, foiaId, isViewModal = false) {
             if (!parentElement) {
                 console.warn("formatAndDisplayFoiaContentWithPrompt: parentElement is null for sectionKeySuffix:", sectionKeySuffix);
@@ -591,15 +587,18 @@ document.addEventListener('DOMContentLoaded', () => {
         
             const promptTextarea = document.createElement('textarea');
             promptTextarea.id = `prompt-edit-${sectionKeySuffix}${isViewModal ? '-view' : ''}`;
-            promptTextarea.className = 'prompt-edit-textarea'; // Ensure this class is styled
-            promptTextarea.value = sectionPromptText || getStoredFoiaSectionPrompt(sectionKeySuffix, currentlyViewedFoiaAnalysis?.analysisPrompts);
+            promptTextarea.className = 'prompt-edit-textarea'; 
+            const actualPromptForTextarea = isViewModal
+                ? getStoredFoiaSectionPrompt(sectionKeySuffix, currentlyViewedFoiaAnalysis?.analysisPrompts)
+                : getStoredFoiaSectionPrompt(sectionKeySuffix, null);
+            promptTextarea.value = actualPromptForTextarea;
             promptEditorContainer.appendChild(promptTextarea);
         
             const reanalyzeButton = document.createElement('button');
             reanalyzeButton.className = 'reanalyze-section-button btn btn-sm btn-info'; 
             reanalyzeButton.dataset.sectionKey = sectionKeySuffix;
             reanalyzeButton.dataset.foiaId = foiaId;
-            reanalyzeButton.textContent = `Re-analyze ${promptTitle}`;
+            reanalyzeButton.textContent = "Re-Analyze"; // Updated Button Text
             reanalyzeButton.addEventListener('click', handleReanalyzeFoiaSection);
             promptEditorContainer.appendChild(reanalyzeButton);
 
@@ -658,13 +657,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const button = event.currentTarget;
             const sectionKey = button.dataset.sectionKey;
             const foiaId = button.dataset.foiaId; 
+            const isViewModalActive = viewSavedFoiaDetailsSection.style.display === 'block' || viewSavedFoiaDetailsSection.classList.contains('modal-active');
         
             if (!sectionKey || !foiaId || !currentlyViewedFoiaAnalysis || !originalFoiaTextForReanalysis) {
                 alert("Error: Could not re-analyze section due to missing data. Ensure FOIA text is loaded.");
                 return;
             }
         
-            const promptTextareaId = `prompt-edit-${sectionKey}-view`; // Assuming re-analysis happens in view modal
+            const promptTextareaId = `prompt-edit-${sectionKey}${isViewModalActive ? '-view' : '-modal'}`;
             const promptTextarea = document.getElementById(promptTextareaId);
             const newSectionPrompt = promptTextarea ? promptTextarea.value : null;
         
@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         
-            const statusAreaId = `reanalyze-status-${sectionKey}-view`;
+            const statusAreaId = `reanalyze-status-${sectionKey}${isViewModalActive ? '-view' : '-modal'}`;
             const statusArea = document.getElementById(statusAreaId);
             if (statusArea) showLoadingMessage(statusArea, `Re-analyzing ${PROMPT_CONFIG_FOIA[sectionKey]?.title || sectionKey}...`);
             button.disabled = true;
@@ -711,7 +711,7 @@ ${originalFoiaTextForReanalysis}
                 const match = rawAiOutput.match(sectionRegex);
                 const newSectionContent = match && match[1] ? match[1].trim() : `Failed to extract ${delimiter} section. AI Raw: ${rawAiOutput.substring(0,200)}`;
         
-                const contentDisplayId = `section-content-display-${sectionKey}-view`;
+                const contentDisplayId = `section-content-display-${sectionKey}${isViewModalActive ? '-view' : '-modal'}`;
                 const contentDisplayDiv = document.getElementById(contentDisplayId);
                 if (contentDisplayDiv) {
                     const lines = (newSectionContent || "N/A").split('\n');
@@ -755,8 +755,9 @@ ${originalFoiaTextForReanalysis}
                 }
         
                 if (statusArea) showLoadingMessage(statusArea, "Section re-analyzed!", false);
-                const parentElement = document.getElementById(`prompt-editor-container-${sectionKey}-view`)?.parentElement;
-                const saveButton = parentElement?.querySelector(`.save-section-button[data-section-key="${sectionKey}"]`);
+                const parentElementForSaveButton = document.getElementById(`prompt-editor-container-${sectionKey}${isViewModalActive ? '-view' : '-modal'}`)?.parentElement;
+                const saveButton = parentElementForSaveButton?.querySelector(`.save-section-button[data-section-key="${sectionKey}"]`);
+
                 if(saveButton) saveButton.style.display = 'inline-block';
 
             } catch (error) {
@@ -772,27 +773,27 @@ ${originalFoiaTextForReanalysis}
             const button = event.currentTarget;
             const sectionKey = button.dataset.sectionKey;
             const foiaId = button.dataset.foiaId;
+            const isViewModalActive = viewSavedFoiaDetailsSection.style.display === 'block' || viewSavedFoiaDetailsSection.classList.contains('modal-active');
         
             if (!sectionKey || !foiaId || !currentlyViewedFoiaAnalysis) {
                 alert("Cannot save: Missing information.");
                 return;
             }
         
-            const promptTextareaId = `prompt-edit-${sectionKey}-view`;
+            const promptTextareaId = `prompt-edit-${sectionKey}${isViewModalActive ? '-view' : ''}`;
             const promptTextarea = document.getElementById(promptTextareaId);
             const newPromptForSection = promptTextarea ? promptTextarea.value : null;
         
-            const contentDisplayId = `section-content-display-${sectionKey}-view`;
+            const contentDisplayId = `section-content-display-${sectionKey}${isViewModalActive ? '-view' : ''}`;
             const contentDisplayDiv = document.getElementById(contentDisplayId);
-            // Getting innerText might strip some HTML formatting. If rich text is needed, this needs refinement.
-            const newContentForSection = contentDisplayDiv ? contentDisplayDiv.innerText : null; 
+            const newContentForSection = contentDisplayDiv ? contentDisplayDiv.innerText.trim() : null; 
         
             if (newPromptForSection === null || newContentForSection === null) {
                 alert("Cannot save: Content or prompt missing.");
                 return;
             }
         
-            const statusAreaId = `reanalyze-status-${sectionKey}-view`;
+            const statusAreaId = `reanalyze-status-${sectionKey}${isViewModalActive ? '-view' : ''}`;
             const statusArea = document.getElementById(statusAreaId);
         
             if (statusArea) showLoadingMessage(statusArea, `Saving changes for ${PROMPT_CONFIG_FOIA[sectionKey]?.title || sectionKey}...`);
@@ -835,6 +836,7 @@ ${originalFoiaTextForReanalysis}
                 if(currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId){
                      if (dbKey) currentlyViewedFoiaAnalysis[dbKey] = newContentForSection;
                     currentlyViewedFoiaAnalysis.analysisPrompts = payload.analysisPrompts;
+                    currentlyViewedFoiaAnalysis.lastModified = result.lastModified || new Date().toISOString();
                 }
                 button.style.display = 'none'; 
         
@@ -906,11 +908,10 @@ ${originalFoiaTextForReanalysis}
             const requiredDbKeys = Object.values(PROMPT_CONFIG_FOIA).map(config => config.databaseKey);
             let needsFetch = false;
             for (const dbKey of requiredDbKeys) {
-                if (PROMPT_CONFIG_FOIA[Object.keys(PROMPT_CONFIG_FOIA).find(key => PROMPT_CONFIG_FOIA[key].databaseKey === dbKey)]) { 
-                    if (!analysis.hasOwnProperty(dbKey)) {
-                        needsFetch = true;
-                        break;
-                    }
+                // Check if analysis object has this specific database key
+                if (!analysis.hasOwnProperty(dbKey)) {
+                    needsFetch = true;
+                    break;
                 }
             }
 
@@ -939,12 +940,13 @@ ${originalFoiaTextForReanalysis}
             if (editSubmittedBySelectFoia) editSubmittedBySelectFoia.value = analysis.submittedBy || 'Other';
             if (editFoiaStatusSelect) editFoiaStatusSelect.value = analysis.status || 'analyzed';
             
-            if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis.foiaSummary || ''; 
-            if (editFoiaProposalComparisonTextarea) editFoiaProposalComparisonTextarea.value = analysis.foiaProposalComparison || ''; 
-            if (editFoiaInsightsAnalysisTextarea) editFoiaInsightsAnalysisTextarea.value = analysis.foiaInsightsAnalysis || ''; 
-            if (editFoiaPricingIntelligenceTextarea) editFoiaPricingIntelligenceTextarea.value = analysis.foiaPricingIntelligence || ''; 
-            if (editFoiaMarketTrendsTextarea) editFoiaMarketTrendsTextarea.value = analysis.foiaMarketTrends || ''; 
-            if (editFoiaTasksWorkPlanTextarea) editFoiaTasksWorkPlanTextarea.value = analysis.foiaTasksWorkPlan || ''; 
+            // Populate textareas based on PROMPT_CONFIG_FOIA and their corresponding database keys
+            if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis[PROMPT_CONFIG_FOIA.summary.databaseKey] || ''; 
+            if (editFoiaProposalComparisonTextarea) editFoiaProposalComparisonTextarea.value = analysis[PROMPT_CONFIG_FOIA.proposalComparison.databaseKey] || ''; 
+            if (editFoiaInsightsAnalysisTextarea) editFoiaInsightsAnalysisTextarea.value = analysis[PROMPT_CONFIG_FOIA.insightsAnalysis.databaseKey] || ''; 
+            if (editFoiaPricingIntelligenceTextarea) editFoiaPricingIntelligenceTextarea.value = analysis[PROMPT_CONFIG_FOIA.pricingIntelligence.databaseKey] || ''; 
+            if (editFoiaMarketTrendsTextarea) editFoiaMarketTrendsTextarea.value = analysis[PROMPT_CONFIG_FOIA.marketTrends.databaseKey] || ''; 
+            if (editFoiaTasksWorkPlanTextarea) editFoiaTasksWorkPlanTextarea.value = analysis[PROMPT_CONFIG_FOIA.tasksWorkPlan.databaseKey] || ''; 
             
             if (editFoiaModalTitle) editFoiaModalTitle.textContent = `Edit FOIA: ${analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames[0] : 'Document')}`;
             
@@ -966,12 +968,13 @@ ${originalFoiaTextForReanalysis}
                     foiaType: editFoiaTypeInput.value.trim(),
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
-                    foiaSummary: editFoiaSummaryTextarea.value.trim(),
-                    foiaProposalComparison: editFoiaProposalComparisonTextarea.value.trim(),
-                    foiaInsightsAnalysis: editFoiaInsightsAnalysisTextarea.value.trim(),
-                    foiaPricingIntelligence: editFoiaPricingIntelligenceTextarea.value.trim(),
-                    foiaMarketTrends: editFoiaMarketTrendsTextarea.value.trim(),
-                    foiaTasksWorkPlan: editFoiaTasksWorkPlanTextarea.value.trim(),
+                    // Populate data from textareas based on PROMPT_CONFIG_FOIA databaseKeys
+                    [PROMPT_CONFIG_FOIA.summary.databaseKey]: editFoiaSummaryTextarea.value.trim(),
+                    [PROMPT_CONFIG_FOIA.proposalComparison.databaseKey]: editFoiaProposalComparisonTextarea.value.trim(),
+                    [PROMPT_CONFIG_FOIA.insightsAnalysis.databaseKey]: editFoiaInsightsAnalysisTextarea.value.trim(),
+                    [PROMPT_CONFIG_FOIA.pricingIntelligence.databaseKey]: editFoiaPricingIntelligenceTextarea.value.trim(),
+                    [PROMPT_CONFIG_FOIA.marketTrends.databaseKey]: editFoiaMarketTrendsTextarea.value.trim(),
+                    [PROMPT_CONFIG_FOIA.tasksWorkPlan.databaseKey]: editFoiaTasksWorkPlanTextarea.value.trim(),
                 };
                 if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Saving FOIA changes...');
                 try {
@@ -1112,7 +1115,7 @@ ${originalFoiaTextForReanalysis}
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
-                        originalFoiaTextForReanalysis = ""; // Reset
+                        originalFoiaTextForReanalysis = ""; 
                         currentlyViewedFoiaAnalysis = allFetchedFoiaAnalyses.find(item => item.id === analysisId);
                         if (!currentlyViewedFoiaAnalysis) {
                             console.error("Could not find FOIA item in local cache for ID:", analysisId);
@@ -1151,7 +1154,7 @@ ${originalFoiaTextForReanalysis}
                                 const dbKey = PROMPT_CONFIG_FOIA[keySuffix].databaseKey; 
 
                                 const sectionContent = detailedAnalysis[dbKey] || "N/A";
-                                const promptTextUsed = getStoredFoiaSectionPrompt(keySuffix, savedPromptsForThisAnalysis); // Use helper
+                                const promptTextUsed = getStoredFoiaSectionPrompt(keySuffix, savedPromptsForThisAnalysis); 
                                 
                                 if (contentDiv) {
                                     formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptTextUsed, sectionContent, analysisId, true);
@@ -1304,7 +1307,7 @@ ${originalFoiaTextForReanalysis}
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, `PDF Error: ${error.message}`, false);
                     if(modalAnalysisStatusAreaFoia) hideLoadingMessage(modalAnalysisStatusAreaFoia, 5000); return;
                 }
-                originalFoiaTextForReanalysis = tempOriginalFoiaText; // Store for later re-analysis
+                originalFoiaTextForReanalysis = tempOriginalFoiaText; 
 
                 if (!serverFoiaPrompts) { 
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "Loading latest FOIA prompt settings...", true);
@@ -1353,7 +1356,7 @@ ${originalFoiaTextForReanalysis}
                         const promptText = currentFoiaAnalysisPrompts[keySuffix]; 
                         const sectionContent = parsedAISectionsFoia[keySuffix];
                         if (contentDiv) {
-                             formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent, null, false); // foiaId is null for new
+                             formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptText, sectionContent, null, false); 
                         } else {
                             console.warn(`Modal FOIA Tab Content Div for key "${keySuffix}" not found. Check HTML IDs and modalTabContentMapFoia.`);
                         }
@@ -1380,7 +1383,7 @@ ${originalFoiaTextForReanalysis}
                             foiaType: foiaTypeValue, 
                             submittedBy: submittedByValue,
                             foiaFileNames: foiaFileNamesArray, 
-                            originalFoiaFullText: originalFoiaTextForReanalysis, // Save full text
+                            originalFoiaFullText: originalFoiaTextForReanalysis, 
                             status: 'analyzed',
                             analysisPrompts: currentFoiaAnalysisPrompts 
                         };
