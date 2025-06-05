@@ -49,7 +49,7 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
             }
         }
         const docRef = db.collection('promptSettings').doc(RFP_PROMPT_SETTINGS_DOC_ID);
-        await docRef.set(prompts, { merge: true }); // merge: true will create if not exists, or update
+        await docRef.set(prompts, { merge: true });
         console.log('RFP prompt settings saved with ID:', RFP_PROMPT_SETTINGS_DOC_ID);
         res.status(200).json({ message: 'RFP prompt settings saved successfully.', prompts });
     } catch (error) {
@@ -83,9 +83,11 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
         if (!prompts || typeof prompts !== 'object') {
             return res.status(400).json({ error: 'Invalid FOIA prompts data. Expecting an object.' });
         }
+        // Updated expected keys for FOIA prompts
         const EXPECTED_FOIA_PROMPT_KEYS = [
             'summary', 'proposalComparison', 'insightsAnalysis', 
-            'pricingIntelligence', 'marketTrends', 'tasksWorkPlan'
+            'pricingIntelligence', 'marketTrends', 'tasksWorkPlan',
+            'documentType' // Added documentType
         ];
         for (const key of EXPECTED_FOIA_PROMPT_KEYS) {
             if (!prompts.hasOwnProperty(key) || typeof prompts[key] !== 'string') {
@@ -113,7 +115,7 @@ app.post('/api/generate', async (req, res) => {
         console.error('Error: GEMINI_API_KEY environment variable is not set.');
         return res.status(500).json({ error: 'API key not configured on server.' });
     }
-    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/ggemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         console.log(`Received prompt for Gemini. Sending... (Prompt length: ${prompt.length})`);
@@ -164,7 +166,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
             rfpTitle, rfpType, submittedBy,
             rfpSubmissionFormat, rfpRegistration, rfpLicenses, rfpBudget,
-            originalRfpFullText, // Added to save original text
+            originalRfpFullText, 
             analysisPrompts 
         } = req.body;
 
@@ -186,12 +188,11 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpRegistration: rfpRegistration || "Not specified",
             rfpLicenses: rfpLicenses || "Not specified",
             rfpBudget: rfpBudget || "Not specified",
-            originalRfpFullText: originalRfpFullText || "", // Save the full text
+            originalRfpFullText: originalRfpFullText || "", 
             analysisPrompts: analysisPrompts || {} 
         };
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
         console.log('RFP Analysis saved with ID:', docRef.id);
-        // Return the full document including the ID and Firestore timestamp
         const savedDoc = await docRef.get();
         res.status(201).json({ id: savedDoc.id, ...savedDoc.data() });
     } catch (error) {
@@ -231,7 +232,7 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
 
         const updates = {};
         const currentData = doc.data();
-        const allowedRFPFields = [ // These are direct fields in the document
+        const allowedRFPFields = [ 
             'rfpTitle', 'rfpType', 'submittedBy', 'status',
             'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
             'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
@@ -248,12 +249,10 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
             }
         }
         
-        // Handle analysisPrompts separately for merging
         if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
-            // Deep merge for analysisPrompts to update individual section prompts
             updates.analysisPrompts = {
-                ...(currentData.analysisPrompts || {}), // Keep existing prompts
-                ...req.body.analysisPrompts          // Overwrite/add new ones
+                ...(currentData.analysisPrompts || {}), 
+                ...req.body.analysisPrompts          
             };
         }
 
@@ -328,7 +327,7 @@ app.post('/api/foia-analysis', async (req, res) => {
             originalFoiaFullText, 
             status,
             foiaTitle,
-            foiaType,
+            foiaType, // This will now be the AI-determined type sent from the client
             submittedBy,
             analysisPrompts        
         } = req.body;
@@ -349,7 +348,7 @@ app.post('/api/foia-analysis', async (req, res) => {
             analysisDate: Timestamp.now(),
             status: status || 'analyzed', 
             foiaTitle: foiaTitle || "",   
-            foiaType: foiaType || "N/A", 
+            foiaType: foiaType || "AI Determination Pending", // Save the AI determined type
             submittedBy: submittedBy || "N/A",
             analysisPrompts: analysisPrompts || {} 
         };
@@ -431,15 +430,16 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
 
         const updates = {};
         const currentData = doc.data();
+        // `foiaType` is AI-determined and shown as read-only in edit, so client won't send it for update unless you allow overrides.
+        // If you want to allow overriding it, add 'foiaType' to allowedFoiaFields.
         const allowedFoiaFields = [
-            'foiaTitle', 'foiaType', 'submittedBy', 'status',
+            'foiaTitle', /* 'foiaType', // Only if user can override AI's determination */ 'submittedBy', 'status',
             'foiaSummary', 
             'foiaProposalComparison', 
             'foiaInsightsAnalysis',
             'foiaPricingIntelligence',
             'foiaMarketTrends',
             'foiaTasksWorkPlan',
-            // 'originalFoiaFullText' // Typically not updated after initial save
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
 
@@ -451,14 +451,13 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
                 updates[field] = req.body[field];
             }
         }
-         // Handle analysisPrompts separately for merging
+        
         if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
             updates.analysisPrompts = {
                 ...(currentData.analysisPrompts || {}), 
                 ...req.body.analysisPrompts          
             };
         }
-
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for FOIA analysis update.' });
