@@ -1455,7 +1455,8 @@ ${originalFoiaTextForReanalysis}
                 allFetchedFoiaAnalyses = await response.json();
                 renderFoiaAnalysesList();
             } catch (error) {
-                if(savedAnalysesListDivFoia) savedAnalysesListDivFoia.innerHTML = `<p class="loading-text" style="color:red; text-align:center;">Failed to load FOIA: ${error.message}`, false);
+                // Correct
+                if(savedAnalysesListDivFoia) savedAnalysesListDivFoia.innerHTML = `<p class="loading-text" style="color:red; text-align:center;">Failed to load FOIA: ${error.message}</p>`;
                 if(noSavedAnalysesPFoia) noSavedAnalysesPFoia.style.display = 'block';
                 if(noSavedAnalysesPFoia) noSavedAnalysesPFoia.textContent = `Failed to load FOIA analyses.`;
             } finally {
