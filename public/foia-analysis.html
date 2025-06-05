@@ -35,12 +35,11 @@
         <header>
             <div class="container nav-container">
                 <div class="logo-container">
-                    <!-- Make sure /images/cendien_corp_logo.jpg path is correct -->
                     <a href="index.html"><img src="/images/cendien_corp_logo.jpg" alt="Cendien Corporation Logo" id="company-logo-foia"></a>
                 </div>
                 <nav>
                     <span class="nav-current-page">FOIA Analyzer</span>
-                    <a href="index.html" class="nav-link">RFP Analyzer</a> <!-- Link to RFP Analyzer -->
+                    <a href="index.html" class="nav-link">RFP Analyzer</a>
                 </nav>
                 <div class="settings-icon-container">
                     <button id="open-prompt-settings-modal-button-foia" class="action-icon" title="Edit AI Prompts for FOIA">
@@ -51,21 +50,20 @@
         </header>
 
         <main>
-            <!-- Section for displaying list of saved FOIA analyses -->
             <section id="foia-analyzer-main-content" class="container content-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2 class="history-title">History</h2> <!-- Changed heading and added class -->
+                    <h2 class="history-title">History</h2>
                     <button id="open-new-foia-modal-button" class="btn btn-primary">New FOIA Analysis</button>
                 </div>
 
                 <div id="saved-analyses-section-foia">
-                    <div class="rfp-list-tabs" id="foia-list-tabs"> <!-- Using rfp-list-tabs class for styling -->
+                    <div class="rfp-list-tabs" id="foia-list-tabs">
                         <button class="rfp-list-tab-button" data-status-filter="active">Active</button>
                         <button class="rfp-list-tab-button" data-status-filter="not_pursuing">Not Pursuing</button>
                         <button class="rfp-list-tab-button" data-status-filter="archived">Archived</button>
                         <button class="rfp-list-tab-button active" data-status-filter="all_statuses">All Analyzed</button>
                     </div>
-                    <div id="saved-analyses-header-foia" class="analyzed-rfp-item"> <!-- Using analyzed-rfp-item for styling -->
+                    <div id="saved-analyses-header-foia" class="analyzed-rfp-item">
                         <span class="rfp-col-title sortable-header" data-sort-key="foiaTitle">FOIA Title ⇅</span>
                         <span class="rfp-col-type sortable-header" data-sort-key="foiaType">Document Type ⇅</span>
                         <span class="rfp-col-owner sortable-header" data-sort-key="submittedBy">Owner ⇅</span>
@@ -74,20 +72,26 @@
                         <span id="foia-actions-header-text" class="rfp-col-actions">Actions</span>
                     </div>
                     <div id="saved-analyses-list-foia" class="analyzed-rfp-list-container">
-                        <!-- FOIA items will be listed here by JavaScript -->
                     </div>
                     <p id="no-saved-analyses-foia" style="display: none; text-align: center; margin-top: 1rem; font-style: italic;">No FOIA analyses found.</p>
                     <div id="foia-list-status-area" class="loading-container" style="display: none; margin-top: 1rem;">
-                        <!-- Status messages for the list -->
                     </div>
                 </div>
             </section>
 
-            <!-- Section for viewing details of a saved FOIA analysis -->
             <section id="view-saved-foia-details-section" style="display: none;">
-                <div class="view-rfp-modal-content content-card container"> <!-- Reusing rfp modal styling -->
+                <div class="view-rfp-modal-content content-card container">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 id="view-foia-main-title-heading">FOIA Details</h2>
+                         <!-- Action button added here -->
+                        <div class="view-modal-actions-dropdown-container">
+                            <button id="view-foia-modal-action-trigger" class="view-modal-actions-dropdown-trigger action-icon" title="More actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="view-foia-modal-actions-menu" class="actions-dropdown-menu view-modal-actions-dropdown-menu">
+                                <!-- Dropdown items will be populated by JavaScript -->
+                            </div>
+                        </div>
                         <button id="close-view-foia-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
                     </div>
                     <div id="view-foia-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
@@ -99,7 +103,6 @@
                             <button class="tab-link" onclick="openFoiaViewTab(event, 'view-requirements-tab-foia')">Key Info/Requirements</button>
                             <button class="tab-link" onclick="openFoiaViewTab(event, 'view-stakeholders-tab-foia')">Entities/Contacts</button>
                             <button class="tab-link" onclick="openFoiaViewTab(event, 'view-risks-tab-foia')">Exemptions/Redactions</button>
-                            <!-- Add other relevant FOIA tabs if different from RFP -->
                         </div>
 
                         <div id="view-summary-tab-foia" class="tab-content" style="display: block;">
@@ -126,7 +129,6 @@
                             <h3>Potential Exemptions/Redactions:</h3>
                             <div id="view-risks-result-content-foia"></div>
                         </div>
-                         <!-- Additional FOIA-specific tab contents here -->
                     </div>
                 </div>
             </section>
@@ -174,20 +176,17 @@
                             <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-requirements-tab-foia')">Key Info</button>
                             <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-stakeholders-tab-foia')">Entities</button>
                             <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-risks-tab-foia')">Exemptions</button>
-                            <!-- Add other relevant FOIA tabs if different from RFP -->
                         </div>
                         <div id="modal-summary-tab-foia" class="tab-content" style="display: block;"><div id="modal-summary-result-content-foia"></div></div>
                         <div id="modal-questions-tab-foia" class="tab-content"><div id="modal-questions-result-content-foia"></div></div>
-                        <div id="modal-deadlines-tab-foia" class="tab-content"> <!-- Content structure handled by JS --> </div>
+                        <div id="modal-deadlines-tab-foia" class="tab-content"> </div>
                         <div id="modal-requirements-tab-foia" class="tab-content"><div id="modal-requirements-result-content-foia"></div></div>
                         <div id="modal-stakeholders-tab-foia" class="tab-content"><div id="modal-stakeholders-result-content-foia"></div></div>
                         <div id="modal-risks-tab-foia" class="tab-content"><div id="modal-risks-result-content-foia"></div></div>
-                         <!-- Additional FOIA-specific tab contents here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Modal for Editing FOIA Details -->
             <div id="edit-foia-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
                     <span class="modal-close-button" id="edit-foia-modal-close-button">&times;</span>
@@ -200,7 +199,7 @@
                             <input type="text" id="editFoiaTitle" name="editFoiaTitle" placeholder="Enter a Title">
                         </div>
                         <div class="form-group">
-                            <label for="editFoiaFileNames">Original File Name(s):</label> <!-- Changed from single file -->
+                            <label for="editFoiaFileNames">Original File Name(s):</label>
                             <textarea id="editFoiaFileNames" name="editFoiaFileNames" readonly disabled rows="2"></textarea>
                         </div>
                         <div class="form-group">
@@ -255,7 +254,6 @@
                             <label for="editFoiaRisks">Exemptions/Redactions:</label>
                             <textarea id="editFoiaRisks" name="editFoiaRisks" rows="3"></textarea>
                         </div>
-                        <!-- Add other editable FOIA fields if needed -->
 
                         <button type="submit" id="save-edited-foia-button" class="btn btn-primary">Save Changes</button>
                         <button type="button" id="cancel-edit-foia-button" class="btn btn-secondary">Cancel</button>
@@ -264,7 +262,6 @@
                 </div>
             </div>
 
-            <!-- Modal for Prompt Settings -->
             <div id="prompt-settings-modal-foia" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
                     <span class="modal-close-button" id="prompt-modal-close-button-foia">&times;</span>
@@ -280,10 +277,6 @@
                             <option value="requirements">5. Key Information/Requirements</option>
                             <option value="stakeholders">6. Entities/Key Contacts</option>
                             <option value="risks">7. Potential Exemptions/Redactions</option>
-                            <!-- Add other FOIA specific prompt sections if different from RFP -->
-                            <!-- <option value="registration">8. Registration Requirements</option> -->
-                            <!-- <option value="licenses">9. Licenses/Certifications</option> -->
-                            <!-- <option value="budget">10. Budget Constraints</option> -->
                         </select>
                     </div>
 
@@ -308,9 +301,8 @@
         </footer>
     </div>
 
-    <script type="module" src="foia-script.js"></script> <!-- Points to the new FOIA script -->
+    <script type="module" src="foia-script.js"></script>
     <script>
-        // Global tab functions for FOIA modals
         function openTabGenericFoia(evt, tabName, containerElementId) {
             var i, tabcontent, tablinks;
             var container = document.getElementById(containerElementId);
