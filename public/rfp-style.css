@@ -506,6 +506,7 @@ header .settings-icon-container .action-icon:hover {
     flex-direction: column;
 }
 
+/* Header of the View Modal */
 #view-saved-rfp-details-section.modal-active .view-rfp-modal-content > div:nth-child(1),
 #view-saved-foia-details-section.modal-active .view-rfp-modal-content > div:nth-child(1) { /* Added FOIA */
     display: flex;
@@ -517,19 +518,49 @@ header .settings-icon-container .action-icon:hover {
     border-bottom: 1px solid #eee;
     flex-shrink: 0;
 }
+/* Modal Title (RFP/FOIA) - Font size reduced */
 #view-saved-rfp-details-section.modal-active #view-rfp-main-title-heading,
 #view-saved-foia-details-section.modal-active #view-foia-main-title-heading { /* Added FOIA ID */
     text-align: left;
     color: #003366;
     margin-bottom: 0;
-    font-size: 1.6rem;
+    font-size: 1.3rem; /* MODIFIED: Reduced font size */
+    font-weight: 600; /* MODIFIED: Slightly bolder for emphasis at smaller size */
     flex-grow: 1;
+    margin-right: 1rem; /* Add some space before action buttons */
 }
+/* Action Button Container in View Modal Header */
+.view-modal-actions-dropdown-container {
+    position: relative;
+    display: inline-block;
+    margin-left: auto; /* Pushes it to the right, before close button */
+    padding-right: 1rem; /* Space before the close button */
+}
+.view-modal-actions-dropdown-trigger.action-icon {
+    color: #005a9c;
+    font-size: 1.1rem; /* Slightly smaller than list view actions if desired */
+    padding: 0.3rem 0.5rem;
+}
+.view-modal-actions-dropdown-trigger.action-icon:hover {
+    background-color: #e9f1f7;
+    color: #003f6e;
+}
+/* Dropdown menu for view modal (can reuse .actions-dropdown-menu or make specific) */
+.view-modal-actions-dropdown-menu {
+    /* Styles are inherited from .actions-dropdown-menu,
+       but ensure it's positioned correctly relative to the modal header */
+    right: 0; /* Align to the right of the trigger */
+    top: 100%; /* Below the trigger */
+    z-index: 2000; /* Ensure it's above other modal content if necessary */
+}
+
+
 #view-saved-rfp-details-section.modal-active #close-view-rfp-details-button,
 #view-saved-foia-details-section.modal-active #close-view-foia-details-button { /* Added FOIA ID */
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
     white-space: nowrap;
+    flex-shrink: 0; /* Prevent close button from shrinking */
 }
 #view-saved-rfp-details-section.modal-active #view-rfp-status-area,
 #view-saved-foia-details-section.modal-active #view-foia-status-area { /* Added FOIA ID */
@@ -546,12 +577,12 @@ header .settings-icon-container .action-icon:hover {
 }
 
 /* Styling for Analysis Results Tabs (SHARED for RFP & FOIA) */
-/* Apply to both RFP and FOIA tab containers */
+/* Tab Containers */
 #new-rfp-modal #modal-analysis-results-area .tabs-container,
-#edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container, /* For edit RFP (if structure implies) */
+#edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container,
 #view-saved-rfp-details-section #view-analysis-results-area .tabs-container,
 #new-foia-modal #modal-analysis-results-area-foia .tabs-container,
-#edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container, /* For edit FOIA (if structure implies) */
+#edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container,
 #view-saved-foia-details-section #view-analysis-results-area-foia .tabs-container {
     overflow: hidden;
     border-bottom: 1px solid #ccc;
@@ -560,7 +591,7 @@ header .settings-icon-container .action-icon:hover {
     flex-shrink: 0;
 }
 
-/* Apply to tab links in both RFP and FOIA */
+/* Tab Links - Font weight made bold */
 #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link,
 #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link,
 #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link,
@@ -570,11 +601,13 @@ header .settings-icon-container .action-icon:hover {
     background-color: #f1f1f1; float: left; border: 1px solid #ccc;
     border-bottom: none; outline: none; cursor: pointer;
     padding: 8px 15px; transition: background-color 0.3s;
-    font-size: 0.9rem; font-weight: 500; color: #333;
+    font-size: 0.9rem;
+    font-weight: 600; /* MODIFIED: Bold tab titles */
+    color: #333;
     border-radius: 6px 6px 0 0; margin-right: 2px;
 }
 
-/* Hover for tab links in both RFP and FOIA */
+/* Hover for tab links */
 #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link:hover,
 #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link:hover,
 #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link:hover,
@@ -584,7 +617,7 @@ header .settings-icon-container .action-icon:hover {
     background-color: #ddd;
 }
 
-/* Active tab links in both RFP and FOIA */
+/* Active tab links */
 #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link.active,
 #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link.active,
 #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link.active,
@@ -773,6 +806,12 @@ header .settings-icon-container .action-icon:hover {
         margin: 1% auto;
         max-height: 97vh;
     }
+    /* View Modal Title font size for small screens */
+    #view-saved-rfp-details-section.modal-active #view-rfp-main-title-heading,
+    #view-saved-foia-details-section.modal-active #view-foia-main-title-heading {
+        font-size: 1.1rem; /* Further reduce for very small screens */
+    }
+
 
     #new-rfp-modal #modal-analysis-results-area .tab-content h3,
     #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tab-content h3,
