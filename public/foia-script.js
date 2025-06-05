@@ -181,16 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Defined FOIA types for the AI to choose from
         const FOIA_DOCUMENT_TYPE_CATEGORIES = [
-            "FOIA Request",
-            "Agency Response to FOIA Request",
-            "Internal Agency Records (e.g., Memos, Reports)",
-            "Email Correspondence",
-            "Meeting Minutes",
-            "Legal Briefing/Pleading",
-            "Publicly Released Report/Publication",
-            "Data Set/Spreadsheet",
-            "Contract/Agreement Document",
-            "Other Government Record",
+            "IT Support",
+            "IT Managed Services",
+            "ERP Managed Services",
+            "Cloud Migration",
+            "IT Staffing",
             "Mixed Batch of Records",
             "Undetermined" // Fallback
         ];
