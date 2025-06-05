@@ -37,7 +37,7 @@
                 </div>
                 <nav>
                     <span class="nav-current-page">RFP Analyzer</span>
-                    <a href="foia-analysis.html" class="nav-link">FOIA Analyzer</a> <!-- Added FOIA Analyzer link -->
+                    <a href="foia-analysis.html" class="nav-link">FOIA Analyzer</a>
                 </nav>
                 <div class="settings-icon-container">
                     <button id="open-prompt-settings-modal-button" class="action-icon" title="Edit AI Prompts">
@@ -50,7 +50,7 @@
         <main>
             <section id="rfp-analyzer-main-content" class="container content-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2 class="history-title">History</h2> <!-- Changed heading and added class -->
+                    <h2 class="history-title">History</h2>
                     <button id="open-new-rfp-modal-button" class="btn btn-primary">New RFP Analysis</button>
                 </div>
 
@@ -81,6 +81,15 @@
                 <div class="view-rfp-modal-content content-card container">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 id="view-rfp-main-title-heading">RFP Details</h2>
+                        <!-- Action button added here -->
+                        <div class="view-modal-actions-dropdown-container">
+                            <button id="view-rfp-modal-action-trigger" class="view-modal-actions-dropdown-trigger action-icon" title="More actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="view-rfp-modal-actions-menu" class="actions-dropdown-menu view-modal-actions-dropdown-menu">
+                                <!-- Dropdown items will be populated by JavaScript -->
+                            </div>
+                        </div>
                         <button id="close-view-rfp-details-button" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Close Details</button>
                     </div>
                     <div id="view-rfp-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
@@ -343,8 +352,6 @@
         </footer>
     </div> <script type="module" src="rfp-script.js"></script>
     <script>
-        // This script is for global tab functions if needed by modals from rfp-script.js
-        // It's placed here so it's globally available after rfp-script.js (which is type="module") might have run.
         function openTabGeneric(evt, tabName, containerElementId) {
             var i, tabcontent, tablinks;
             var container = document.getElementById(containerElementId);
@@ -371,14 +378,12 @@
                 evt.currentTarget.className += " active";
             }
         }
-        // Make them globally accessible if rfp-script.js needs them (though it might be better if rfp-script.js defines them internally)
         window.openModalTab = function(evt, tabName) {
             openTabGeneric(evt, tabName, 'modal-analysis-results-area');
         }
         window.openViewTab = function(evt, tabName) {
             openTabGeneric(evt, tabName, 'view-analysis-results-area');
         }
-         // Ensure current year is set in the footer if not already by rfp-script.js
         const yearSpanRFPGlobal = document.getElementById('current-year-rfp');
         if (yearSpanRFPGlobal && !yearSpanRFPGlobal.textContent) {
             yearSpanRFPGlobal.textContent = new Date().getFullYear();
