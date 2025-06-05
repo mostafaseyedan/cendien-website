@@ -104,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalAnalysisStatusAreaFoia = document.getElementById('modal-analysis-status-area-foia');
         const modalAnalysisResultsAreaFoia = document.getElementById('modal-analysis-results-area-foia');
 
-        // Updated modalTabContentMapFoia to match new HTML structure from foia-analysis.html (Canvas id="foia_analysis_html_v3")
         const modalTabContentMapFoia = {
             summary: document.getElementById('modal-summary-result-content-foia'),
             proposalComparison: document.getElementById('modal-comparison-rating-result-content-foia'), 
@@ -122,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewFoiaModalActionTrigger = document.getElementById('view-foia-modal-action-trigger'); 
         const viewFoiaModalActionsMenu = document.getElementById('view-foia-modal-actions-menu'); 
         
-        // Updated viewTabContentMapFoia to match new HTML structure
         const viewTabContentMapFoia = {
             summary: document.getElementById('view-summary-result-content-foia'),
             proposalComparison: document.getElementById('view-comparison-rating-result-content-foia'), 
@@ -139,11 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const editFoiaIdInput = document.getElementById('editFoiaId');
         const editFoiaTitleInput = document.getElementById('editFoiaTitle');
         const editFoiaFileNamesTextarea = document.getElementById('editFoiaFileNames'); 
-        const editFoiaTypeInput = document.getElementById('editFoiaType');
+        const editFoiaTypeInput = document.getElementById('editFoiaType'); // This is now read-only, populated by AI
         const editSubmittedBySelectFoia = document.getElementById('editSubmittedByFoia');
         const editFoiaStatusSelect = document.getElementById('editFoiaStatus');
         
-        // Updated textareas for edit modal, ensure these IDs are in foia-analysis.html
         const editFoiaSummaryTextarea = document.getElementById('editFoiaSummary');
         const editFoiaProposalComparisonTextarea = document.getElementById('editFoiaProposalComparison'); 
         const editFoiaInsightsAnalysisTextarea = document.getElementById('editFoiaInsightsAnalysis'); 
@@ -184,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const FOIA_PROMPT_SECTION_DELIMITER_FORMAT = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
         const FOIA_PROMPT_TEXT_SUFFIX = "\n\nFOIA Document Text:\n---\n{FOIA_TEXT_PLACEHOLDER}\n---";
 
+        // Updated PROMPT_CONFIG_FOIA to include documentType
         const PROMPT_CONFIG_FOIA = {
             summary: {
                 defaultText: "Provide a concise overview of the FOIA document content, highlighting the main subject, key information disclosed or requested, and any immediate takeaways.",
@@ -220,6 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 delimiterKey: "ACTIONABLE_ITEMS",
                 databaseKey: "foiaTasksWorkPlan",
                 title: "Tasks or Work Plan"
+            },
+            documentType: { // New section for AI to determine document type
+                defaultText: "Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Examples: 'FOIA Request', 'Agency Response to FOIA Request', 'Internal Agency Records', 'Email Correspondence', 'Meeting Minutes', 'Legal Briefing', 'Public Report', 'Data Set', 'Mixed Batch of Records'. If it's a mixed batch, briefly state the main components if discernible.",
+                delimiterKey: "DOCUMENT_TYPE",
+                databaseKey: "foiaType", // Using existing 'foiaType' DB field for simplicity
+                title: "Document Type (AI Determined)"
             }
         };
 
@@ -376,9 +380,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function constructFullFoiaAnalysisPrompt(foiaText, analysisPrompts = null) {
             let fullPrompt = FOIA_PROMPT_MAIN_INSTRUCTION;
-            Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
+            Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => { // Iterate over all defined FOIA prompts
                 const sectionInstruction = getStoredFoiaSectionPrompt(keySuffix, analysisPrompts); 
-                fullPrompt += `\n${sectionInstruction}`;
+                fullPrompt += `\n${sectionInstruction}`; // Add instruction for each section
             });
             fullPrompt += "\n\nUse the following format strictly for each section:";
             Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
@@ -495,9 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
             Object.keys(modalTabContentMapFoia).forEach(key => {
                 const div = modalTabContentMapFoia[key];
                 if (div) {
-                     div.innerHTML = ''; // This should target the inner content div
+                     div.innerHTML = ''; 
                 } else {
-                    console.warn(`Modal tab content div for key "${key}" (ID: modal-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase()}-result-content-foia) not found during clear. Check modalTabContentMapFoia and HTML IDs.`);
+                    console.warn(`Modal tab content div for key "${key}" (ID: modal-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase().replace(/_/g, '-')}-result-content-foia) not found during clear. Check modalTabContentMapFoia and HTML IDs.`);
                 }
             });
         }
@@ -505,9 +509,9 @@ document.addEventListener('DOMContentLoaded', () => {
              Object.keys(viewTabContentMapFoia).forEach(key => {
                 const div = viewTabContentMapFoia[key];
                 if (div) {
-                     div.innerHTML = '';  // This should target the inner content div
+                     div.innerHTML = '';  
                 } else {
-                    console.warn(`View tab content div for key "${key}" (ID: view-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase()}-result-content-foia) not found during clear. Check viewTabContentMapFoia and HTML IDs.`);
+                    console.warn(`View tab content div for key "${key}" (ID: view-${PROMPT_CONFIG_FOIA[key]?.delimiterKey?.toLowerCase().replace(/_/g, '-')}-result-content-foia) not found during clear. Check viewTabContentMapFoia and HTML IDs.`);
                 }
             });
         }
@@ -598,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reanalyzeButton.className = 'reanalyze-section-button btn btn-sm btn-info'; 
             reanalyzeButton.dataset.sectionKey = sectionKeySuffix;
             reanalyzeButton.dataset.foiaId = foiaId;
-            reanalyzeButton.textContent = "Re-Analyze"; // Updated Button Text
+            reanalyzeButton.textContent = "Re-Analyze"; 
             reanalyzeButton.addEventListener('click', handleReanalyzeFoiaSection);
             promptEditorContainer.appendChild(reanalyzeButton);
 
@@ -908,8 +912,7 @@ ${originalFoiaTextForReanalysis}
             const requiredDbKeys = Object.values(PROMPT_CONFIG_FOIA).map(config => config.databaseKey);
             let needsFetch = false;
             for (const dbKey of requiredDbKeys) {
-                // Check if analysis object has this specific database key
-                if (!analysis.hasOwnProperty(dbKey)) {
+                if (!analysis.hasOwnProperty(dbKey)) { // Check if the key itself is missing from the analysis object
                     needsFetch = true;
                     break;
                 }
@@ -936,11 +939,11 @@ ${originalFoiaTextForReanalysis}
             if (editFoiaIdInput) editFoiaIdInput.value = analysis.id;
             if (editFoiaTitleInput) editFoiaTitleInput.value = analysis.foiaTitle || '';
             if (editFoiaFileNamesTextarea) editFoiaFileNamesTextarea.value = (analysis.foiaFileNames || []).join('\n') || 'N/A';
-            if (editFoiaTypeInput) editFoiaTypeInput.value = analysis.foiaType || '';
+             // Populate the read-only AI-determined foiaType
+            if (editFoiaTypeInput) editFoiaTypeInput.value = analysis.foiaType || 'Not determined'; // Use foiaType from DB
             if (editSubmittedBySelectFoia) editSubmittedBySelectFoia.value = analysis.submittedBy || 'Other';
             if (editFoiaStatusSelect) editFoiaStatusSelect.value = analysis.status || 'analyzed';
             
-            // Populate textareas based on PROMPT_CONFIG_FOIA and their corresponding database keys
             if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis[PROMPT_CONFIG_FOIA.summary.databaseKey] || ''; 
             if (editFoiaProposalComparisonTextarea) editFoiaProposalComparisonTextarea.value = analysis[PROMPT_CONFIG_FOIA.proposalComparison.databaseKey] || ''; 
             if (editFoiaInsightsAnalysisTextarea) editFoiaInsightsAnalysisTextarea.value = analysis[PROMPT_CONFIG_FOIA.insightsAnalysis.databaseKey] || ''; 
@@ -965,10 +968,11 @@ ${originalFoiaTextForReanalysis}
                 }
                 const updatedFoiaData = {
                     foiaTitle: editFoiaTitleInput.value.trim(),
-                    foiaType: editFoiaTypeInput.value.trim(),
+                    // foiaType is AI-determined, so not taken from user input here for update.
+                    // If you want users to override AI type, this logic needs to change.
+                    // For now, we assume foiaType in DB is the AI's determination.
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
-                    // Populate data from textareas based on PROMPT_CONFIG_FOIA databaseKeys
                     [PROMPT_CONFIG_FOIA.summary.databaseKey]: editFoiaSummaryTextarea.value.trim(),
                     [PROMPT_CONFIG_FOIA.proposalComparison.databaseKey]: editFoiaProposalComparisonTextarea.value.trim(),
                     [PROMPT_CONFIG_FOIA.insightsAnalysis.databaseKey]: editFoiaInsightsAnalysisTextarea.value.trim(),
@@ -1100,7 +1104,7 @@ ${originalFoiaTextForReanalysis}
                                        'orange'; 
                     itemDiv.innerHTML = `
                         <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
-                        <span class="rfp-col-type">${analysis.foiaType || 'N/A'}</span>
+                        <span class="rfp-col-type">${analysis.foiaType || 'AI Determining...'}</span> <!-- Display AI determined type -->
                         <span class="rfp-col-owner">${analysis.submittedBy || 'N/A'}</span>
                         <span class="rfp-col-date">${formattedDateTime}</span>
                         <span class="rfp-col-status"><span class="rfp-status-dot ${statusDotClass}" title="${analysis.status || 'analyzed'}"></span></span>
@@ -1150,6 +1154,8 @@ ${originalFoiaTextForReanalysis}
                             const savedPromptsForThisAnalysis = detailedAnalysis.analysisPrompts || {};
 
                             Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
+                                if(keySuffix === 'documentType') return; // Skip trying to render documentType as a main tab here
+
                                 const contentDiv = viewTabContentMapFoia[keySuffix]; 
                                 const dbKey = PROMPT_CONFIG_FOIA[keySuffix].databaseKey; 
 
@@ -1268,7 +1274,7 @@ ${originalFoiaTextForReanalysis}
             foiaForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
                 const foiaTitleValue = document.getElementById('foiaTitle').value.trim();
-                const foiaTypeValue = document.getElementById('foiaType').value.trim(); 
+                // Document Type is now AI-determined, so we don't get it from user input here.
                 const submittedByValue = document.getElementById('submittedByFoia').value;
                 const foiaFiles = foiaFileUploadInput.files; 
 
@@ -1321,7 +1327,7 @@ ${originalFoiaTextForReanalysis}
                 }
                 
                 const aiPromptForFoia = constructFullFoiaAnalysisPrompt(originalFoiaTextForReanalysis);
-                console.log("Constructed AI Prompt for FOIA Submission:\n", aiPromptForFoia);
+                console.log("Constructed AI Prompt for FOIA Submission (includes Document Type determination):\n", aiPromptForFoia);
 
                 const currentFoiaAnalysisPrompts = {}; 
                 Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
@@ -1329,6 +1335,7 @@ ${originalFoiaTextForReanalysis}
                 });
                 
                 let parsedAISectionsFoia = {};
+                let aiDeterminedFoiaType = "Unknown"; // Default if AI fails to determine
                 try {
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "AI is analyzing FOIA document(s)...");
                     const response = await fetch('/api/generate', { 
@@ -1344,14 +1351,23 @@ ${originalFoiaTextForReanalysis}
                     const parseFoiaSection = (output, delimiterKey) => {
                         const regex = new RegExp(`###${delimiterKey}_START###([\\s\\S]*?)###${delimiterKey}_END###`);
                         const match = output.match(regex);
-                        return match && match[1] ? match[1].trim() : `${delimiterKey.replace(/_/g, ' ')} not found in AI response.`;
+                        return match && match[1] ? match[1].trim() : `${delimiterKey.replace(/_/g, ' ')} not found.`;
                     };
+
                     Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
-                        parsedAISectionsFoia[keySuffix] = parseFoiaSection(rawAiOutput, PROMPT_CONFIG_FOIA[keySuffix].delimiterKey);
+                        const delimiter = PROMPT_CONFIG_FOIA[keySuffix].delimiterKey;
+                        const content = parseFoiaSection(rawAiOutput, delimiter);
+                        parsedAISectionsFoia[keySuffix] = content;
+                        if (keySuffix === 'documentType') { // Capture the AI determined type
+                            aiDeterminedFoiaType = content !== `${delimiter.replace(/_/g, ' ')} not found.` ? content : "Unknown";
+                        }
                     });
 
                     clearModalFoiaAnalysisResultTabs(); 
                     Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
+                        // Skip displaying "Document Type" as a main re-analyzable tab content
+                        if (keySuffix === 'documentType') return; 
+
                         const contentDiv = modalTabContentMapFoia[keySuffix];
                         const promptText = currentFoiaAnalysisPrompts[keySuffix]; 
                         const sectionContent = parsedAISectionsFoia[keySuffix];
@@ -1380,7 +1396,7 @@ ${originalFoiaTextForReanalysis}
                     try {
                         const savePayloadFoia = {
                             foiaTitle: foiaTitleValue || "", 
-                            foiaType: foiaTypeValue, 
+                            foiaType: aiDeterminedFoiaType, // Save AI determined type
                             submittedBy: submittedByValue,
                             foiaFileNames: foiaFileNamesArray, 
                             originalFoiaFullText: originalFoiaTextForReanalysis, 
@@ -1388,6 +1404,8 @@ ${originalFoiaTextForReanalysis}
                             analysisPrompts: currentFoiaAnalysisPrompts 
                         };
                         Object.keys(PROMPT_CONFIG_FOIA).forEach(key => {
+                             // Don't save 'documentType' content as a main field again if it's already in 'foiaType'
+                            if (key === 'documentType') return;
                             const dbKey = PROMPT_CONFIG_FOIA[key].databaseKey;
                             if (dbKey) { 
                                 savePayloadFoia[dbKey] = parsedAISectionsFoia[key];
