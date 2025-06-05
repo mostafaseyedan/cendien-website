@@ -215,32 +215,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 databaseKey: "rfpSubmissionFormat" // This is how submission format data is stored
             },
             requirements: { 
-                defaultText: "5. A list of Requirements (e.g., mandatory, highly desirable).", 
+                defaultText: "A list of Requirements (e.g., mandatory, highly desirable).", 
                 delimiterKey: "REQUIREMENTS",
                 databaseKey: "rfpKeyRequirements"
             },
             stakeholders: { 
-                defaultText: "6. Mentioned Stakeholders or Key Contacts.", 
+                defaultText: "Mentioned Stakeholders or Key Contacts.", 
                 delimiterKey: "STAKEHOLDERS",
                 databaseKey: "rfpStakeholders"
             },
             risks: { 
-                defaultText: "7. Potential Risks or Red Flags identified in the RFP.", 
+                defaultText: "Potential Risks or Red Flags identified in the RFP.", 
                 delimiterKey: "RISKS",
                 databaseKey: "rfpRisks" 
             },
             registration: { 
-                defaultText: "8. Registration requirements or details for bidders.", 
+                defaultText: "Registration requirements or details for bidders.", 
                 delimiterKey: "REGISTRATION",
                 databaseKey: "rfpRegistration"
             },
             licenses: { 
-                defaultText: "9. Required Licenses or Certifications for bidders.", 
+                defaultText: "Required Licenses or Certifications for bidders.", 
                 delimiterKey: "LICENSES",
                 databaseKey: "rfpLicenses"
             },
             budget: { 
-                defaultText: "10. Any mentioned Budget constraints or financial information.", 
+                defaultText: "Any mentioned Budget constraints or financial information.", 
                 delimiterKey: "BUDGET",
                 databaseKey: "rfpBudget"
             }
