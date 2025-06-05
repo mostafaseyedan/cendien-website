@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeViewFoiaDetailsButton = document.getElementById('close-view-foia-details-button');
         const viewFoiaStatusArea = document.getElementById('view-foia-status-area');
         const viewAnalysisResultsAreaFoia = document.getElementById('view-analysis-results-area-foia');
+        const viewFoiaModalActionTrigger = document.getElementById('view-foia-modal-action-trigger'); // Action trigger in view modal
+        const viewFoiaModalActionsMenu = document.getElementById('view-foia-modal-actions-menu'); // Action menu in view modal
         
         // Tab content maps for viewing saved analysis (FOIA specific)
         const viewTabContentMapFoia = {
@@ -184,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentFoiaStatusFilter = 'all_statuses';
         let serverFoiaPrompts = null; 
         let foiaPromptsLastFetchedFromServer = false; 
+        let currentlyViewedFoiaAnalysis = null; // Store the currently viewed FOIA item
 
         // FOIA Specific Prompt Configuration (adjust defaultText as needed for FOIA context)
         const FOIA_PROMPT_MAIN_INSTRUCTION = "Please analyze the following Freedom of Information Act (FOIA) document(s).\nProvide the following distinct sections in your response, each clearly delimited:";
@@ -219,8 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 defaultText: "Identify any FOIA exemptions cited, justifications for redactions, or sections of withheld information mentioned in the document. Note any potential issues or controversies highlighted.",
                 delimiterKey: "EXEMPTIONS_REDACTIONS"
             }
-            // Remove RFP-specific sections like registration, licenses, budget if not applicable to FOIA
-            // Or adapt them if there are FOIA equivalents.
         };
 
         if (yearSpanFoia && !yearSpanFoia.textContent) {
@@ -406,7 +407,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalElement.style.display = 'none';
                  if (modalElement.id === 'view-saved-foia-details-section') {
                     modalElement.classList.remove('modal-active');
-                }
+                    currentlyViewedFoiaAnalysis = null; // Clear currently viewed item when modal closes
+                 }
                 document.body.style.overflow = '';
             }
         }
@@ -465,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (closeViewFoiaDetailsButton) {
             closeViewFoiaDetailsButton.addEventListener('click', () => closeModal(viewSavedFoiaDetailsSection));
         }
-        if (viewSavedFoiaDetailsSection) { // Event listener for background click
+        if (viewSavedFoiaDetailsSection) { 
             viewSavedFoiaDetailsSection.addEventListener('click', (event) => {
                 if (event.target === viewSavedFoiaDetailsSection) closeModal(viewSavedFoiaDetailsSection);
             });
@@ -477,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cancelEditFoiaButton) {
             cancelEditFoiaButton.addEventListener('click', () => closeModal(editFoiaModal));
         }
-         if (editFoiaModal) { // Event listener for background click
+         if (editFoiaModal) { 
             editFoiaModal.addEventListener('click', (event) => {
                 if (event.target === editFoiaModal) closeModal(editFoiaModal);
             });
@@ -490,16 +492,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (div) div.innerHTML = '';
             });
             let deadlinesTabParent, deadlinesDivId, submissionDivId;
-            // Handle combined "Deadlines & Format" tab for FOIA
             if (isModalView && modalDeadlinesTabContentDivFoia) {
                 deadlinesTabParent = modalDeadlinesTabContentDivFoia;
-                deadlinesDivId = 'modal-deadlines-only-content-foia'; // Unique ID for inner div
-                submissionDivId = 'modal-submission-format-content-foia'; // Unique ID for inner div
+                deadlinesDivId = 'modal-deadlines-only-content-foia'; 
+                submissionDivId = 'modal-submission-format-content-foia'; 
                 deadlinesTabParent.innerHTML = `<h4>Key Dates:</h4><div id="${deadlinesDivId}"></div><h4 style="margin-top: 1rem;">Response Format/Channel:</h4><div id="${submissionDivId}"></div>`;
                 modalTabContentMapFoia.deadlines = document.getElementById(deadlinesDivId);
                 modalTabContentMapFoia.submissionFormat = document.getElementById(submissionDivId);
             } else if (!isModalView && viewDeadlinesTabContentDivFoia) {
-                 const resultContainer = viewDeadlinesTabContentDivFoia.querySelector('#view-deadlines-result-content-foia'); // Target specific inner container
+                 const resultContainer = viewDeadlinesTabContentDivFoia.querySelector('#view-deadlines-result-content-foia'); 
                 deadlinesDivId = 'view-deadlines-only-content-foia';
                 submissionDivId = 'view-submission-format-content-foia';
                 if (resultContainer) {
@@ -524,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (areaElement === editFoiaStatusArea && saveEditedFoiaButton && showSpinner) {
                 saveEditedFoiaButton.disabled = true;
             }
-             if (areaElement === promptSaveStatusFoia) { // Make sure prompt status is always visible when active
+             if (areaElement === promptSaveStatusFoia) { 
                 areaElement.style.display = 'flex';
             }
         }
@@ -569,19 +570,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn("formatAndDisplayFoiaContentWithPrompt: parentElement is null for sectionKeySuffix:", sectionKeySuffix);
                 return;
             }
-            parentElement.innerHTML = ''; // Clear previous content
+            parentElement.innerHTML = ''; 
 
-            // Display the prompt used for this section
             if (sectionPromptText) {
                 const promptDisplayDiv = document.createElement('div');
-                promptDisplayDiv.className = 'prompt-display-box'; // Use existing styling
+                promptDisplayDiv.className = 'prompt-display-box'; 
                 const promptLabel = document.createElement('strong');
                 promptLabel.textContent = "Prompt Used: ";
                 promptDisplayDiv.appendChild(promptLabel);
                 const promptTextNode = document.createTextNode(sectionPromptText);
                 promptDisplayDiv.appendChild(promptTextNode);
                 
-                // Indicate if it's the current default
                 const currentDefaultPrompt = PROMPT_CONFIG_FOIA[sectionKeySuffix]?.defaultText;
                 if (currentDefaultPrompt && sectionPromptText === currentDefaultPrompt) {
                     const defaultIndicator = document.createElement('em');
@@ -593,37 +592,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 parentElement.appendChild(promptDisplayDiv);
             }
 
-            // Display the AI-generated content
             const contentDiv = document.createElement('div');
-            contentDiv.className = 'ai-generated-section-content'; // Use existing styling
+            contentDiv.className = 'ai-generated-section-content'; 
             const lines = (sectionContentText || "N/A").split('\n');
             let currentList = null;
             lines.forEach(line => {
                 const trimmedLine = line.trim();
                 if (trimmedLine) {
-                    // Basic formatting for bold text, more can be added
                     let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-                    
-                    const isQuestionsList = sectionKeySuffix === 'questions'; // for numbered list
+                    const isQuestionsList = sectionKeySuffix === 'questions'; 
                     const listMatch = formattedLine.match(/^(\*|-|\d+\.)\s+/);
-
-                    if (listMatch) { // If line starts with a list marker
-                        if (!currentList) { // Create new list if not already in one
+                    if (listMatch) { 
+                        if (!currentList) { 
                             currentList = isQuestionsList ? document.createElement('ol') : document.createElement('ul');
-                            if (isQuestionsList) currentList.className = 'numbered-list'; // For specific styling if needed
+                            if (isQuestionsList) currentList.className = 'numbered-list'; 
                             contentDiv.appendChild(currentList);
                         }
                         const listItem = document.createElement('li');
-                        listItem.innerHTML = formattedLine.substring(listMatch[0].length); // Remove marker from content
+                        listItem.innerHTML = formattedLine.substring(listMatch[0].length); 
                         currentList.appendChild(listItem);
-                    } else { // Not a list item
-                        currentList = null; // End current list
+                    } else { 
+                        currentList = null; 
                         const p = document.createElement('p');
                         p.innerHTML = formattedLine;
                         contentDiv.appendChild(p);
                     }
-                } else { // Empty line
-                    currentList = null; // End current list if line is blank
+                } else { 
+                    currentList = null; 
                 }
             });
             parentElement.appendChild(contentDiv);
@@ -631,56 +626,65 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- CRUD Operations for FOIA Analyses (using /api/foia-analysis endpoints) ---
         async function updateFoiaStatus(foiaId, newStatus) {
-            const foiaToUpdate = allFetchedFoiaAnalyses.find(a => a.id === foiaId);
+            const foiaToUpdate = allFetchedFoiaAnalyses.find(a => a.id === foiaId) || currentlyViewedFoiaAnalysis; // Check currently viewed as well
             const foiaTitleForMessage = foiaToUpdate ? (foiaToUpdate.foiaTitle || (foiaToUpdate.foiaFileNames && foiaToUpdate.foiaFileNames.length > 0 ? foiaToUpdate.foiaFileNames.join(', ') : 'this document')) : 'this document';
+            const statusArea = viewSavedFoiaDetailsSection.style.display === 'block' ? viewFoiaStatusArea : foiaListStatusArea;
 
-            if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `Updating "${foiaTitleForMessage}" to ${newStatus}...`);
+            if(statusArea) showLoadingMessage(statusArea, `Updating "${foiaTitleForMessage}" to ${newStatus}...`);
             try {
-                const response = await fetch(`/api/foia-analysis/${foiaId}/status`, { // FOIA endpoint
+                const response = await fetch(`/api/foia-analysis/${foiaId}/status`, { 
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
                 });
                 if (!response.ok) throw new Error((await response.json()).error || 'Failed to update FOIA status.');
                 const result = await response.json(); 
-                const updatedAnalysis = allFetchedFoiaAnalyses.find(a => a.id === foiaId);
-                if (updatedAnalysis) updatedAnalysis.status = result.newStatus || newStatus; 
-                renderFoiaAnalysesList(); // Re-render the list
-                if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `"${foiaTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
+                
+                // Update in main list
+                const listItemInAllFetched = allFetchedFoiaAnalyses.find(a => a.id === foiaId);
+                if (listItemInAllFetched) listItemInAllFetched.status = result.newStatus || newStatus;
+                
+                // Update currently viewed item if it matches
+                if (currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId) {
+                    currentlyViewedFoiaAnalysis.status = result.newStatus || newStatus;
+                    populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); // Re-populate actions in view modal
+                }
+                renderFoiaAnalysesList(); 
+                if(statusArea) showLoadingMessage(statusArea, `"${foiaTitleForMessage}" status updated to ${result.newStatus || newStatus}!`, false);
             } catch (error) { 
-                if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `Error updating FOIA status: ${error.message}`, false);
+                if(statusArea) showLoadingMessage(statusArea, `Error updating FOIA status: ${error.message}`, false);
             } finally { 
-                if(foiaListStatusArea) hideLoadingMessage(foiaListStatusArea, 3000); 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
         async function deleteFoiaAnalysis(foiaId, foiaTitleForConfirm) {
             if (!window.confirm(`Are you sure you want to delete FOIA document(s): "${foiaTitleForConfirm}"? This action cannot be undone.`)) return;
+            const statusArea = viewSavedFoiaDetailsSection.style.display === 'block' ? viewFoiaStatusArea : foiaListStatusArea;
             
-            if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `Deleting "${foiaTitleForConfirm}"...`);
+            if(statusArea) showLoadingMessage(statusArea, `Deleting "${foiaTitleForConfirm}"...`);
             try {
-                const response = await fetch(`/api/foia-analysis/${foiaId}`, { method: 'DELETE' }); // FOIA endpoint
+                const response = await fetch(`/api/foia-analysis/${foiaId}`, { method: 'DELETE' }); 
                 if (!response.ok) throw new Error((await response.json()).error || `Failed to delete ${foiaTitleForConfirm}.`);
                 allFetchedFoiaAnalyses = allFetchedFoiaAnalyses.filter(a => a.id !== foiaId);
-                renderFoiaAnalysesList(); // Re-render
+                renderFoiaAnalysesList(); 
                 if (viewSavedFoiaDetailsSection && viewSavedFoiaDetailsSection.classList.contains('modal-active') && 
-                    viewSavedFoiaDetailsSection.dataset.currentViewingId === foiaId) {
-                    closeModal(viewSavedFoiaDetailsSection); // Close view if deleted item was open
+                    currentlyViewedFoiaAnalysis && currentlyViewedFoiaAnalysis.id === foiaId) { // Check if the deleted item was being viewed
+                    closeModal(viewSavedFoiaDetailsSection); 
                 }
-                if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `"${foiaTitleForConfirm}" deleted successfully!`, false);
+                if(statusArea) showLoadingMessage(statusArea, `"${foiaTitleForConfirm}" deleted successfully!`, false);
             } catch (error) { 
-                if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, `Error deleting FOIA: ${error.message}`, false);
+                if(statusArea) showLoadingMessage(statusArea, `Error deleting FOIA: ${error.message}`, false);
             } finally { 
-                if(foiaListStatusArea) hideLoadingMessage(foiaListStatusArea, 3000); 
+                if(statusArea) hideLoadingMessage(statusArea, 3000); 
             }
         }
 
         async function openEditFoiaModal(analysisFullDetails) {
             if (!editFoiaModal || !editFoiaForm) return;
             let analysis = analysisFullDetails;
-            // Check if detailed fields are present, if not, fetch full details
             if (!analysis.foiaSummary && !analysis.generatedQuestionsFoia && !analysis.foiaDeadlines) { 
                 if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Loading full FOIA details...');
                 try {
-                    const response = await fetch(`/api/foia-analysis/${analysisFullDetails.id}`); // FOIA endpoint
+                    const response = await fetch(`/api/foia-analysis/${analysisFullDetails.id}`); 
                     if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch full FOIA details.');
                     analysis = await response.json();
                 } catch (error) {
@@ -695,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Populate Edit FOIA Modal
             if (editFoiaIdInput) editFoiaIdInput.value = analysis.id;
             if (editFoiaTitleInput) editFoiaTitleInput.value = analysis.foiaTitle || '';
             if (editFoiaFileNamesTextarea) editFoiaFileNamesTextarea.value = (analysis.foiaFileNames || []).join('\n') || 'N/A';
@@ -703,12 +706,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editSubmittedBySelectFoia) editSubmittedBySelectFoia.value = analysis.submittedBy || 'Other';
             if (editFoiaStatusSelect) editFoiaStatusSelect.value = analysis.status || 'analyzed';
             
-            // Map FOIA specific fields from PROMPT_CONFIG_FOIA keys to textarea IDs
-            if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis.foiaSummary || ''; // Directly map summary
-            if (editGeneratedQuestionsTextareaFoia) editGeneratedQuestionsTextareaFoia.value = analysis.generatedQuestionsFoia || ''; // Directly map questions
+            if (editFoiaSummaryTextarea) editFoiaSummaryTextarea.value = analysis.foiaSummary || ''; 
+            if (editGeneratedQuestionsTextareaFoia) editGeneratedQuestionsTextareaFoia.value = analysis.generatedQuestionsFoia || ''; 
 
-            // For other sections, map based on the analysis object properties
-            // These should match what's saved in the database
             if (editFoiaDeadlinesTextarea) editFoiaDeadlinesTextarea.value = analysis.foiaDeadlines || '';
             if (editFoiaSubmissionFormatTextarea) editFoiaSubmissionFormatTextarea.value = analysis.foiaSubmissionFormat || '';
             if (editFoiaKeyRequirementsTextarea) editFoiaKeyRequirementsTextarea.value = analysis.foiaKeyRequirements || '';
@@ -717,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (editFoiaModalTitle) editFoiaModalTitle.textContent = `Edit FOIA: ${analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames[0] : 'Document')}`;
             
+            closeModal(viewSavedFoiaDetailsSection); // Close view modal before opening edit
             openModal(editFoiaModal);
         }
         
@@ -735,17 +736,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     submittedBy: editSubmittedBySelectFoia.value,
                     status: editFoiaStatusSelect.value,
                     foiaSummary: editFoiaSummaryTextarea.value.trim(),
-                    generatedQuestionsFoia: editGeneratedQuestionsTextareaFoia.value.trim(), // FOIA specific field name
+                    generatedQuestionsFoia: editGeneratedQuestionsTextareaFoia.value.trim(), 
                     foiaDeadlines: editFoiaDeadlinesTextarea.value.trim(),
                     foiaSubmissionFormat: editFoiaSubmissionFormatTextarea.value.trim(),
                     foiaKeyRequirements: editFoiaKeyRequirementsTextarea.value.trim(),
                     foiaStakeholders: editFoiaStakeholdersTextarea.value.trim(),
                     foiaRisks: editFoiaRisksTextarea.value.trim(),
-                    // foiaFileNames are not typically edited this way, they are part of original upload
                 };
                 if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, 'Saving FOIA changes...');
                 try {
-                    const response = await fetch(`/api/foia-analysis/${foiaIdToUpdate}`, { // FOIA endpoint
+                    const response = await fetch(`/api/foia-analysis/${foiaIdToUpdate}`, { 
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(updatedFoiaData)
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     const result = await response.json();
                     if(editFoiaStatusArea) showLoadingMessage(editFoiaStatusArea, result.message || 'FOIA changes saved!', false);
-                    await loadSavedFoiaAnalysesInitial(); // Refresh list
+                    await loadSavedFoiaAnalysesInitial(); 
                     setTimeout(() => closeModal(editFoiaModal), 2000);
                 } catch (error) {
                     console.error('Error saving FOIA details:', error);
@@ -765,26 +765,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+         // --- Helper to add dropdown items for actions (generic) ---
+        function addDropdownItemToMenu(menuElement, iconClass, text, clickHandler) {
+            const item = document.createElement('button');
+            item.className = 'dropdown-item';
+            item.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clickHandler();
+                menuElement.style.display = 'none'; // Hide menu after action
+            });
+            menuElement.appendChild(item);
+        }
+
+        // --- Populate Actions for View Modal ---
+        function populateViewModalFoiaActions(analysis) {
+            if (!viewFoiaModalActionsMenu || !analysis) return;
+            viewFoiaModalActionsMenu.innerHTML = ''; // Clear previous items
+            const displayTitle = analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames.join(', ') : 'N/A');
+
+            addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-edit', 'Edit Details', () => openEditFoiaModal(analysis));
+            viewFoiaModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
+
+            // Status change actions
+            if (analysis.status === 'analyzed') {
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'active') {
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'not_pursuing') {
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+            } else if (analysis.status === 'archived') {
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+            } else {
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+            }
+            viewFoiaModalActionsMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
+            addDropdownItemToMenu(viewFoiaModalActionsMenu, 'fa-trash-alt', 'Delete FOIA', () => deleteFoiaAnalysis(analysis.id, displayTitle));
+        }
+         // Event listener for the action trigger in the "View FOIA Details" modal
+        if (viewFoiaModalActionTrigger) {
+            viewFoiaModalActionTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (viewFoiaModalActionsMenu) {
+                    // If currentlyViewedFoiaAnalysis is set, populate/re-populate menu before showing
+                    if (currentlyViewedFoiaAnalysis) {
+                        populateViewModalFoiaActions(currentlyViewedFoiaAnalysis);
+                    }
+                    viewFoiaModalActionsMenu.style.display = viewFoiaModalActionsMenu.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        }
+
 
         // --- Rendering FOIA Analyses List ---
         function renderFoiaAnalysesList() {
             if (!savedAnalysesListDivFoia || !noSavedAnalysesPFoia) return;
-            savedAnalysesListDivFoia.innerHTML = ''; // Clear existing list
+            savedAnalysesListDivFoia.innerHTML = ''; 
             let filteredAnalyses = [...allFetchedFoiaAnalyses];
 
-            // Filter by status
             if (currentFoiaStatusFilter !== 'all_statuses') {
                 filteredAnalyses = filteredAnalyses.filter(a => a.status === currentFoiaStatusFilter);
             }
 
-            // Sort analyses
             filteredAnalyses.sort((a, b) => {
                 let valA = a[currentFoiaSortKey];
                 let valB = b[currentFoiaSortKey];
-                if (currentFoiaSortKey === 'analysisDate') { // Handle Firestore Timestamp
+                if (currentFoiaSortKey === 'analysisDate') { 
                     valA = a.analysisDate && a.analysisDate._seconds ? Number(a.analysisDate._seconds) : 0;
                     valB = b.analysisDate && b.analysisDate._seconds ? Number(b.analysisDate._seconds) : 0;
-                } else { // Handle string sorting
+                } else { 
                     valA = (typeof valA === 'string' ? valA.toLowerCase() : (valA || '')).toString();
                     valB = (typeof valB === 'string' ? valB.toLowerCase() : (valB || '')).toString();
                 }
@@ -801,19 +859,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 noSavedAnalysesPFoia.style.display = 'none';
                 filteredAnalyses.forEach(analysis => {
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'analyzed-rfp-item'; // Reusing RFP styling for list items
+                    itemDiv.className = 'analyzed-rfp-item'; 
                     const displayTitle = analysis.foiaTitle || (analysis.foiaFileNames && analysis.foiaFileNames.length > 0 ? analysis.foiaFileNames.join(', ') : 'N/A');
                     let formattedDateTime = 'N/A';
                     if (analysis.analysisDate && typeof analysis.analysisDate._seconds === 'number') {
                         const date = new Date(analysis.analysisDate._seconds * 1000);
-                        if (!isNaN(date.valueOf())) { // Check if date is valid
+                        if (!isNaN(date.valueOf())) { 
                             formattedDateTime = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
                         }
                     }
                     const statusDotClass = analysis.status === 'active' ? 'green' :
                                        analysis.status === 'not_pursuing' ? 'red' :
                                        analysis.status === 'archived' ? 'grey' :
-                                       'orange'; // Default for 'analyzed' or other
+                                       'orange'; 
                     itemDiv.innerHTML = `
                         <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
                         <span class="rfp-col-type">${analysis.foiaType || 'N/A'}</span>
@@ -823,59 +881,72 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="rfp-col-actions"></span>`;
                     
                     const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
-                    // View Details Link
                     const viewLink = document.createElement('a');
-                    viewLink.href = '#'; viewLink.className = 'rfp-view-details action-icon'; // Reuse styling
+                    viewLink.href = '#'; viewLink.className = 'rfp-view-details action-icon'; 
                     viewLink.dataset.id = analysis.id;
                     viewLink.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
                     viewLink.title = "View FOIA Analysis Details";
                     viewLink.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const analysisId = e.currentTarget.dataset.id;
+                        // Find the full analysis object, needed for populating actions in view modal
+                        currentlyViewedFoiaAnalysis = allFetchedFoiaAnalyses.find(item => item.id === analysisId);
+                        if (!currentlyViewedFoiaAnalysis) {
+                            console.error("Could not find FOIA item in local cache for ID:", analysisId);
+                            // Optionally, fetch it if not found, though it should be in allFetchedFoiaAnalyses
+                            // For now, we'll assume it's found or handle error if critical.
+                            return;
+                        }
+
+
                         const foiaItemDiv = e.currentTarget.closest('.analyzed-rfp-item');
                         const titleElement = foiaItemDiv ? foiaItemDiv.querySelector('.rfp-col-title') : null;
                         const loadingMessageTitle = titleElement ? titleElement.textContent : 'Selected FOIA';
                         
                         openModal(viewSavedFoiaDetailsSection);
-                        if (viewSavedFoiaDetailsSection) viewSavedFoiaDetailsSection.dataset.currentViewingId = analysisId;
+                        if (viewSavedFoiaDetailsSection) viewSavedFoiaDetailsSection.dataset.currentViewingId = analysisId; // Store ID for context
                         if (viewFoiaMainTitleHeading) viewFoiaMainTitleHeading.textContent = `Details for: ${loadingMessageTitle}`;
                         if(viewFoiaStatusArea) showLoadingMessage(viewFoiaStatusArea, `Loading analysis for ${loadingMessageTitle}...`);
                         if (viewAnalysisResultsAreaFoia) viewAnalysisResultsAreaFoia.style.display = 'none';
                         clearViewFoiaAnalysisResultTabs();
                         
+                        // Populate actions for the opened modal
+                        populateViewModalFoiaActions(currentlyViewedFoiaAnalysis);
+
+
                         let loadErrorOccurred = false;
                         try {
-                            const detailResponse = await fetch(`/api/foia-analysis/${analysisId}`); // FOIA endpoint
+                            // Fetch full details if not all are present in the list item, or re-fetch for freshness
+                            const detailResponse = await fetch(`/api/foia-analysis/${analysisId}`); 
                             if (!detailResponse.ok) throw new Error((await detailResponse.json()).error || 'Failed to fetch FOIA details.');
                             const detailedAnalysis = await detailResponse.json();
+                             currentlyViewedFoiaAnalysis = detailedAnalysis; // Update with fresh full details
+                            populateViewModalFoiaActions(currentlyViewedFoiaAnalysis); // Re-populate with full details
+
                             const savedPromptsForThisAnalysis = detailedAnalysis.analysisPrompts || {};
 
-                            // Populate tabs for viewing saved FOIA
                             Object.keys(PROMPT_CONFIG_FOIA).forEach(keySuffix => {
-                                const contentDiv = viewTabContentMapFoia[keySuffix]; // Use FOIA specific map
-                                let sectionDataField; // Determine which field in `detailedAnalysis` holds the content for this tab
-                                 // Mapping based on how data is likely stored from PROMPT_CONFIG_FOIA
+                                const contentDiv = viewTabContentMapFoia[keySuffix]; 
+                                let sectionDataField; 
                                 if (keySuffix === 'summary') sectionDataField = 'foiaSummary';
-                                else if (keySuffix === 'questions') sectionDataField = 'generatedQuestionsFoia'; // Adjusted for FOIA
-                                else if (keySuffix === 'deadlines') sectionDataField = 'foiaDeadlines'; // This will hold both dates and format for FOIA in DB
-                                else if (keySuffix === 'submissionFormat') sectionDataField = 'foiaSubmissionFormat'; // This will hold both dates and format for FOIA in DB
+                                else if (keySuffix === 'questions') sectionDataField = 'generatedQuestionsFoia'; 
+                                else if (keySuffix === 'deadlines') sectionDataField = 'foiaDeadlines'; 
+                                else if (keySuffix === 'submissionFormat') sectionDataField = 'foiaSubmissionFormat'; 
                                 else if (keySuffix === 'requirements') sectionDataField = 'foiaKeyRequirements';
                                 else if (keySuffix === 'stakeholders') sectionDataField = 'foiaStakeholders';
                                 else if (keySuffix === 'risks') sectionDataField = 'foiaRisks';
-                                else { // Fallback or for custom sections if any
+                                else { 
                                     sectionDataField = `foia${keySuffix.charAt(0).toUpperCase() + keySuffix.slice(1)}`;
                                 }
-
                                 const sectionContent = detailedAnalysis[sectionDataField] || "N/A";
                                 const promptTextUsed = savedPromptsForThisAnalysis[keySuffix] || PROMPT_CONFIG_FOIA[keySuffix]?.defaultText;
-                                
                                 if (contentDiv) {
                                     formatAndDisplayFoiaContentWithPrompt(contentDiv, keySuffix, promptTextUsed, sectionContent);
                                 }
                             });
                             if (viewAnalysisResultsAreaFoia) viewAnalysisResultsAreaFoia.style.display = 'block';
                             const firstViewTabLinkFoia = document.querySelector('#view-saved-foia-details-section.modal-active .tabs-container .tab-link');
-                            if (firstViewTabLinkFoia) { // Auto-click the first tab
+                            if (firstViewTabLinkFoia) { 
                                 document.querySelectorAll('#view-saved-foia-details-section.modal-active .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
                                 firstViewTabLinkFoia.classList.add('active');
                                 const tabNameToOpen = firstViewTabLinkFoia.getAttribute('onclick').match(/'([^']*)'/)[1];
@@ -892,7 +963,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     actionsSpan.appendChild(viewLink);
 
-                    // Actions Dropdown
                     const dropdownContainer = document.createElement('div');
                     dropdownContainer.className = 'actions-dropdown-container';
                     const dropdownTrigger = document.createElement('button');
@@ -900,49 +970,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     dropdownTrigger.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
                     dropdownTrigger.title = "More actions";
                     const dropdownMenu = document.createElement('div');
-                    dropdownMenu.className = 'actions-dropdown-menu';
+                    dropdownMenu.className = 'actions-dropdown-menu'; // This is for the list view actions
                     dropdownTrigger.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent click from bubbling to document listener immediately
-                        // Close other open dropdowns
+                        e.stopPropagation(); 
                         document.querySelectorAll('.actions-dropdown-menu').forEach(menu => {
                             if (menu !== dropdownMenu) menu.style.display = 'none';
                         });
                         dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
                     });
-                    function addFoiaDropdownItem(iconClass, text, clickHandler) {
-                        const item = document.createElement('button');
-                        item.className = 'dropdown-item';
-                        item.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation(); clickHandler(); dropdownMenu.style.display = 'none';
-                        });
-                        dropdownMenu.appendChild(item);
-                    }
-                    addFoiaDropdownItem('fa-edit', 'Edit Details', () => openEditFoiaModal(analysis)); // Pass full analysis object
+                    // Use the generic helper for populating the list item's dropdown
+                    addDropdownItemToMenu(dropdownMenu, 'fa-edit', 'Edit Details', () => openEditFoiaModal(analysis));
                     dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
-                    // Status change actions (similar to RFP, adjust if FOIA statuses are different)
+                    
                     if (analysis.status === 'analyzed') {
-                        addFoiaDropdownItem('fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
-                        addFoiaDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
-                        addFoiaDropdownItem('fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'active') {
-                        addFoiaDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
-                        addFoiaDropdownItem('fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
-                        addFoiaDropdownItem('fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'not_pursuing') {
-                        addFoiaDropdownItem('fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
-                        addFoiaDropdownItem('fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
-                        addFoiaDropdownItem('fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-inbox', 'Move to Analyzed', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
                     } else if (analysis.status === 'archived') {
-                        addFoiaDropdownItem('fa-box-open', 'Unarchive (to Analyzed)', () => updateFoiaStatus(analysis.id, 'analyzed'));
-                        addFoiaDropdownItem('fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
-                    } else { // Default set of actions if status is unknown or different
-                        addFoiaDropdownItem('fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
-                        addFoiaDropdownItem('fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
-                        addFoiaDropdownItem('fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-box-open', 'Unarchive (to Analyzed)', () => updateFoiaStatus(analysis.id, 'analyzed'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                    } else { 
+                        addDropdownItemToMenu(dropdownMenu, 'fa-check-circle', 'Move to Active', () => updateFoiaStatus(analysis.id, 'active'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-times-circle', 'Move to Not Pursuing', () => updateFoiaStatus(analysis.id, 'not_pursuing'));
+                        addDropdownItemToMenu(dropdownMenu, 'fa-archive', 'Archive', () => updateFoiaStatus(analysis.id, 'archived'));
                     }
                     dropdownMenu.appendChild(document.createElement('div')).className = 'dropdown-divider';
-                    addFoiaDropdownItem('fa-trash-alt', 'Delete FOIA', () => deleteFoiaAnalysis(analysis.id, displayTitle));
+                    addDropdownItemToMenu(dropdownMenu, 'fa-trash-alt', 'Delete FOIA', () => deleteFoiaAnalysis(analysis.id, displayTitle));
                     
                     dropdownContainer.appendChild(dropdownTrigger);
                     dropdownContainer.appendChild(dropdownMenu);
@@ -952,10 +1013,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Event listeners for FOIA list tabs and sorting headers
         if (foiaListTabsContainer) {
             foiaListTabsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('rfp-list-tab-button')) { // Reuse class for styling
+                if (e.target.classList.contains('rfp-list-tab-button')) { 
                     foiaListTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
                     currentFoiaStatusFilter = e.target.dataset.statusFilter;
@@ -972,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentFoiaSortKey = sortKey;
                     currentFoiaSortOrder = 'asc'; 
                 }
-                // Update visual indicator for sort order (optional)
                 document.querySelectorAll('#saved-analyses-header-foia .sortable-header').forEach(h => {
                     let text = h.textContent.replace(/ [⇅↑↓]$/, ''); 
                     if (h.dataset.sortKey === currentFoiaSortKey) {
@@ -986,14 +1045,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // --- Form Submission for New FOIA Analysis ---
         if (foiaForm) {
             foiaForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
                 const foiaTitleValue = document.getElementById('foiaTitle').value.trim();
-                const foiaTypeValue = document.getElementById('foiaType').value.trim(); // Assuming this is a text input now
+                const foiaTypeValue = document.getElementById('foiaType').value.trim(); 
                 const submittedByValue = document.getElementById('submittedByFoia').value;
-                const foiaFiles = foiaFileUploadInput.files; // Get all files from the single input
+                const foiaFiles = foiaFileUploadInput.files; 
 
                 if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "Starting FOIA analysis...");
                 if (modalAnalysisResultsAreaFoia) modalAnalysisResultsAreaFoia.style.display = 'none';
@@ -1023,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.warn(`Minimal text extracted from ${file.name}.`);
                         }
                     }
-                    if (combinedFoiaText.trim().length < 50) { // Check total length
+                    if (combinedFoiaText.trim().length < 50) { 
                         throw new Error("Insufficient total text extracted from PDF(s) for FOIA analysis.");
                     }
                 } catch (error) {
@@ -1031,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(modalAnalysisStatusAreaFoia) hideLoadingMessage(modalAnalysisStatusAreaFoia, 5000); return;
                 }
 
-                if (!serverFoiaPrompts) { // Ensure FOIA prompts are loaded
+                if (!serverFoiaPrompts) { 
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "Loading latest FOIA prompt settings...", true);
                     await fetchFoiaPromptsFromServer();
                     if (!serverFoiaPrompts) {
@@ -1053,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let parsedAISectionsFoia = {};
                 try {
                     if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "AI is analyzing FOIA document(s)...");
-                    const response = await fetch('/api/generate', { // Generic AI generation endpoint
+                    const response = await fetch('/api/generate', { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ prompt: aiPromptForFoia })
@@ -1086,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (modalAnalysisResultsAreaFoia) modalAnalysisResultsAreaFoia.style.display = 'block';
                     const activeModalResultTabFoia = document.querySelector('#new-foia-modal .tabs-container .tab-link');
-                    if (activeModalResultTabFoia) { // Auto-click first tab
+                    if (activeModalResultTabFoia) { 
                         document.querySelectorAll('#new-foia-modal .tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
                         activeModalResultTabFoia.classList.add('active');
                         const tabNameToOpen = activeModalResultTabFoia.getAttribute('onclick').match(/'([^']*)'/)[1];
@@ -1099,24 +1157,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             foiaTitle: foiaTitleValue || "", 
                             foiaType: foiaTypeValue, 
                             submittedBy: submittedByValue,
-                            foiaFileNames: foiaFileNamesArray, // Save array of names
-                            // Map parsed sections to payload keys
+                            foiaFileNames: foiaFileNamesArray, 
                             foiaSummary: parsedAISectionsFoia.summary,
-                            generatedQuestionsFoia: parsedAISectionsFoia.questions, // FOIA specific name
-                            foiaDeadlines: parsedAISectionsFoia.deadlines, // From combined dates/format
-                            foiaSubmissionFormat: parsedAISectionsFoia.submissionFormat, // From combined
+                            generatedQuestionsFoia: parsedAISectionsFoia.questions, 
+                            foiaDeadlines: parsedAISectionsFoia.deadlines, 
+                            foiaSubmissionFormat: parsedAISectionsFoia.submissionFormat, 
                             foiaKeyRequirements: parsedAISectionsFoia.requirements,
                             foiaStakeholders: parsedAISectionsFoia.stakeholders,
                             foiaRisks: parsedAISectionsFoia.risks,
                             status: 'analyzed',
                             analysisPrompts: currentFoiaAnalysisPrompts 
                         };
-                        const saveResponse = await fetch('/api/foia-analysis', { // FOIA specific save endpoint
+                        const saveResponse = await fetch('/api/foia-analysis', { 
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(savePayloadFoia)
                         });
                         if (!saveResponse.ok) throw new Error((await saveResponse.json()).error || 'Failed to save FOIA analysis.');
                         if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, "FOIA analysis complete and results saved!", false);
-                        await loadSavedFoiaAnalysesInitial(); // Refresh list
+                        await loadSavedFoiaAnalysesInitial(); 
                     } catch (saveError) {
                         if(modalAnalysisStatusAreaFoia) showLoadingMessage(modalAnalysisStatusAreaFoia, `FOIA analysis complete, but failed to save: ${saveError.message}`, false);
                     }
@@ -1129,11 +1186,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // --- Initial Load for FOIA Page ---
         async function loadSavedFoiaAnalysesInitial() {
             if(foiaListStatusArea) showLoadingMessage(foiaListStatusArea, "Loading saved FOIA analyses...", true);
             try {
-                const response = await fetch('/api/foia-analyses'); // FOIA specific endpoint
+                const response = await fetch('/api/foia-analyses'); 
                 if (!response.ok) throw new Error((await response.json()).error || 'Failed to fetch FOIA analyses.');
                 allFetchedFoiaAnalyses = await response.json();
                 renderFoiaAnalysesList();
@@ -1146,7 +1202,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Auto-activate first tab if viewing saved details (FOIA)
         const firstActiveViewTabFoia = document.querySelector('#view-saved-foia-details-section.modal-active .tabs-container .tab-link');
         if (firstActiveViewTabFoia && viewSavedFoiaDetailsSection && viewSavedFoiaDetailsSection.classList.contains('modal-active')) {
             const tabNameToOpen = firstActiveViewTabFoia.getAttribute('onclick').match(/'([^']*)'/)[1];
@@ -1164,16 +1219,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        initializeFoiaPage(); // Start the FOIA page logic
+        initializeFoiaPage(); 
 
-        // Global click listener to close dropdowns if clicked outside
         document.addEventListener('click', (e) => {
-            const openDropdowns = document.querySelectorAll('.actions-dropdown-menu'); // Standard class
+            const openDropdowns = document.querySelectorAll('.actions-dropdown-menu'); 
             let clickedInsideADropdownOrTrigger = false;
-            const triggerElement = e.target.closest('.actions-dropdown-trigger'); // Standard class
-
+            // Check if click is inside any action trigger or menu (including view modal's action menu)
+            const actionTriggerClicked = e.target.closest('.actions-dropdown-trigger, .view-modal-actions-dropdown-trigger');
+            
             openDropdowns.forEach(menu => {
-                if (menu.contains(e.target) || (triggerElement && menu.previousElementSibling === triggerElement) ) {
+                 if (menu.contains(e.target) || (actionTriggerClicked && (menu.previousElementSibling === actionTriggerClicked || menu.id === actionTriggerClicked.nextElementSibling?.id))) {
                     clickedInsideADropdownOrTrigger = true;
                 }
             });
