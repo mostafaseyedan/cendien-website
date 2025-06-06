@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // This function will pass the current state to the UI manager
     function updateSharedState() {
-        ui.initializeSharedState({
+        ui.updateSharedState({
             type: state.type,
             allAnalyses: state.allAnalyses,
             sortKey: state.currentSortKey,
@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             originalTextForReanalysis: state.originalTextForReanalysis,
             elements: elements,
             actionHandlers: {
+                onView: openRfpViewModal,
                 onEdit: openRfpEditModal,
                 onStatusUpdate: updateRfpStatus,
                 onDelete: deleteRfpAnalysis,
@@ -330,4 +331,3 @@ document.addEventListener('DOMContentLoaded', () => {
         onLoginSuccess: initializeRfpPage
     });
 });
-
