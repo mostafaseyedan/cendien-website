@@ -257,10 +257,14 @@ export function populateViewModal(analysis) {
 
 export function populateViewModalActions(analysis) {
     const { viewModalActionsMenu, type, actionHandlers } = state;
+    if (!viewModalActionsMenu) return;
     viewModalActionsMenu.innerHTML = '';
-    createActionsDropdown(analysis, type, actionHandlers).childNodes.forEach(node => {
-        viewModalActionsMenu.appendChild(node.cloneNode(true));
-    });
+    const dropdownMenu = createActionsDropdown(analysis, type, actionHandlers);
+    
+    // Move the actual items (buttons, dividers) into the permanent menu
+    while (dropdownMenu.firstElementChild) {
+        viewModalActionsMenu.appendChild(dropdownMenu.firstElementChild);
+    }
 }
 
 
@@ -268,12 +272,16 @@ export function populateEditModal(analysis) {
     const { editForm, type } = state;
     const prefix = type === 'rfp' ? 'Rfp' : 'Foia';
     
-    // Reset form first
     editForm.reset();
 
-    // Populate fields
     Object.keys(analysis).forEach(key => {
-        const inputId = `edit${prefix}${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        let inputId;
+        if (key.toLowerCase().includes('submittedby')) {
+            inputId = `edit${prefix}SubmittedBy`;
+        } else {
+             inputId = `edit${prefix}${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        }
+       
         const input = editForm.querySelector(`#${inputId}`);
         if(input) {
             if (key.toLowerCase().includes('filenames') && Array.isArray(analysis[key])) {
@@ -319,4 +327,48 @@ export function parseGeneratedContent(rawText, promptConfig) {
         parsed[config.databaseKey] = match?.[1].trim() || `Content for ${config.title} not found.`;
     });
     return parsed;
+}
+
+// NEWLY ADDED FUNCTION
+export function populateNewAnalysisModal(parsedSections) {
+    const { modalAnalysisResultsArea, promptConfig, type } = state;
+    if (!modalAnalysisResultsArea) return;
+
+    const suffix = type === 'foia' ? '-foia' : '';
+
+    Object.keys(promptConfig).forEach(key => {
+        if (type === 'foia' && key === 'documentType') return; // Don't show a tab for this
+        const config = promptConfig[key];
+        const content = parsedSections[config.databaseKey] || 'Not available.';
+        
+        // Find the specific container div for this section in the new-analysis modal
+        // e.g., 'modal-summary-result-content' or 'modal-proposalComparison-result-content-foia'
+        const contentDivId = `modal-${key.toLowerCase().replace('proposalcomparison','comparison-rating').replace('pricingintelligence','financial-intelligence').replace('markettrends','context-impact').replace('tasksworkplan','actionable-items')}-result-content${suffix}`;
+
+        const contentDiv = document.getElementById(contentDivId);
+        
+        if (contentDiv) {
+            contentDiv.innerHTML = content.replace(/\n/g, '<br>');
+        } else {
+            console.warn(`UI Manager: Could not find content element with ID: ${contentDivId}`);
+        }
+    });
+
+    modalAnalysisResultsArea.style.display = 'block';
+
+    // Activate the first tab
+    const firstTabLink = modalAnalysisResultsArea.querySelector('.tabs-container .tab-link');
+    if (firstTabLink) {
+        // Deactivate all
+        modalAnalysisResultsArea.querySelectorAll('.tabs-container .tab-link').forEach(tl => tl.classList.remove('active'));
+        modalAnalysisResultsArea.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+        
+        // Activate first
+        firstTabLink.classList.add('active');
+        const tabNameMatch = firstTabLink.getAttribute('onclick').match(/'(modal-[^']+-tab[^']*)'/);
+        if (tabNameMatch && tabNameMatch[1]) {
+            const tabElement = document.getElementById(tabNameMatch[1]);
+            if(tabElement) tabElement.style.display = 'block';
+        }
+    }
 }
