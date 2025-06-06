@@ -1,88 +1,132 @@
 /**
- * @file forms.css
- * @description Styles for forms within the analyzer modals.
+ * @file apiService.js
+ * @description Centralizes all fetch calls to the backend API for analyzers.
  */
 
-/* Form Styling common to New and Edit Modals */
-.modal-content form {
-    padding-top: 0;
-    border-top: none;
+async function handleResponse(response) {
+    if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({ error: `Server error with status: ${response.status}` }));
+        throw new Error(errorResult.error || `HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
 }
 
-.modal-content form .form-group {
-    margin-bottom: 1.2rem;
+/**
+ * Fetches prompts from the server.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @returns {Promise<object>} - The prompt settings object.
+ */
+export async function fetchPrompts(type) {
+    const response = await fetch(`/api/${type}-prompt-settings`);
+    return handleResponse(response);
 }
 
-.modal-content form .form-group label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.6rem;
-    color: #333;
-    font-size: 0.95rem;
+/**
+ * Saves prompts to the server.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {object} prompts - The prompt settings object to save.
+ * @returns {Promise<object>} - The server response.
+ */
+export async function savePrompts(type, prompts) {
+    const response = await fetch(`/api/${type}-prompt-settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompts }),
+    });
+    return handleResponse(response);
 }
 
-.modal-content form input[type="text"],
-.modal-content form select,
-.modal-content form input[type="file"],
-.modal-content form textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    box-sizing: border-box;
-    background-color: #fff;
-}
-.modal-content form input[type="file"] {
-    padding: 0.5rem;
+/**
+ * Sends a prompt to the Gemini API for content generation.
+ * @param {string} prompt - The full prompt string.
+ * @returns {Promise<object>} - The generated content.
+ */
+export async function generateContent(prompt) {
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+    });
+    return handleResponse(response);
 }
 
-.modal-content form select {
-    appearance: auto;
-    -webkit-appearance: auto;
-    -moz-appearance: auto;
+/**
+ * Fetches all analyses of a specific type.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @returns {Promise<Array>} - An array of analysis objects.
+ */
+export async function getAnalyses(type) {
+    const response = await fetch(`/api/${type}-analyses`);
+    return handleResponse(response);
 }
 
-.modal-content form input[readonly][disabled],
-.modal-content form textarea[readonly][disabled] {
-    background-color: #e9ecef;
-    cursor: not-allowed;
+/**
+ * Fetches the full details for a single analysis.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {string} id - The ID of the analysis.
+ * @returns {Promise<object>} - The detailed analysis object.
+ */
+export async function getAnalysisDetails(type, id) {
+    const response = await fetch(`/api/${type}-analysis/${id}`);
+    return handleResponse(response);
 }
 
-.modal-content form input:focus,
-.modal-content form select:focus,
-.modal-content form textarea:focus {
-    border-color: #005a9c;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25);
+/**
+ * Saves a new analysis to the database.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {object} data - The analysis data payload.
+ * @returns {Promise<object>} - The saved analysis object.
+ */
+export async function saveNewAnalysis(type, data) {
+    const response = await fetch(`/api/${type}-analysis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse(response);
 }
 
-/* Auth form specifics */
-.auth-modal-content input[type="text"],
-.auth-modal-content input[type="password"] {
-    width: 100%;
-    padding: 0.65rem 0.9rem; 
-    border: 1px solid #ccc; 
-    border-radius: 4px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    box-sizing: border-box;
-    margin-bottom: 0.5rem; 
+/**
+ * Updates an existing analysis.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {string} id - The ID of the analysis to update.
+ * @param {object} data - The data to update.
+ * @returns {Promise<object>} - The server response.
+ */
+export async function updateAnalysis(type, id, data) {
+    const response = await fetch(`/api/${type}-analysis/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse(response);
 }
 
-.auth-modal-content input[type="text"]:focus,
-.auth-modal-content input[type="password"]:focus {
-    border-color: #005a9c;
-    outline: 0;
-    box-shadow: 0 0 0 0.15rem rgba(0, 90, 156, 0.2); 
+/**
+ * Updates the status of an analysis.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {string} id - The ID of the analysis.
+ * @param {string} status - The new status.
+ * @returns {Promise<object>} - The server response.
+ */
+export async function updateAnalysisStatus(type, id, status) {
+    const response = await fetch(`/api/${type}-analysis/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+    });
+    return handleResponse(response);
 }
 
-.auth-error {
-    color: #dc3545; 
-    font-size: 0.85rem;
-    text-align: center;
-    margin-top: 10px;
-    min-height: 1.2em; 
+/**
+ * Deletes an analysis.
+ * @param {string} type - 'rfp' or 'foia'.
+ * @param {string} id - The ID of the analysis to delete.
+ * @returns {Promise<object>} - The server response.
+ */
+export async function deleteAnalysis(type, id) {
+    const response = await fetch(`/api/${type}-analysis/${id}`, {
+        method: 'DELETE',
+    });
+    return handleResponse(response);
 }
