@@ -1,0 +1,108 @@
+/**
+ * @file tabs.css
+ * @description Styles for tabbed interfaces in modals.
+ */
+
+.tabs-container {
+    overflow: hidden;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.tabs-container .tab-link {
+    background-color: #f1f1f1;
+    float: left;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 15px;
+    transition: background-color 0.3s;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    border-radius: 6px 6px 0 0;
+    margin-right: 2px;
+}
+
+.tabs-container .tab-link:hover {
+    background-color: #ddd;
+}
+
+.tabs-container .tab-link.active {
+    background-color: #fff;
+    color: #005a9c;
+    border-color: #ccc;
+    border-bottom: 1px solid #fff;
+    position: relative;
+    top: 1px;
+}
+
+.tab-content {
+    display: none;
+    padding: 1rem 0.5rem;
+    clear: both;
+}
+
+.tab-content h3 {
+    text-align: left;
+    font-size: 1.3rem;
+    color: #003366;
+    margin-bottom: 1rem;
+}
+
+.tab-content h4 {
+    font-size: 1.1rem;
+    color: #004c80;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.tab-content h4:first-of-type {
+    margin-top: 0.5rem;
+}
+
+.tab-content p,
+.tab-content li {
+    color: #373F41;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+}
+
+.tab-content ul,
+.tab-content ol {
+    list-style-position: outside;
+    padding-left: 20px;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tabs-container .tab-link {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabs-container {
+        border-bottom: none;
+    }
+    .tabs-container .tab-link {
+        float: none;
+        display: block;
+        width: 100%;
+        text-align: left;
+        margin-right: 0;
+        margin-bottom: 2px;
+        border-radius: 4px;
+        border-bottom: 1px solid #ccc !important;
+    }
+    .tabs-container .tab-link.active {
+        top: 0;
+        border-bottom: 2px solid #005a9c !important;
+    }
+}
