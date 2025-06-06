@@ -1,0 +1,170 @@
+/**
+ * @file modals.css
+ * @description Styles for all modal windows in the application.
+ */
+
+/* Generic Modal (Overlay) Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 8px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modal-close-button {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+.modal-close-button:hover,
+.modal-close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* Modal Titles */
+#new-rfp-modal #modal-title,
+#edit-rfp-modal #edit-rfp-modal-title,
+#new-foia-modal #modal-title-foia, 
+#edit-foia-modal #edit-foia-modal-title,
+#prompt-settings-modal h2,
+#prompt-settings-modal-foia h2 { 
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #003366;
+    font-size: 1.8rem;
+}
+
+/* View Modal Specifics */
+#view-saved-rfp-details-section.modal-active,
+#view-saved-foia-details-section.modal-active { 
+    display: block;
+    position: fixed;
+    z-index: 1900;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.5);
+    margin-top: 0 !important;
+}
+
+#view-saved-rfp-details-section.modal-active .view-rfp-modal-content,
+#view-saved-foia-details-section.modal-active .view-rfp-modal-content { 
+    background-color: #fefefe;
+    margin: 2.5% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 1400px;
+    border-radius: 8px;
+    position: relative;
+    max-height: 95vh;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header of the View Modal */
+.view-rfp-modal-content > div:nth-child(1) { 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+#view-rfp-main-title-heading,
+#view-foia-main-title-heading { 
+    text-align: left;
+    color: #003366;
+    margin-bottom: 0;
+    font-size: 1.3rem;
+    font-weight: 600; 
+    flex-grow: 1;
+    margin-right: 1rem; 
+}
+
+/* Auth Modal Styles */
+.auth-modal-overlay {
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 3000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7); 
+}
+
+.auth-modal-hidden { 
+    display: none !important;
+}
+
+.auth-modal-content {
+    background-color: #fefefe;
+    margin: auto; 
+    padding: 25px 35px; 
+    border: 1px solid #bbb; 
+    width: 90%;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: left; 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-content,
+    .view-rfp-modal-content { 
+        width: 95%;
+        margin: 2.5% auto;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content,
+    .view-rfp-modal-content { 
+        width: 98%;
+        padding: 10px;
+        margin: 1% auto;
+        max-height: 97vh;
+    }
+    #view-rfp-main-title-heading,
+    #view-foia-main-title-heading {
+        font-size: 1.1rem; 
+    }
+}
