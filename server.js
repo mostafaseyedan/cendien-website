@@ -513,9 +513,7 @@ app.delete('/api/foia-analysis/:id', async (req, res) => {
 });
 
 
-app.get(/^\/(?!api).*/, (req, res) => { 
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+
 
 
 app.listen(PORT, () => {
