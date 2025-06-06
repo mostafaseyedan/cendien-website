@@ -295,15 +295,15 @@
         </footer>
     </div>
     
-    <script type="module" src="foia-script.js"></script> 
+    <!-- MODIFIED SCRIPT TAG -->
+    <script type="module" src="/js/foia-app.js"></script>
+
+    <!-- The old tab functions can remain for now as they are simple and page-specific -->
     <script>
         function openTabGenericFoia(evt, tabName, containerElementId) {
             var i, tabcontent, tablinks;
             var container = document.getElementById(containerElementId);
-            if (!container) {
-                console.error("Tab container not found:", containerElementId);
-                return;
-            }
+            if (!container) return;
 
             tabcontent = container.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
@@ -316,8 +316,6 @@
             const targetTab = document.getElementById(tabName);
             if (targetTab) {
                 targetTab.style.display = "block";
-            } else {
-                console.error("Target tab not found:", tabName, "within", containerElementId);
             }
             if (evt && evt.currentTarget) {
                 evt.currentTarget.className += " active";
