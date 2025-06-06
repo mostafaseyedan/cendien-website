@@ -48,10 +48,22 @@ app.post('/api/rfp-prompt-settings', async (req, res) => {
                  return res.status(400).json({ error: `Invalid or missing RFP prompt for section: ${key}.` });
             }
         }
-        const docRef = db.collection('promptSettings').doc(RFP_PROMPT_SETTINGS_DOC_ID);
-        await docRef.set(prompts, { merge: true });
-        console.log('RFP prompt settings saved with ID:', RFP_PROMPT_SETTINGS_DOC_ID);
-        res.status(200).json({ message: 'RFP prompt settings saved successfully.', prompts });
+        
+        // Step 1: Update the current global settings (existing functionality)
+        const globalDocRef = db.collection('promptSettings').doc(RFP_PROMPT_SETTINGS_DOC_ID);
+        await globalDocRef.set(prompts, { merge: true });
+        console.log('Global RFP prompt settings updated with ID:', RFP_PROMPT_SETTINGS_DOC_ID);
+
+        // Step 2: Save a copy to the history collection (new functionality)
+        const historyData = {
+            type: 'rfp',
+            savedAt: Timestamp.now(),
+            prompts: prompts
+        };
+        const historyDocRef = await db.collection('promptHistory').add(historyData);
+        console.log('RFP prompt version saved to history with ID:', historyDocRef.id);
+
+        res.status(200).json({ message: 'RFP prompt settings saved successfully and history recorded.', prompts });
     } catch (error) {
         console.error('Error saving RFP prompt settings:', error);
         res.status(500).json({ error: 'Failed to save RFP prompt settings.', details: error.message });
@@ -94,10 +106,22 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
                  return res.status(400).json({ error: `Invalid or missing FOIA prompt for section: ${key}. All sections must be provided with string values.` });
             }
         }
-        const docRef = db.collection('promptSettings').doc(FOIA_PROMPT_SETTINGS_DOC_ID);
-        await docRef.set(prompts, { merge: true });
-        console.log('FOIA prompt settings saved with ID:', FOIA_PROMPT_SETTINGS_DOC_ID);
-        res.status(200).json({ message: 'FOIA prompt settings saved successfully.', prompts });
+        
+        // Step 1: Update the current global settings (existing functionality)
+        const globalDocRef = db.collection('promptSettings').doc(FOIA_PROMPT_SETTINGS_DOC_ID);
+        await globalDocRef.set(prompts, { merge: true });
+        console.log('Global FOIA prompt settings updated with ID:', FOIA_PROMPT_SETTINGS_DOC_ID);
+
+        // Step 2: Save a copy to the history collection (new functionality)
+        const historyData = {
+            type: 'foia',
+            savedAt: Timestamp.now(),
+            prompts: prompts
+        };
+        const historyDocRef = await db.collection('promptHistory').add(historyData);
+        console.log('FOIA prompt version saved to history with ID:', historyDocRef.id);
+
+        res.status(200).json({ message: 'FOIA prompt settings saved successfully and history recorded.', prompts });
     } catch (error) {
         console.error('Error saving FOIA prompt settings:', error);
         res.status(500).json({ error: 'Failed to save FOIA prompt settings.', details: error.message });
