@@ -3,11 +3,11 @@
  * @description Main application logic for the RFP Analyzer page.
  */
 
-import { initializeAuth } from '/js/modules/auth.js';
-import * as api from '/js/modules/apiService.js';
-import * as ui from '/js/modules/uiManager.js';
-import { initializePdfWorker, extractTextFromPdf } from '/js/modules/pdfHandler.js';
-import { RFP_PROMPT_CONFIG } from '/js/modules/config.js';
+import { initializeAuth } from './modules/auth.js';
+import * as api from './modules/apiService.js';
+import * as ui from './modules/uiManager.js';
+import { initializePdfWorker, extractTextFromPdf } from './modules/pdfHandler.js';
+import { RFP_PROMPT_CONFIG } from './modules/config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializePdfWorker();
@@ -128,6 +128,34 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.openModal(elements.newRfpModal);
         });
         elements.openPromptSettingsModalButton?.addEventListener('click', openPromptSettingsModal);
+
+        // Tab functionality
+        document.querySelectorAll('.tabs-container').forEach(container => {
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-link')) {
+                    const tabId = e.target.dataset.tab;
+                    const isViewTab = tabId.startsWith('view-');
+                    const isModalTab = tabId.startsWith('modal-');
+                    
+                    // Remove active class from all tabs in this container
+                    container.querySelectorAll('.tab-link').forEach(tab => tab.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Hide all tab content
+                    const tabContents = isViewTab ? 
+                        document.querySelectorAll('#view-analysis-results-area .tab-content') :
+                        document.querySelectorAll('#modal-analysis-results-area .tab-content');
+                    
+                    tabContents.forEach(content => content.style.display = 'none');
+                    
+                    // Show selected tab content
+                    const selectedContent = document.getElementById(tabId);
+                    if (selectedContent) {
+                        selectedContent.style.display = 'block';
+                    }
+                }
+            });
+        });
 
         // List controls
         elements.listTabsContainer?.addEventListener('click', (e) => {
@@ -403,14 +431,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    initializeAuth({
-        loginTimestampKey: 'rfpAnalyzerLoginTimestamp',
-        authModalEl: elements.authModal,
-        authFormEl: elements.authForm,
-        usernameInputEl: elements.usernameInput,
-        passwordInputEl: elements.passwordInput,
-        errorMessageEl: elements.errorMessage,
-        pageWrapperEl: elements.pageWrapper,
-        onLoginSuccess: initializeRfpPage
-    });
+    initializeAuth(
+        elements.authModal,
+        elements.authForm,
+        elements.usernameInput,
+        elements.passwordInput,
+        elements.errorMessage,
+        elements.pageWrapper,
+        initializeRfpPage
+    );
 });

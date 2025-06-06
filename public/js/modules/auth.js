@@ -9,15 +9,14 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Checks if a valid session exists in localStorage.
- * @param {string} loginTimestampKey - The key used to store the login timestamp in localStorage.
  * @returns {boolean} - True if the session is valid, false otherwise.
  */
-function isSessionValid(loginTimestampKey) {
-    const storedTimestamp = localStorage.getItem(loginTimestampKey);
+function isSessionValid() {
+    const storedTimestamp = localStorage.getItem('rfpAnalyzerLoginTimestamp');
     if (!storedTimestamp) return false;
     const lastLoginTime = parseInt(storedTimestamp, 10);
     if (isNaN(lastLoginTime)) {
-        localStorage.removeItem(loginTimestampKey);
+        localStorage.removeItem('rfpAnalyzerLoginTimestamp');
         return false;
     }
     return (Date.now() - lastLoginTime) < SESSION_DURATION;
@@ -25,29 +24,17 @@ function isSessionValid(loginTimestampKey) {
 
 /**
  * Initializes the authentication flow for a page.
- * @param {object} options - Configuration options.
- * @param {string} options.loginTimestampKey - The localStorage key for the session.
- * @param {HTMLElement} options.authModalEl - The authentication modal overlay element.
- * @param {HTMLElement} options.authFormEl - The form element inside the modal.
- * @param {HTMLElement} options.usernameInputEl - The username input element.
- * @param {HTMLElement} options.passwordInputEl - The password input element.
- * @param {HTMLElement} options.errorMessageEl - The element to display login errors.
- * @param {HTMLElement} options.pageWrapperEl - The main content wrapper to show/hide.
+ * @param {HTMLElement} authModalEl - The authentication modal overlay element.
+ * @param {HTMLElement} authFormEl - The form element inside the modal.
+ * @param {HTMLElement} usernameInputEl - The username input element.
+ * @param {HTMLElement} passwordInputEl - The password input element.
+ * @param {HTMLElement} errorMessageEl - The element to display login errors.
+ * @param {HTMLElement} pageWrapperEl - The main content wrapper to show/hide.
  * @param {function} onLoginSuccess - The callback function to execute after a successful login.
  */
-export function initializeAuth({
-    loginTimestampKey,
-    authModalEl,
-    authFormEl,
-    usernameInputEl,
-    passwordInputEl,
-    errorMessageEl,
-    pageWrapperEl,
-    onLoginSuccess
-}) {
-
+export function initializeAuth(authModalEl, authFormEl, usernameInputEl, passwordInputEl, errorMessageEl, pageWrapperEl, onLoginSuccess) {
     const handleSuccessfulLogin = () => {
-        localStorage.setItem(loginTimestampKey, Date.now().toString());
+        localStorage.setItem('rfpAnalyzerLoginTimestamp', Date.now().toString());
         if (authModalEl) {
             authModalEl.classList.add('auth-modal-hidden');
             authModalEl.style.display = 'none';
@@ -56,7 +43,7 @@ export function initializeAuth({
             pageWrapperEl.classList.remove('content-hidden');
             pageWrapperEl.style.display = '';
         }
-        onLoginSuccess();
+        if (onLoginSuccess) onLoginSuccess();
     };
 
     const showLoginError = (message) => {
@@ -68,7 +55,7 @@ export function initializeAuth({
         if (usernameInputEl) usernameInputEl.focus();
     };
 
-    if (isSessionValid(loginTimestampKey)) {
+    if (isSessionValid()) {
         handleSuccessfulLogin();
     } else {
         if (authModalEl) {

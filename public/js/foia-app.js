@@ -3,23 +3,23 @@
  * @description Main application logic for the FOIA Analyzer page.
  */
 
-import { initializeAuth } from '/js/modules/auth.js';
-import * as api from '/js/modules/apiService.js';
-import * as ui from '/js/modules/uiManager.js';
-import { initializePdfWorker, extractTextFromPdf } from '/js/modules/pdfHandler.js';
-import { FOIA_PROMPT_CONFIG } from '/js/modules/config.js';
+import { initializeAuth } from './modules/auth.js';
+import * as api from './modules/apiService.js';
+import * as ui from './modules/uiManager.js';
+import { initializePdfWorker, extractTextFromPdf } from './modules/pdfHandler.js';
+import { FOIA_PROMPT_CONFIG } from './modules/config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializePdfWorker();
 
     const elements = {
         // Auth
-        authModal: document.getElementById('auth-modal-overlay-foia'),
-        authForm: document.getElementById('auth-form-foia'),
-        usernameInput: document.getElementById('auth-username-foia'),
-        passwordInput: document.getElementById('auth-password-foia'),
-        errorMessage: document.getElementById('auth-error-message-foia'),
-        pageWrapper: document.getElementById('page-content-wrapper-foia'),
+        authModal: document.getElementById('auth-modal-overlay'),
+        authForm: document.getElementById('auth-form'),
+        usernameInput: document.getElementById('auth-username'),
+        passwordInput: document.getElementById('auth-password'),
+        errorMessage: document.getElementById('auth-error-message'),
+        pageWrapper: document.getElementById('page-content-wrapper'),
         // Main Page
         listContainer: document.getElementById('saved-analyses-list-foia'),
         noItemsP: document.getElementById('no-saved-analyses-foia'),
@@ -412,14 +412,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initializeAuth({
-        loginTimestampKey: 'foiaAnalyzerLoginTimestamp',
-        authModalEl: elements.authModal,
-        authFormEl: elements.authForm,
-        usernameInputEl: elements.usernameInput,
-        passwordInputEl: elements.passwordInput,
-        errorMessageEl: elements.errorMessage,
-        pageWrapperEl: elements.pageWrapper,
-        onLoginSuccess: initializeFoiaPage
-    });
+    initializeAuth(
+        elements.authModal,
+        elements.authForm,
+        elements.usernameInput,
+        elements.passwordInput,
+        elements.errorMessage,
+        elements.pageWrapper,
+        initializeFoiaPage
+    );
 });
