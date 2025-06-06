@@ -2,15 +2,24 @@
  * @file uiManager.js
  * @description Manages all UI interactions and DOM updates for the analyzers.
  */
+import { PROMPT_MAIN_INSTRUCTION, PROMPT_SECTION_DELIMITER_FORMAT, PROMPT_TEXT_SUFFIX } from './config.js';
 
-let state = {}; // Holds references to elements and current data
+let state = {}; // This module's internal state
 
 /**
- * Initializes the UI manager with necessary elements and state.
- * @param {object} initialState - An object containing initial state and element references.
+ * Initializes the UI manager and sets its internal state.
+ * @param {object} initialSharedState - The initial state object from the main app script.
  */
-export function initializeUIManager(initialState) {
-    state = { ...initialState };
+export function initializeUIManager(initialSharedState) {
+    state = { ...state, ...initialSharedState };
+}
+
+/**
+ * Allows the main app script to update the UI manager's state.
+ * @param {object} newSharedState - The new state properties to merge.
+ */
+export function updateSharedState(newSharedState) {
+    state = { ...state, ...newSharedState };
 }
 
 /**
@@ -23,13 +32,13 @@ export function showLoadingMessage(areaElement, message = "Processing...", showS
     if (!areaElement) return;
     areaElement.style.display = 'flex';
     areaElement.innerHTML = `${showSpinner ? '<div class="spinner"></div>' : ''}<p class="loading-text">${message}</p>`;
-    // Disable corresponding buttons if a spinner is shown
+    const { generateAnalysisButton, saveEditedButton } = state.elements;
     if (showSpinner) {
-        if (state.elements.generateAnalysisButton && areaElement.id.includes('modal-analysis-status')) {
-            state.elements.generateAnalysisButton.disabled = true;
+        if (generateAnalysisButton && areaElement.id.includes('modal-analysis-status')) {
+            generateAnalysisButton.disabled = true;
         }
-        if (state.elements.saveEditedButton && areaElement.id.includes('edit-status-area')) {
-            state.elements.saveEditedButton.disabled = true;
+        if (saveEditedButton && areaElement.id.includes('edit-status-area')) {
+            saveEditedButton.disabled = true;
         }
     }
 }
@@ -41,16 +50,16 @@ export function showLoadingMessage(areaElement, message = "Processing...", showS
  */
 export function hideLoadingMessage(areaElement, delay = 0) {
     setTimeout(() => {
-        if (areaElement && (areaElement.innerHTML.includes('loading-text') || areaElement.innerHTML.includes('spinner'))) {
+        if (areaElement) {
             areaElement.style.display = 'none';
             areaElement.innerHTML = '';
         }
-        // Re-enable corresponding buttons
-        if (state.elements.generateAnalysisButton && areaElement.id.includes('modal-analysis-status')) {
-            state.elements.generateAnalysisButton.disabled = false;
+        const { generateAnalysisButton, saveEditedButton } = state.elements;
+        if (generateAnalysisButton && areaElement?.id.includes('modal-analysis-status')) {
+            generateAnalysisButton.disabled = false;
         }
-        if (state.elements.saveEditedButton && areaElement.id.includes('edit-status-area')) {
-            state.elements.saveEditedButton.disabled = false;
+        if (saveEditedButton && areaElement?.id.includes('edit-status-area')) {
+            saveEditedButton.disabled = false;
         }
     }, delay);
 }
@@ -61,14 +70,8 @@ export function hideLoadingMessage(areaElement, delay = 0) {
  */
 export function openModal(modalElement) {
     if (!modalElement) return;
-    // Close all other modals first
     document.querySelectorAll('.modal-overlay').forEach(modal => {
-        if (modal !== modalElement) {
-            modal.style.display = 'none';
-            if (modal.classList.contains('modal-active')) {
-                modal.classList.remove('modal-active');
-            }
-        }
+        if (modal !== modalElement) modal.style.display = 'none';
     });
     modalElement.style.display = 'block';
     if (modalElement.id.startsWith('view-saved-')) {
@@ -86,40 +89,21 @@ export function closeModal(modalElement) {
         modalElement.style.display = 'none';
         if (modalElement.id.startsWith('view-saved-')) {
             modalElement.classList.remove('modal-active');
-            // Reset state related to the viewed item
-            state.currentlyViewedAnalysis = null;
-            state.originalTextForReanalysis = "";
         }
         document.body.style.overflow = '';
     }
 }
 
 /**
- * Clears the content of all tabs in a given tab map.
- * @param {object} tabContentMap - A map of section keys to their content elements.
- */
-export function clearTabContent(tabContentMap) {
-    if (!tabContentMap) return;
-    Object.values(tabContentMap).forEach(div => {
-        if (div) div.innerHTML = '';
-    });
-}
-
-/**
  * Renders the list of analyses.
  */
 export function renderAnalysesList() {
-    const { listContainer, noItemsP, allAnalyses, sortKey, sortOrder, statusFilter, type, openViewModalHandler, actionHandlers } = state;
+    const { listContainer, noItemsP, allAnalyses, sortKey, sortOrder, statusFilter, type } = state;
     if (!listContainer || !noItemsP) return;
 
     listContainer.innerHTML = '';
-    let filteredAnalyses = allAnalyses;
+    let filteredAnalyses = allAnalyses.filter(a => statusFilter === 'all_statuses' || a.status === statusFilter);
 
-    if (statusFilter !== 'all_statuses') {
-        filteredAnalyses = filteredAnalyses.filter(a => a.status === statusFilter);
-    }
-
-    // Sort the analyses
     filteredAnalyses.sort((a, b) => {
         let valA = a[sortKey];
         let valB = b[sortKey];
@@ -130,36 +114,27 @@ export function renderAnalysesList() {
             valA = String(valA || '').toLowerCase();
             valB = String(valB || '').toLowerCase();
         }
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+        const orderModifier = sortOrder === 'asc' ? 1 : -1;
+        if (valA < valB) return -1 * orderModifier;
+        if (valA > valB) return 1 * orderModifier;
         return 0;
     });
 
     if (filteredAnalyses.length === 0) {
         noItemsP.style.display = 'block';
-        noItemsP.textContent = statusFilter === 'all_statuses'
-            ? `No ${type.toUpperCase()} analyses found.`
-            : `No ${type.toUpperCase()} analyses found for "${statusFilter}" category.`;
+        noItemsP.textContent = `No ${type.toUpperCase()} analyses found for "${statusFilter}" category.`;
     } else {
         noItemsP.style.display = 'none';
         filteredAnalyses.forEach(analysis => {
-            listContainer.appendChild(createAnalysisListItem(analysis, type, openViewModalHandler, actionHandlers));
+            listContainer.appendChild(createAnalysisListItem(analysis));
         });
     }
 }
 
-/**
- * Creates a single list item element for an analysis.
- * @param {object} analysis - The analysis data object.
- * @param {string} type - 'rfp' or 'foia'.
- * @param {function} openViewModalHandler - Handler to open the view modal.
- * @param {object} actionHandlers - Object containing handlers for edit, status change, delete.
- * @returns {HTMLElement} - The created list item element.
- */
-function createAnalysisListItem(analysis, type, openViewModalHandler, actionHandlers) {
+function createAnalysisListItem(analysis) {
+    const { type, actionHandlers } = state;
     const itemDiv = document.createElement('div');
     itemDiv.className = 'analyzed-rfp-item';
-
     const titleKey = type === 'rfp' ? 'rfpTitle' : 'foiaTitle';
     const typeKey = type === 'rfp' ? 'rfpType' : 'foiaType';
     const fileNamesKey = type === 'rfp' ? 'rfpFileName' : 'foiaFileNames';
@@ -170,15 +145,9 @@ function createAnalysisListItem(analysis, type, openViewModalHandler, actionHand
     let formattedDateTime = 'N/A';
     if (analysis.analysisDate?._seconds) {
         const date = new Date(analysis.analysisDate._seconds * 1000);
-        if (!isNaN(date.valueOf())) {
-            formattedDateTime = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-        }
+        formattedDateTime = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
-
-    const statusDotClass = analysis.status === 'active' ? 'green' :
-                           analysis.status === 'not_pursuing' ? 'red' :
-                           analysis.status === 'archived' ? 'grey' :
-                           'orange';
+    const statusDotClass = { active: 'green', not_pursuing: 'red', archived: 'grey' }[analysis.status] || 'orange';
 
     itemDiv.innerHTML = `
         <span class="rfp-col-title" title="${displayTitle}">${displayTitle}</span>
@@ -189,7 +158,6 @@ function createAnalysisListItem(analysis, type, openViewModalHandler, actionHand
         <span class="rfp-col-actions"></span>`;
 
     const actionsSpan = itemDiv.querySelector('.rfp-col-actions');
-    
     const viewLink = document.createElement('a');
     viewLink.href = '#';
     viewLink.className = 'rfp-view-details action-icon';
@@ -198,39 +166,26 @@ function createAnalysisListItem(analysis, type, openViewModalHandler, actionHand
     viewLink.title = `View ${type.toUpperCase()} Analysis Details`;
     viewLink.addEventListener('click', (e) => {
         e.preventDefault();
-        openViewModalHandler(analysis.id);
+        state.actionHandlers.onView(analysis.id);
     });
     actionsSpan.appendChild(viewLink);
-    
-    // Dropdown Actions
-    const dropdownContainer = createActionsDropdown(analysis, type, actionHandlers);
-    actionsSpan.appendChild(dropdownContainer);
-
+    actionsSpan.appendChild(createActionsDropdown(analysis));
     return itemDiv;
 }
 
-/**
- * Creates the actions dropdown menu for a list item.
- * @param {object} analysis - The analysis object.
- * @param {string} type - 'rfp' or 'foia'.
- * @param {object} actionHandlers - Handlers for actions.
- * @returns {HTMLElement} - The dropdown container element.
- */
-function createActionsDropdown(analysis, type, { onEdit, onStatusUpdate, onDelete }) {
+function createActionsDropdown(analysis) {
+    const { type, actionHandlers } = state;
     const container = document.createElement('div');
     container.className = 'actions-dropdown-container';
-
     const trigger = document.createElement('button');
     trigger.className = 'actions-dropdown-trigger action-icon';
     trigger.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
     trigger.title = "More actions";
-
     const menu = document.createElement('div');
     menu.className = 'actions-dropdown-menu';
 
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Close all other menus before opening this one
         document.querySelectorAll('.actions-dropdown-menu').forEach(m => {
             if (m !== menu) m.style.display = 'none';
         });
@@ -241,65 +196,127 @@ function createActionsDropdown(analysis, type, { onEdit, onStatusUpdate, onDelet
         const item = document.createElement('button');
         item.className = 'dropdown-item';
         item.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
-        item.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handler();
-            menu.style.display = 'none';
-        });
+        item.addEventListener('click', (e) => { e.stopPropagation(); handler(); menu.style.display = 'none'; });
         menu.appendChild(item);
     };
     
-    addMenuItem('fa-edit', 'Edit Details', () => onEdit(analysis));
+    addMenuItem('fa-edit', 'Edit Details', () => actionHandlers.onEdit(analysis));
     menu.appendChild(document.createElement('div')).className = 'dropdown-divider';
 
     const statusActions = {
-        analyzed: [
-            { text: 'Move to Active', status: 'active', icon: 'fa-check-circle' },
-            { text: 'Move to Not Pursuing', status: 'not_pursuing', icon: 'fa-times-circle' },
-            { text: 'Archive', status: 'archived', icon: 'fa-archive' }
-        ],
-        active: [
-            { text: 'Move to Not Pursuing', status: 'not_pursuing', icon: 'fa-times-circle' },
-            { text: 'Move to Analyzed', status: 'analyzed', icon: 'fa-inbox' },
-            { text: 'Archive', status: 'archived', icon: 'fa-archive' }
-        ],
-        not_pursuing: [
-            { text: 'Move to Active', status: 'active', icon: 'fa-check-circle' },
-            { text: 'Move to Analyzed', status: 'analyzed', icon: 'fa-inbox' },
-            { text: 'Archive', status: 'archived', icon: 'fa-archive' }
-        ],
-        archived: [
-            { text: 'Unarchive (to Analyzed)', status: 'analyzed', icon: 'fa-box-open' },
-            { text: 'Move to Active', status: 'active', icon: 'fa-check-circle' },
-        ]
+        analyzed: [{ text: 'Move to Active', status: 'active', icon: 'fa-check-circle' }, { text: 'Not Pursuing', status: 'not_pursuing', icon: 'fa-times-circle' }, { text: 'Archive', status: 'archived', icon: 'fa-archive' }],
+        active: [{ text: 'Not Pursuing', status: 'not_pursuing', icon: 'fa-times-circle' }, { text: 'Back to Analyzed', status: 'analyzed', icon: 'fa-inbox' }, { text: 'Archive', status: 'archived', icon: 'fa-archive' }],
+        not_pursuing: [{ text: 'Move to Active', status: 'active', icon: 'fa-check-circle' }, { text: 'Back to Analyzed', status: 'analyzed', icon: 'fa-inbox' }, { text: 'Archive', status: 'archived', icon: 'fa-archive' }],
+        archived: [{ text: 'Unarchive', status: 'analyzed', icon: 'fa-box-open' }, { text: 'Move to Active', status: 'active', icon: 'fa-check-circle' }]
     };
-
-    const currentStatusActions = statusActions[analysis.status] || statusActions.analyzed;
-    currentStatusActions.forEach(({ text, status, icon }) => {
-        addMenuItem(icon, text, () => onStatusUpdate(analysis.id, status));
-    });
-
+    (statusActions[analysis.status] || statusActions.analyzed).forEach(action => addMenuItem(action.icon, action.text, () => actionHandlers.onStatusUpdate(analysis.id, action.status)));
+    
     menu.appendChild(document.createElement('div')).className = 'dropdown-divider';
-    addMenuItem('fa-trash-alt', `Delete ${type.toUpperCase()}`, () => {
-        const titleKey = type === 'rfp' ? 'rfpTitle' : 'foiaTitle';
-        const fileNamesKey = type === 'rfp' ? 'rfpFileName' : 'foiaFileNames';
-        const displayTitle = analysis[titleKey] || analysis[fileNamesKey] || 'this item';
-        onDelete(analysis.id, displayTitle);
-    });
-
+    addMenuItem('fa-trash-alt', `Delete`, () => actionHandlers.onDelete(analysis.id, analysis[type === 'rfp' ? 'rfpTitle' : 'foiaTitle'] || 'this item'));
+    
     container.appendChild(trigger);
     container.appendChild(menu);
     return container;
 }
 
-/**
- * Globally handles clicks to close open dropdowns.
- */
-document.addEventListener('click', (e) => {
-    const isInsideDropdown = e.target.closest('.actions-dropdown-container');
-    if (!isInsideDropdown) {
-        document.querySelectorAll('.actions-dropdown-menu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-    }
-});
+export function populateViewModal(analysis) {
+    const { viewModalTitle, viewModalContentArea } = state.elements;
+    const { type, promptConfig } = state;
+    const titleKey = type === 'rfp' ? 'rfpTitle' : 'foiaTitle';
+    const fileNamesKey = type === 'rfp' ? 'rfpFileName' : 'foiaFileNames';
+    viewModalTitle.textContent = analysis[titleKey] || (Array.isArray(analysis[fileNamesKey]) ? analysis[fileNamesKey].join(', ') : analysis[fileNamesKey]);
+
+    viewModalContentArea.innerHTML = ''; // Clear previous content
+    const tabsContainer = document.createElement('div');
+    tabsContainer.className = 'tabs-container';
+    viewModalContentArea.appendChild(tabsContainer);
+
+    Object.keys(promptConfig).forEach((key, index) => {
+        if (type === 'foia' && key === 'documentType') return;
+        const config = promptConfig[key];
+        const tabButton = document.createElement('button');
+        tabButton.className = `tab-link ${index === 0 ? 'active' : ''}`;
+        tabButton.textContent = config.title;
+        tabButton.onclick = () => {
+            viewModalContentArea.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+            tabButton.classList.add('active');
+            viewModalContentArea.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+            document.getElementById(`view-tab-content-${key}`).style.display = 'block';
+        };
+        tabsContainer.appendChild(tabButton);
+
+        const tabContent = document.createElement('div');
+        tabContent.id = `view-tab-content-${key}`;
+        tabContent.className = 'tab-content';
+        tabContent.style.display = index === 0 ? 'block' : 'none';
+        tabContent.innerHTML = analysis[config.databaseKey]?.replace(/\n/g, '<br>') || 'Not available.';
+        viewModalContentArea.appendChild(tabContent);
+    });
+    populateViewModalActions(analysis);
+}
+
+export function populateViewModalActions(analysis) {
+    const { viewModalActionsMenu, type, actionHandlers } = state;
+    viewModalActionsMenu.innerHTML = '';
+    createActionsDropdown(analysis, type, actionHandlers).childNodes.forEach(node => {
+        viewModalActionsMenu.appendChild(node.cloneNode(true));
+    });
+}
+
+
+export function populateEditModal(analysis) {
+    const { editForm, type } = state;
+    const prefix = type === 'rfp' ? 'Rfp' : 'Foia';
+    
+    // Reset form first
+    editForm.reset();
+
+    // Populate fields
+    Object.keys(analysis).forEach(key => {
+        const inputId = `edit${prefix}${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        const input = editForm.querySelector(`#${inputId}`);
+        if(input) {
+            if (key.toLowerCase().includes('filenames') && Array.isArray(analysis[key])) {
+                input.value = analysis[key].join('\n');
+            } else {
+                input.value = analysis[key];
+            }
+        }
+    });
+    editForm.querySelector(`#edit${prefix}Id`).value = analysis.id;
+}
+
+
+// --- Prompt Construction Logic ---
+export function constructAnalysisPrompt(type, text, promptConfig, analysisPrompts) {
+    const docType = type.toUpperCase();
+    let fullPrompt = PROMPT_MAIN_INSTRUCTION.replace('{DOCUMENT_TYPE}', docType);
+
+    Object.keys(promptConfig).forEach(keySuffix => {
+        const sectionInstruction = analysisPrompts?.[keySuffix] || state.serverPrompts?.[keySuffix] || promptConfig[keySuffix]?.defaultText || "";
+        fullPrompt += `\n${sectionInstruction}`;
+    });
+    
+    fullPrompt += "\n\nUse the following format strictly for each section:";
+    Object.keys(promptConfig).forEach(keySuffix => {
+        const delimiterKeyUpper = promptConfig[keySuffix]?.delimiterKey;
+        if (delimiterKeyUpper) {
+            fullPrompt += PROMPT_SECTION_DELIMITER_FORMAT.replace(/{SECTION_KEY_UPPER}/g, delimiterKeyUpper);
+        }
+    });
+    
+    fullPrompt += PROMPT_TEXT_SUFFIX.replace('{DOCUMENT_TYPE}', docType).replace('{TEXT_PLACEHOLDER}', text);
+    return fullPrompt;
+}
+
+export function parseGeneratedContent(rawText, promptConfig) {
+    const parsed = {};
+    const cleanText = rawText.replace(/^```[a-z]*\s*/im, '').replace(/\s*```$/m, '');
+    Object.keys(promptConfig).forEach(key => {
+        const config = promptConfig[key];
+        const regex = new RegExp(`###${config.delimiterKey}_START###([\\s\\S]*?)###${config.delimiterKey}_END###`);
+        const match = cleanText.match(regex);
+        parsed[config.databaseKey] = match?.[1].trim() || `Content for ${config.title} not found.`;
+    });
+    return parsed;
+}
