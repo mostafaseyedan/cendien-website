@@ -2,7 +2,7 @@
  * @file uiManager.js
  * @description Manages all UI interactions and DOM updates for the analyzers.
  */
-import { PROMPT_MAIN_INSTRUCTION, PROMPT_SECTION_DELIMITER_FORMAT, PROMPT_TEXT_SUFFIX } from './config.js';
+import { PROMPT_MAIN_INSTRUCTION, PROMPT_SECTION_DELIMITER_FORMAT, PROMPT_TEXT_SUFFIX } from '/js/modules/config.js';
 
 let state = {}; // This module's internal state
 
@@ -371,4 +371,36 @@ export function populateNewAnalysisModal(parsedSections) {
             if(tabElement) tabElement.style.display = 'block';
         }
     }
+}
+
+/**
+ * Opens a tab in the view modal context.
+ * @param {Event} event - The click event.
+ * @param {string} tabId - The ID of the tab to open.
+ */
+export function openFoiaViewTab(event, tabId) {
+    const tabContent = document.querySelectorAll('#view-analysis-results-area-foia .tab-content');
+    const tabLinks = document.querySelectorAll('#view-analysis-results-area-foia .tab-link');
+    
+    tabContent.forEach(content => content.style.display = 'none');
+    tabLinks.forEach(link => link.classList.remove('active'));
+    
+    document.getElementById(tabId).style.display = 'block';
+    event.currentTarget.classList.add('active');
+}
+
+/**
+ * Opens a tab in the new analysis modal context.
+ * @param {Event} event - The click event.
+ * @param {string} tabId - The ID of the tab to open.
+ */
+export function openFoiaModalTab(event, tabId) {
+    const tabContent = document.querySelectorAll('#modal-analysis-results-area-foia .tab-content');
+    const tabLinks = document.querySelectorAll('#modal-analysis-results-area-foia .tab-link');
+    
+    tabContent.forEach(content => content.style.display = 'none');
+    tabLinks.forEach(link => link.classList.remove('active'));
+    
+    document.getElementById(tabId).style.display = 'block';
+    event.currentTarget.classList.add('active');
 }

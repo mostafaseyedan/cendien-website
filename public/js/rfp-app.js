@@ -3,11 +3,11 @@
  * @description Main application logic for the RFP Analyzer page.
  */
 
-import { initializeAuth } from './modules/auth.js';
-import * as api from './modules/apiService.js';
-import * as ui from './modules/uiManager.js';
-import { initializePdfWorker, extractTextFromPdf } from './modules/pdfHandler.js';
-import { RFP_PROMPT_CONFIG } from './modules/config.js';
+import { initializeAuth } from '/js/modules/auth.js';
+import * as api from '/js/modules/apiService.js';
+import * as ui from '/js/modules/uiManager.js';
+import { initializePdfWorker, extractTextFromPdf } from '/js/modules/pdfHandler.js';
+import { RFP_PROMPT_CONFIG } from '/js/modules/config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializePdfWorker();

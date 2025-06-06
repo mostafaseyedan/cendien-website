@@ -3,11 +3,11 @@
  * @description Main application logic for the FOIA Analyzer page.
  */
 
-import { initializeAuth } from './modules/auth.js';
-import * as api from './modules/apiService.js';
-import * as ui from './modules/uiManager.js';
-import { initializePdfWorker, extractTextFromPdf } from './modules/pdfHandler.js';
-import { FOIA_PROMPT_CONFIG } from './modules/config.js';
+import { initializeAuth } from '/js/modules/auth.js';
+import * as api from '/js/modules/apiService.js';
+import * as ui from '/js/modules/uiManager.js';
+import { initializePdfWorker, extractTextFromPdf } from '/js/modules/pdfHandler.js';
+import { FOIA_PROMPT_CONFIG } from '/js/modules/config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializePdfWorker();
@@ -127,6 +127,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.openModal(elements.newModal);
         });
         elements.openPromptSettingsModalButton?.addEventListener('click', openPromptSettingsModal);
+
+        // Tab controls
+        document.querySelectorAll('#view-analysis-results-area-foia .tab-link').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                ui.openFoiaViewTab(e, e.target.dataset.tab);
+            });
+        });
+
+        document.querySelectorAll('#modal-analysis-results-area-foia .tab-link').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                ui.openFoiaModalTab(e, e.target.dataset.tab);
+            });
+        });
 
         // List controls
         elements.listTabsContainer?.addEventListener('click', (e) => {
