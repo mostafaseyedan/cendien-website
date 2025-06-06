@@ -51,6 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
         editForm: document.getElementById('edit-rfp-details-form'),
         saveEditedButton: document.getElementById('save-edited-rfp-button'),
         editStatusArea: document.getElementById('edit-rfp-status-area'),
+        // Prompt Settings Modal
+        promptSettingsModal: document.getElementById('prompt-settings-modal'),
+        openPromptSettingsModalButton: document.getElementById('open-prompt-settings-modal-button'),
+        promptSettingsModalCloseButton: document.getElementById('prompt-modal-close-button'),
+        promptSectionSelector: document.getElementById('promptSectionSelector'),
+        individualPromptTextarea: document.getElementById('rfpIndividualPromptTextarea'),
+        saveCurrentPromptButton: document.getElementById('save-current-prompt-button'),
+        resetCurrentPromptButton: document.getElementById('reset-current-prompt-button'),
+        resetAllPromptsButton: document.getElementById('reset-all-prompts-button'),
+        promptSaveStatus: document.getElementById('prompt-save-status'),
     };
 
     let state = {
@@ -62,10 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentlyViewedAnalysis: null,
         originalTextForReanalysis: "",
         promptConfig: RFP_PROMPT_CONFIG,
-        serverPrompts: null,
+        serverPrompts: null, // Will hold prompts fetched from the server
     };
     
-    // This function will pass the current state to the UI manager
     function updateSharedState() {
         ui.updateSharedState({
             type: state.type,
@@ -111,13 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // Main page buttons
         elements.openNewRfpModalButton?.addEventListener('click', () => {
             elements.newRfpForm.reset();
             elements.modalAnalysisResultsArea.style.display = 'none';
             elements.modalAnalysisStatusArea.style.display = 'none';
             ui.openModal(elements.newRfpModal);
         });
+        elements.openPromptSettingsModalButton?.addEventListener('click', openPromptSettingsModal);
 
+        // List controls
         elements.listTabsContainer?.addEventListener('click', (e) => {
             if (e.target.classList.contains('rfp-list-tab-button')) {
                 elements.listTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
@@ -142,23 +154,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Modal close buttons
         elements.newRfpModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.newRfpModal));
         elements.viewModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.viewModal));
         elements.editModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
         elements.cancelEditButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
+        elements.promptSettingsModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.promptSettingsModal));
         
+        // Forms and actions
         elements.newRfpForm?.addEventListener('submit', handleNewRfpSubmission);
         elements.editForm?.addEventListener('submit', handleEditRfpSubmission);
         
         elements.viewModalActionTrigger?.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (state.currentlyViewedAnalysis) {
-                ui.populateViewModalActions(state.currentlyViewedAnalysis);
-            }
+            ui.populateViewModalActions(state.currentlyViewedAnalysis);
             elements.viewModalActionsMenu.style.display = elements.viewModalActionsMenu.style.display === 'block' ? 'none' : 'block';
         });
+
+        // Prompt Settings controls
+        elements.promptSectionSelector?.addEventListener('change', (e) => updatePromptTextarea(e.target.value));
+        elements.saveCurrentPromptButton?.addEventListener('click', saveCurrentPrompt);
+        elements.resetCurrentPromptButton?.addEventListener('click', resetCurrentPrompt);
+        elements.resetAllPromptsButton?.addEventListener('click', resetAllPrompts);
     }
     
+    // ... (handleNewRfpSubmission, handleEditRfpSubmission, openRfpViewModal, etc. remain the same) ...
     async function handleNewRfpSubmission(event) {
         event.preventDefault();
         ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Starting analysis...", true);
@@ -191,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, "AI is analyzing...", true);
-            const prompt = ui.constructAnalysisPrompt(state.type, fullText, state.promptConfig, null);
+            const prompt = ui.constructAnalysisPrompt(state.type, fullText, state.promptConfig, state.serverPrompts);
             const result = await api.generateContent(prompt);
             const parsedSections = ui.parseGeneratedContent(result.generatedText, state.promptConfig);
 
@@ -204,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 originalRfpFullText: fullText,
                 analysisPrompts: state.serverPrompts || {},
             };
-            // Map parsed sections to payload
             Object.keys(state.promptConfig).forEach(key => {
                 const dbKey = state.promptConfig[key].databaseKey;
                 if(dbKey) payload[dbKey] = parsedSections[dbKey];
@@ -213,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedAnalysis = await api.saveNewAnalysis(state.type, payload);
             await loadSavedAnalyses();
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Analysis complete and saved!", false);
-            setTimeout(() => ui.closeModal(elements.newRfpModal), 2000);
+            ui.populateNewRfpModalResults(parsedSections); // Display results
         } catch (error) {
             console.error("Error during new RFP submission process:", error);
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Error: ${error.message}`, false);
@@ -231,11 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formData = new FormData(elements.editForm);
         const updatedData = {};
-        // Convert form data keys to match database fields
         for(let [key, value] of formData.entries()) {
-            let newKey = key.replace('editRfp', 'rfp').replace('edit', '');
-            newKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
-            updatedData[newKey] = value;
+            if (key.startsWith('edit')) {
+                let newKey = key.substring(4); // remove 'edit'
+                newKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+                updatedData[newKey] = value;
+            }
         }
         delete updatedData.rfpId;
         delete updatedData.rfpFileName;
@@ -268,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function openRfpEditModal(analysis) {
-        // Fetch full details if needed to ensure all textareas are populated
         const fullAnalysis = await api.getAnalysisDetails(state.type, analysis.id);
         ui.populateEditModal(fullAnalysis);
         ui.openModal(elements.editModal);
@@ -312,12 +331,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleReanalyzeSection(sectionKey) {
         console.log(`Re-analyzing section: ${sectionKey}`);
-        // Full implementation would involve getting the new prompt from the UI,
-        // constructing a targeted API call, and updating the view.
     }
     
     async function handleSaveSectionChanges(sectionKey) {
         console.log(`Saving changes for section: ${sectionKey}`);
+    }
+
+    // --- Prompt Settings Modal Logic ---
+    async function openPromptSettingsModal() {
+        ui.showLoadingMessage(elements.promptSaveStatus, "Loading current prompts...", true);
+        ui.openModal(elements.promptSettingsModal);
+        try {
+            const response = await api.fetchPrompts(state.type);
+            state.serverPrompts = response.prompts;
+            updateSharedState();
+            updatePromptTextarea(elements.promptSectionSelector.value);
+            ui.hideLoadingMessage(elements.promptSaveStatus);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error: ${error.message}`, false);
+        }
+    }
+
+    function updatePromptTextarea(sectionKey) {
+        const promptValue = state.serverPrompts?.[sectionKey] || state.promptConfig[sectionKey]?.defaultText || "";
+        elements.individualPromptTextarea.value = promptValue;
+    }
+
+    async function saveCurrentPrompt() {
+        const sectionKey = elements.promptSectionSelector.value;
+        const newPromptText = elements.individualPromptTextarea.value;
+        const updatedPrompts = { ...(state.serverPrompts || {}), [sectionKey]: newPromptText };
+
+        ui.showLoadingMessage(elements.promptSaveStatus, "Saving...", true);
+        try {
+            const savedData = await api.savePrompts(state.type, updatedPrompts);
+            state.serverPrompts = savedData.prompts;
+            updateSharedState();
+            ui.showLoadingMessage(elements.promptSaveStatus, "Saved successfully!", false);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error saving: ${error.message}`, false);
+        } finally {
+            ui.hideLoadingMessage(elements.promptSaveStatus, 2000);
+        }
+    }
+
+    function resetCurrentPrompt() {
+        const sectionKey = elements.promptSectionSelector.value;
+        const defaultValue = state.promptConfig[sectionKey]?.defaultText || "";
+        elements.individualPromptTextarea.value = defaultValue;
+    }
+
+    async function resetAllPrompts() {
+        if (!window.confirm("Are you sure you want to reset ALL prompts to their default values? This will be saved immediately.")) return;
+        
+        const defaultPrompts = {};
+        Object.keys(state.promptConfig).forEach(key => {
+            defaultPrompts[key] = state.promptConfig[key].defaultText;
+        });
+
+        ui.showLoadingMessage(elements.promptSaveStatus, "Resetting all prompts...", true);
+        try {
+            const savedData = await api.savePrompts(state.type, defaultPrompts);
+            state.serverPrompts = savedData.prompts;
+            updateSharedState();
+            updatePromptTextarea(elements.promptSectionSelector.value);
+            ui.showLoadingMessage(elements.promptSaveStatus, "All prompts reset to default!", false);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error resetting: ${error.message}`, false);
+        } finally {
+            ui.hideLoadingMessage(elements.promptSaveStatus, 2000);
+        }
     }
     
     initializeAuth({
