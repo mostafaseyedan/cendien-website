@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         viewModalTitle: document.getElementById('view-rfp-main-title-heading'),
         viewModalStatusArea: document.getElementById('view-rfp-status-area'),
         viewModalContentArea: document.getElementById('view-analysis-results-area'),
+        viewModalActionTrigger: document.getElementById('view-rfp-modal-action-trigger'),
+        viewModalActionsMenu: document.getElementById('view-rfp-modal-actions-menu'),
         // Edit Modal
         editModal: document.getElementById('edit-rfp-modal'),
         editModalCloseButton: document.getElementById('edit-rfp-modal-close-button'),
@@ -62,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
         promptConfig: RFP_PROMPT_CONFIG,
         serverPrompts: null,
     };
-
+    
+    // This function will pass the current state to the UI manager
     function updateSharedState() {
         ui.initializeSharedState({
             type: state.type,
@@ -71,12 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
             sortOrder: state.currentSortOrder,
             statusFilter: state.currentStatusFilter,
             promptConfig: state.promptConfig,
-            elements,
-            openViewModalHandler: openRfpViewModal,
+            currentlyViewedAnalysis: state.currentlyViewedAnalysis,
+            originalTextForReanalysis: state.originalTextForReanalysis,
+            elements: elements,
             actionHandlers: {
                 onEdit: openRfpEditModal,
                 onStatusUpdate: updateRfpStatus,
                 onDelete: deleteRfpAnalysis,
+                onReanalyze: handleReanalyzeSection,
+                onSaveSection: handleSaveSectionChanges,
             }
         });
     }
@@ -104,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // Main page listeners
         elements.openNewRfpModalButton?.addEventListener('click', () => {
             elements.newRfpForm.reset();
             elements.modalAnalysisResultsArea.style.display = 'none';
@@ -129,27 +134,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     state.currentSortOrder = state.currentSortOrder === 'asc' ? 'desc' : 'asc';
                 } else {
                     state.currentSortKey = sortKey;
-                    state.currentSortOrder = 'asc';
+                    state.currentSortOrder = 'desc';
                 }
                 updateSharedState();
                 ui.renderAnalysesList();
             });
         });
 
-        // Modal close buttons
         elements.newRfpModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.newRfpModal));
         elements.viewModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.viewModal));
         elements.editModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
         elements.cancelEditButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
         
-        // Form submissions
         elements.newRfpForm?.addEventListener('submit', handleNewRfpSubmission);
         elements.editForm?.addEventListener('submit', handleEditRfpSubmission);
+        
+        elements.viewModalActionTrigger?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (state.currentlyViewedAnalysis) {
+                ui.populateViewModalActions(state.currentlyViewedAnalysis);
+            }
+            elements.viewModalActionsMenu.style.display = elements.viewModalActionsMenu.style.display === 'block' ? 'none' : 'block';
+        });
     }
     
     async function handleNewRfpSubmission(event) {
         event.preventDefault();
-        ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Starting analysis...");
+        ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Starting analysis...", true);
         elements.modalAnalysisResultsArea.style.display = 'none';
 
         const mainFile = elements.rfpFileUpload.files[0];
@@ -161,12 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let fullText = "";
         try {
-            ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Extracting text from ${mainFile.name}...`);
+            ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Extracting text from ${mainFile.name}...`, true);
             fullText = await extractTextFromPdf(mainFile);
             const addendumFiles = elements.rfpAddendumUpload.files;
             for (let i = 0; i < addendumFiles.length; i++) {
                 const file = addendumFiles[i];
-                 ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Extracting text from ${file.name} (${i + 1}/${addendumFiles.length})...`);
+                ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Extracting text from ${file.name}...`, true);
                 fullText += `\n\n--- Addendum: ${file.name} ---\n\n` + await extractTextFromPdf(file);
             }
         } catch (error) {
@@ -177,9 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         state.originalTextForReanalysis = fullText;
 
-        // Construct and call API, then save
         try {
-            ui.showLoadingMessage(elements.modalAnalysisStatusArea, "AI is analyzing...");
+            ui.showLoadingMessage(elements.modalAnalysisStatusArea, "AI is analyzing...", true);
             const prompt = ui.constructAnalysisPrompt(state.type, fullText, state.promptConfig, null);
             const result = await api.generateContent(prompt);
             const parsedSections = ui.parseGeneratedContent(result.generatedText, state.promptConfig);
@@ -191,9 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 submittedBy: formData.get('submittedBy'),
                 rfpFileName: mainFile.name,
                 originalRfpFullText: fullText,
-                analysisPrompts: state.serverPrompts || {}, // Use fetched prompts
-                ...parsedSections
+                analysisPrompts: state.serverPrompts || {},
             };
+            // Map parsed sections to payload
+            Object.keys(state.promptConfig).forEach(key => {
+                const dbKey = state.promptConfig[key].databaseKey;
+                if(dbKey) payload[dbKey] = parsedSections[dbKey];
+            });
 
             const savedAnalysis = await api.saveNewAnalysis(state.type, payload);
             await loadSavedAnalyses();
@@ -202,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error during new RFP submission process:", error);
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Error: ${error.message}`, false);
-            ui.hideLoadingMessage(elements.modalAnalysisStatusArea, 5000);
         }
     }
 
@@ -217,12 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formData = new FormData(elements.editForm);
         const updatedData = {};
+        // Convert form data keys to match database fields
         for(let [key, value] of formData.entries()) {
-            updatedData[key.replace('editRfp', 'rfp').replace('edit', '')] = value;
+            let newKey = key.replace('editRfp', 'rfp').replace('edit', '');
+            newKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+            updatedData[newKey] = value;
         }
-        delete updatedData.rfpId; // Don't send the ID in the body
+        delete updatedData.rfpId;
+        delete updatedData.rfpFileName;
 
-        ui.showLoadingMessage(elements.editStatusArea, "Saving changes...");
+        ui.showLoadingMessage(elements.editStatusArea, "Saving changes...", true);
         try {
             await api.updateAnalysis(state.type, rfpId, updatedData);
             await loadSavedAnalyses();
@@ -233,9 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.showLoadingMessage(elements.editStatusArea, `Error: ${error.message}`, false);
         }
     }
-
+    
     async function openRfpViewModal(analysisId) {
-        ui.showLoadingMessage(elements.viewModalStatusArea, "Loading analysis details...");
+        ui.showLoadingMessage(elements.viewModalStatusArea, "Loading analysis details...", true);
         ui.openModal(elements.viewModal);
         try {
             const analysis = await api.getAnalysisDetails(state.type, analysisId);
@@ -249,22 +266,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openRfpEditModal(analysis) {
-        ui.populateEditModal(analysis, state.type);
+    async function openRfpEditModal(analysis) {
+        // Fetch full details if needed to ensure all textareas are populated
+        const fullAnalysis = await api.getAnalysisDetails(state.type, analysis.id);
+        ui.populateEditModal(fullAnalysis);
         ui.openModal(elements.editModal);
     }
 
     async function updateRfpStatus(analysisId, newStatus) {
         const statusArea = elements.viewModal.style.display === 'block' ? elements.viewModalStatusArea : elements.listStatusArea;
-        ui.showLoadingMessage(statusArea, `Updating status to ${newStatus}...`);
+        ui.showLoadingMessage(statusArea, `Updating status to ${newStatus}...`, true);
         try {
             await api.updateAnalysisStatus(state.type, analysisId, newStatus);
             await loadSavedAnalyses();
-            ui.showLoadingMessage(statusArea, 'Status updated!', false);
-            if (state.currentlyViewedAnalysis?.id === analysisId) {
+            if (elements.viewModal.style.display === 'block' && state.currentlyViewedAnalysis?.id === analysisId) {
                 state.currentlyViewedAnalysis.status = newStatus;
+                updateSharedState();
                 ui.populateViewModalActions(state.currentlyViewedAnalysis);
             }
+            ui.showLoadingMessage(statusArea, 'Status updated!', false);
         } catch (error) {
             ui.showLoadingMessage(statusArea, `Error: ${error.message}`, false);
         } finally {
@@ -274,16 +294,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteRfpAnalysis(analysisId, title) {
         if (!window.confirm(`Are you sure you want to delete RFP: "${title}"?`)) return;
-        ui.showLoadingMessage(elements.listStatusArea, `Deleting "${title}"...`);
+        ui.showLoadingMessage(elements.listStatusArea, `Deleting "${title}"...`, true);
         try {
             await api.deleteAnalysis(state.type, analysisId);
             await loadSavedAnalyses();
+             if (elements.viewModal.style.display === 'block' && state.currentlyViewedAnalysis?.id === analysisId) {
+                ui.closeModal(elements.viewModal);
+            }
             ui.showLoadingMessage(elements.listStatusArea, 'Successfully deleted.', false);
         } catch (error) {
             ui.showLoadingMessage(elements.listStatusArea, `Error deleting: ${error.message}`, false);
         } finally {
             ui.hideLoadingMessage(elements.listStatusArea, 3000);
         }
+    }
+
+    async function handleReanalyzeSection(sectionKey) {
+        console.log(`Re-analyzing section: ${sectionKey}`);
+        // Full implementation would involve getting the new prompt from the UI,
+        // constructing a targeted API call, and updating the view.
+    }
+    
+    async function handleSaveSectionChanges(sectionKey) {
+        console.log(`Saving changes for section: ${sectionKey}`);
     }
     
     initializeAuth({
@@ -297,3 +330,4 @@ document.addEventListener('DOMContentLoaded', () => {
         onLoginSuccess: initializeRfpPage
     });
 });
+
