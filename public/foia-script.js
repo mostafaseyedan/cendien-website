@@ -187,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
             "ERP Managed Services",
             "Cloud Migration",
             "IT Staffing",
-            "Mixed Batch of Records",
             "Undetermined" 
         ];
 
@@ -229,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: "Tasks or Work Plan"
             },
             documentType: { 
-                defaultText: `Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Your answer MUST be one of the following predefined categories: ${FOIA_DOCUMENT_TYPE_CATEGORIES.join(", ")}. If the document appears to contain elements of multiple categories, classify it as "Mixed Batch of Records". If the type cannot be confidently determined from the provided list, classify it as "Undetermined".`,
+                defaultText: `Based on the content of the provided FOIA document(s), determine and state the primary type of the document(s). Your answer MUST be one of the following predefined categories: ${FOIA_DOCUMENT_TYPE_CATEGORIES.join(", ")}. If the type cannot be confidently determined from the provided list, classify it as "Undetermined".`,
                 delimiterKey: "DOCUMENT_TYPE",
                 databaseKey: "foiaType", 
                 title: "Document Type (AI Determined)"
