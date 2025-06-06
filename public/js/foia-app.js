@@ -50,6 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
         editForm: document.getElementById('edit-foia-details-form'),
         saveEditedButton: document.getElementById('save-edited-foia-button'),
         editStatusArea: document.getElementById('edit-foia-status-area'),
+        // Prompt Settings Modal
+        promptSettingsModal: document.getElementById('prompt-settings-modal-foia'),
+        openPromptSettingsModalButton: document.getElementById('open-prompt-settings-modal-button-foia'),
+        promptSettingsModalCloseButton: document.getElementById('prompt-modal-close-button-foia'),
+        promptSectionSelector: document.getElementById('promptSectionSelectorFoia'),
+        individualPromptTextarea: document.getElementById('foiaIndividualPromptTextarea'),
+        saveCurrentPromptButton: document.getElementById('save-current-prompt-button-foia'),
+        resetCurrentPromptButton: document.getElementById('reset-current-prompt-button-foia'),
+        resetAllPromptsButton: document.getElementById('reset-all-prompts-button-foia'),
+        promptSaveStatus: document.getElementById('prompt-save-status-foia'),
     };
 
     let state = {
@@ -109,13 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // Main page buttons
         elements.openNewModalButton?.addEventListener('click', () => {
             elements.newForm.reset();
             elements.modalAnalysisResultsArea.style.display = 'none';
             elements.modalAnalysisStatusArea.style.display = 'none';
             ui.openModal(elements.newModal);
         });
+        elements.openPromptSettingsModalButton?.addEventListener('click', openPromptSettingsModal);
 
+        // List controls
         elements.listTabsContainer?.addEventListener('click', (e) => {
             if (e.target.classList.contains('rfp-list-tab-button')) {
                 elements.listTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
@@ -140,23 +153,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Modal close buttons
         elements.newModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.newModal));
         elements.viewModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.viewModal));
         elements.editModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
         elements.cancelEditButton?.addEventListener('click', () => ui.closeModal(elements.editModal));
-
+        elements.promptSettingsModalCloseButton?.addEventListener('click', () => ui.closeModal(elements.promptSettingsModal));
+        
+        // Forms and actions
         elements.newForm?.addEventListener('submit', handleNewFoiaSubmission);
         elements.editForm?.addEventListener('submit', handleEditFoiaSubmission);
 
         elements.viewModalActionTrigger?.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (state.currentlyViewedAnalysis) {
-                ui.populateViewModalActions(state.currentlyViewedAnalysis);
-            }
+            ui.populateViewModalActions(state.currentlyViewedAnalysis);
             elements.viewModalActionsMenu.style.display = elements.viewModalActionsMenu.style.display === 'block' ? 'none' : 'block';
         });
-    }
 
+        // Prompt Settings controls
+        elements.promptSectionSelector?.addEventListener('change', (e) => updatePromptTextarea(e.target.value));
+        elements.saveCurrentPromptButton?.addEventListener('click', saveCurrentPrompt);
+        elements.resetCurrentPromptButton?.addEventListener('click', resetCurrentPrompt);
+        elements.resetAllPromptsButton?.addEventListener('click', resetAllPrompts);
+    }
+    
+    // ... (handleNewFoiaSubmission, handleEditFoiaSubmission, etc. remain the same as their RFP counterparts, just with 'foia' variables) ...
     async function handleNewFoiaSubmission(event) {
         event.preventDefault();
         ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Starting FOIA analysis...", true);
@@ -188,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, "AI is analyzing...", true);
-            const prompt = ui.constructAnalysisPrompt(state.type, fullText, state.promptConfig, null);
+            const prompt = ui.constructAnalysisPrompt(state.type, fullText, state.promptConfig, state.serverPrompts);
             const result = await api.generateContent(prompt);
             const parsedSections = ui.parseGeneratedContent(result.generatedText, state.promptConfig);
 
@@ -208,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedAnalysis = await api.saveNewAnalysis(state.type, payload);
             await loadSavedAnalyses();
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, "Analysis complete and saved!", false);
-            setTimeout(() => ui.closeModal(elements.newModal), 2000);
+            ui.populateNewRfpModalResults(parsedSections); // Assumes similar population logic
         } catch (error) {
             console.error("Error during new FOIA submission process:", error);
             ui.showLoadingMessage(elements.modalAnalysisStatusArea, `Error: ${error.message}`, false);
@@ -226,9 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(elements.editForm);
         const updatedData = {};
         for(let [key, value] of formData.entries()) {
-            let newKey = key.replace('editFoia', 'foia').replace('edit', '');
-            newKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
-            updatedData[newKey] = value;
+            if (key.startsWith('edit')) {
+                let newKey = key.substring(4);
+                newKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+                updatedData[newKey] = value;
+            }
         }
         delete updatedData.foiaId;
         delete updatedData.foiaFileNames; // Read-only
@@ -308,6 +331,72 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function handleSaveSectionChanges(sectionKey) {
         console.log(`Saving changes for section: ${sectionKey}`);
+    }
+    
+    // --- Prompt Settings Modal Logic ---
+    async function openPromptSettingsModal() {
+        ui.showLoadingMessage(elements.promptSaveStatus, "Loading current prompts...", true);
+        ui.openModal(elements.promptSettingsModal);
+        try {
+            const response = await api.fetchPrompts(state.type);
+            state.serverPrompts = response.prompts;
+            updateSharedState();
+            updatePromptTextarea(elements.promptSectionSelector.value);
+            ui.hideLoadingMessage(elements.promptSaveStatus);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error: ${error.message}`, false);
+        }
+    }
+
+    function updatePromptTextarea(sectionKey) {
+        const promptValue = state.serverPrompts?.[sectionKey] || state.promptConfig[sectionKey]?.defaultText || "";
+        elements.individualPromptTextarea.value = promptValue;
+    }
+
+    async function saveCurrentPrompt() {
+        const sectionKey = elements.promptSectionSelector.value;
+        const newPromptText = elements.individualPromptTextarea.value;
+        const updatedPrompts = { ...(state.serverPrompts || {}), [sectionKey]: newPromptText };
+
+        ui.showLoadingMessage(elements.promptSaveStatus, "Saving...", true);
+        try {
+            const savedData = await api.savePrompts(state.type, updatedPrompts);
+            state.serverPrompts = savedData.prompts;
+            updateSharedState();
+            ui.showLoadingMessage(elements.promptSaveStatus, "Saved successfully!", false);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error saving: ${error.message}`, false);
+        } finally {
+            ui.hideLoadingMessage(elements.promptSaveStatus, 2000);
+        }
+    }
+
+    function resetCurrentPrompt() {
+        const sectionKey = elements.promptSectionSelector.value;
+        const defaultValue = state.promptConfig[sectionKey]?.defaultText || "";
+        elements.individualPromptTextarea.value = defaultValue;
+    }
+
+    async function resetAllPrompts() {
+        if (!window.confirm("Are you sure you want to reset ALL prompts to their default values? This will be saved immediately.")) return;
+        
+        const defaultPrompts = {};
+        Object.keys(state.promptConfig).forEach(key => {
+            defaultPrompts[key] = state.promptConfig[key].defaultText;
+        });
+
+        ui.showLoadingMessage(elements.promptSaveStatus, "Resetting all prompts...", true);
+        try {
+            const savedData = await api.savePrompts(state.type, defaultPrompts);
+            state.serverPrompts = savedData.prompts;
+            updateSharedState();
+            updatePromptTextarea(elements.promptSectionSelector.value);
+            ui.showLoadingMessage(elements.promptSaveStatus, "All prompts reset to default!", false);
+        } catch (error) {
+            ui.showLoadingMessage(elements.promptSaveStatus, `Error resetting: ${error.message}`, false);
+        } finally {
+            ui.hideLoadingMessage(elements.promptSaveStatus, 2000);
+        }
     }
 
     initializeAuth({
