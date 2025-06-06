@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function updateSharedState() {
-        ui.initializeSharedState({
+        ui.updateSharedState({
             type: state.type,
             allAnalyses: state.allAnalyses,
             sortKey: state.currentSortKey,
@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             originalTextForReanalysis: state.originalTextForReanalysis,
             elements: elements,
             actionHandlers: {
+                onView: openFoiaViewModal,
                 onEdit: openFoiaEditModal,
                 onStatusUpdate: updateFoiaStatus,
                 onDelete: deleteFoiaAnalysis,
@@ -320,4 +321,3 @@ document.addEventListener('DOMContentLoaded', () => {
         onLoginSuccess: initializeFoiaPage
     });
 });
-
