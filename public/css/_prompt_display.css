@@ -1,0 +1,73 @@
+.prompt-display-box {
+    background-color: #f9f9f9; border: 1px solid #e0e0e0;
+    border-left: 5px solid #005a9c; padding: 15px;
+    border-radius: 5px; margin-bottom: 1rem;
+}
+.prompt-display-box strong {
+    color: #003366;
+}
+
+.prompt-editor-container {
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 1rem;
+}
+.prompt-editor-container label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+textarea.prompt-edit-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+    background-color: #fff;
+    min-height: 120px;
+    resize: vertical;
+}
+textarea.prompt-edit-textarea:focus {
+    border-color: #005a9c;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25);
+}
+.reanalyze-section-button,
+.reanalyze-section-button-foia {
+    margin-top: 1rem; margin-right: 0.5rem;
+}
+.reanalyze-status-area { /* Uses .loading-container for spinner */
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.5rem; margin-top: 1rem; font-size: 0.9rem; color: #555;
+}
+.reanalyze-status-area .spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #007bff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+.reanalyze-status-area .loading-text {
+    font-style: italic;
+}
+.section-divider {
+    border-top: 1px solid #eee;
+    margin: 1.5rem 0;
+}
+.section-content-display {
+    background-color: #fdfdfd; padding: 15px;
+    border: 1px solid #e9ecef; border-radius: 5px;
+    margin-bottom: 1rem;
+}
+.section-content-display p,
+.section-content-display ul,
+.section-content-display ol {
+    margin-bottom: 0.75rem;
+} 

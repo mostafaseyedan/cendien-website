@@ -1,0 +1,125 @@
+@media (max-width: 768px) {
+    header .settings-icon-container {
+        order: 2;
+        margin-left: 0; 
+        padding-left: 0;
+    }
+    header .nav-container {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    .modal-content,
+    #prompt-settings-modal .modal-content,
+    #prompt-settings-modal-foia .modal-content {
+        width: 95%;
+        margin: 2.5% auto;
+        padding: 15px;
+    }
+    #new-rfp-modal #rfp-details-form input,
+    #new-rfp-modal #rfp-details-form select,
+    #new-rfp-modal #rfp-details-form textarea,
+    #edit-rfp-modal #edit-rfp-details-form input,
+    #edit-rfp-modal #edit-rfp-details-form select,
+    #edit-rfp-modal #edit-rfp-details-form textarea,
+    #new-foia-modal #foia-details-form input,
+    #new-foia-modal #foia-details-form select,
+    #new-foia-modal #foia-details-form textarea,
+    #edit-foia-modal #edit-foia-details-form input,
+    #edit-foia-modal #edit-foia-details-form select,
+    #edit-foia-modal #edit-foia-details-form textarea {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link,
+    #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link,
+    #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link,
+    #new-foia-modal #modal-analysis-results-area-foia .tabs-container .tab-link,
+    #edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container .tab-link,
+    #view-saved-foia-details-section #view-analysis-results-area-foia .tabs-container .tab-link {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    .rfp-list-tabs { flex-wrap: wrap; } 
+    .rfp-list-tab-button { margin-bottom: 0.3rem; } 
+}
+
+@media (max-width: 480px) {
+    #rfp-analyzer-main-content > div:first-of-type,
+    #foia-analyzer-main-content > div:first-of-type {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+     #rfp-analyzer-main-content #open-new-rfp-modal-button.btn-primary,
+     #foia-analyzer-main-content #open-new-foia-modal-button.btn-primary {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    .modal-content,
+    #prompt-settings-modal .modal-content,
+    #prompt-settings-modal-foia .modal-content {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding: 10px;
+        height: 100%;
+        max-height: 100vh;
+    }
+    #view-saved-rfp-details-section.modal-active #view-rfp-main-title-heading,
+    #view-saved-foia-details-section.modal-active #view-foia-main-title-heading {
+        font-size: 1.1rem;
+    }
+    #new-rfp-modal #modal-analysis-results-area .tab-content h3,
+    #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tab-content h3,
+    #view-saved-rfp-details-section #view-analysis-results-area .tab-content h3,
+    #new-foia-modal #modal-analysis-results-area-foia .tab-content h3,
+    #edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tab-content h3,
+    #view-saved-foia-details-section #view-analysis-results-area-foia .tab-content h3 {
+        font-size: 1.1rem;
+    }
+    #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link,
+    #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link,
+    #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link,
+    #new-foia-modal #modal-analysis-results-area-foia .tabs-container .tab-link,
+    #edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container .tab-link,
+    #view-saved-foia-details-section #view-analysis-results-area-foia .tabs-container .tab-link {
+        font-size: 0.75rem;
+        padding: 5px 8px;
+    }
+    #new-rfp-modal #modal-analysis-results-area .tabs-container .tab-link.active,
+    #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container .tab-link.active,
+    #view-saved-rfp-details-section #view-analysis-results-area .tabs-container .tab-link.active,
+    #new-foia-modal #modal-analysis-results-area-foia .tabs-container .tab-link.active,
+    #edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container .tab-link.active,
+    #view-saved-foia-details-section #view-analysis-results-area-foia .tabs-container .tab-link.active {
+        padding-bottom: 6px; /* Adjust for smaller screens */
+    }
+    #new-rfp-modal #modal-analysis-results-area .tabs-container,
+    #edit-rfp-modal #edit-rfp-details-form ~ #modal-analysis-results-area .tabs-container,
+    #view-saved-rfp-details-section #view-analysis-results-area .tabs-container,
+    #new-foia-modal #modal-analysis-results-area-foia .tabs-container,
+    #edit-foia-modal #edit-foia-details-form ~ #modal-analysis-results-area-foia .tabs-container,
+    #view-saved-foia-details-section #view-analysis-results-area-foia .tabs-container {
+        margin-bottom: 1rem;
+    }
+    #saved-analyses-section .analyzed-rfp-item,
+    #saved-analyses-section-foia .analyzed-rfp-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    #saved-analyses-section .analyzed-rfp-item > span,
+    #saved-analyses-section-foia .analyzed-rfp-item > span {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    #saved-analyses-section .rfp-col-actions,
+    #saved-analyses-section-foia .rfp-col-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    #saved-analyses-header,
+    #saved-analyses-header-foia {
+        display: none;
+    }
+} 

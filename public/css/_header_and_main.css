@@ -1,0 +1,40 @@
+header .settings-icon-container {
+    margin-left: auto;
+    padding-left: 1rem;
+}
+
+header .settings-icon-container .action-icon {
+    background: none;
+    border: none;
+    color: #373F41;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+header .settings-icon-container .action-icon:hover {
+    background-color: #e9f1f7;
+    color: #005a9c;
+}
+#rfp-analyzer-main-content > div:first-of-type,
+#foia-analyzer-main-content > div:first-of-type { 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.history-title {
+    text-align: left;
+    margin-bottom: 0;
+    flex-grow: 1;
+    font-size: 1.5rem; 
+    font-weight: 600; 
+    color: #004c80; 
+}
+
+#open-new-rfp-modal-button.btn-primary,
+#open-new-foia-modal-button.btn-primary { 
+    margin-left: 1rem;
+} 

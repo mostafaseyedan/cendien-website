@@ -1,0 +1,60 @@
+/* Prompt Settings Modal */
+#prompt-settings-modal .modal-content,
+#prompt-settings-modal-foia .modal-content { 
+    max-width: 700px;
+}
+#prompt-settings-modal #promptSectionSelector,
+#prompt-settings-modal-foia #promptSectionSelectorFoia { 
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+    background-color: #fff;
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    margin-bottom: 1rem;
+}
+#prompt-settings-modal textarea, 
+#prompt-settings-modal-foia textarea { 
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    resize: vertical;
+    min-height: 200px;
+}
+#prompt-settings-modal textarea:focus,
+#prompt-settings-modal #promptSectionSelector:focus,
+#prompt-settings-modal-foia textarea:focus, 
+#prompt-settings-modal-foia #promptSectionSelectorFoia:focus { 
+    border-color: #005a9c;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 90, 156, 0.25);
+}
+#prompt-settings-modal small,
+#prompt-settings-modal-foia small { 
+    display: block;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+#prompt-settings-modal #reset-all-prompts-button.btn-danger,
+#prompt-settings-modal-foia #reset-all-prompts-button-foia.btn-danger { 
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+#prompt-settings-modal #reset-all-prompts-button.btn-danger:hover,
+#prompt-settings-modal-foia #reset-all-prompts-button-foia.btn-danger:hover { 
+    background-color: #c82333;
+    border-color: #bd2130;
+} 

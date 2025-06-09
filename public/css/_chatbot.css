@@ -1,0 +1,132 @@
+/*
+  ACTION: Create a new file named '_chatbot.css' in the 'public/css/' directory.
+*/
+
+/* Chatbot Floating Action Button */
+.chatbot-fab {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #005a9c;
+    color: white;
+    font-size: 24px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+    transition: background-color 0.2s;
+}
+.chatbot-fab:hover {
+    background-color: #003f6e;
+}
+
+/* Chatbot Modal and Container */
+#chatbot-modal {
+    background: none; /* This makes it a pop-up window rather than a full-screen overlay */
+    pointer-events: none; /* Allows clicks to go "through" the overlay to the page behind it */
+}
+
+#chatbot-modal .chatbot-container {
+    pointer-events: auto; /* Re-enables clicks for the chatbot window itself */
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 370px;
+    max-width: 90vw;
+    height: 500px;
+    max-height: 70vh;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 2100;
+}
+
+.chatbot-header {
+    background-color: #f1f1f1;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #003366;
+}
+
+#close-chatbot-button {
+    position: static;
+    font-size: 24px;
+    padding: 0;
+    line-height: 1;
+}
+
+.chatbot-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-message {
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+}
+
+.chat-message.user {
+    background-color: #005a9c;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+}
+
+.chat-message.bot {
+    background-color: #e9ecef;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+}
+
+.chatbot-input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #f8f9fa;
+}
+
+#chatbot-input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    margin-right: 10px;
+}
+#chatbot-input:focus {
+    outline: none;
+    border-color: #005a9c;
+    box-shadow: 0 0 0 0.1rem rgba(0, 90, 156, 0.25);
+}
+
+#chatbot-send-button {
+    border-radius: 20px;
+    padding: 8px 15px;
+    white-space: nowrap;
+}

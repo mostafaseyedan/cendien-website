@@ -1,0 +1,15 @@
+/* Basic Styles */
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #373F41;
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-y: auto; /* Ensure vertical scrolling for content that extends beyond viewport */
+}
+
+.container {
+    max-width: 1200px;
+} 
