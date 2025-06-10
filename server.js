@@ -86,7 +86,8 @@ app.post('/api/foia-prompt-settings', async (req, res) => {
         // Updated expected keys for FOIA prompts
         const EXPECTED_FOIA_PROMPT_KEYS = [
             'summary', 'proposalComparison', 'insightsAnalysis', 
-            'pricingIntelligence', 'marketTrends', 'tasksWorkPlan'
+            'pricingIntelligence', 'marketTrends', 'tasksWorkPlan',
+            'documentType' // Added documentType
         ];
         for (const key of EXPECTED_FOIA_PROMPT_KEYS) {
             if (!prompts.hasOwnProperty(key) || typeof prompts[key] !== 'string') {
@@ -157,6 +158,93 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
+// --- RAG Chatbot Endpoint (Corrected) ---
+app.post('/api/chatbot', async (req, res) => {
+    const { query } = req.body;
+    if (!query) {
+        return res.status(400).json({ error: 'Query is required' });
+    }
+
+    try {
+        let context = "";
+        let foundData = false;
+
+        // --- Intent Recognition ---
+        const isCountQuery = query.toLowerCase().includes('how many') || query.toLowerCase().includes('count') || query.toLowerCase().includes('total');
+        
+        if (isCountQuery) {
+            // --- Retrieval for Counting ---
+            const rfpSnapshot = await db.collection('rfpAnalyses').get();
+            const foiaSnapshot = await db.collection('foiaAnalyses').get();
+            context = `The user is asking for a count. \n- Total RFP analyses in the database: ${rfpSnapshot.size}. \n- Total FOIA analyses in the database: ${foiaSnapshot.size}.`;
+            foundData = true;
+        } else {
+            // --- Retrieval for Searching by Title (Original Logic) ---
+            const rfpQuerySnapshot = await db.collection('rfpAnalyses').where('rfpTitle', '>=', query).where('rfpTitle', '<=', query + '\uf8ff').limit(2).get();
+            const foiaQuerySnapshot = await db.collection('foiaAnalyses').where('foiaTitle', '>=', query).where('foiaTitle', '<=', query + '\uf8ff').limit(2).get();
+
+            let searchContext = "Context from the database:\n";
+            rfpQuerySnapshot.forEach(doc => {
+                const data = doc.data();
+                searchContext += `- RFP Analysis titled "${data.rfpTitle || 'Untitled'}". Current Status: ${data.status}. Summary: ${data.rfpSummary}\n`;
+                foundData = true;
+            });
+            foiaQuerySnapshot.forEach(doc => {
+                const data = doc.data();
+                searchContext += `- FOIA Analysis titled "${data.foiaTitle || 'Untitled'}". Current Status: ${data.status}. Summary: ${data.foiaSummary}\n`;
+                foundData = true;
+            });
+            context = searchContext;
+        }
+        
+        if (!foundData && !isCountQuery) {
+            context = "No specific data found for the user's query in the database. Please answer the user's question based on your general knowledge of the Cendien platform's capabilities for RFP and FOIA analysis.";
+        }
+
+        // --- Augmentation and Generation ---
+        const ragPrompt = `You are a helpful assistant for the Cendien platform. Answer the user's question based *only* on the provided context. If the context does not contain the answer, state that you don't have enough information from the database to answer.
+
+        Context:
+        ---
+        ${context}
+        ---
+
+        User's Question: "${query}"
+
+        Your Answer:`;
+
+        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        if (!GEMINI_API_KEY) {
+            return res.status(500).json({ error: 'API key not configured on server.' });
+        }
+        const GEMINI_API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+
+        const geminiResponse = await fetch(GEMINI_API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: ragPrompt }] }] }),
+        });
+
+        const responseData = await geminiResponse.json();
+
+        if (!geminiResponse.ok || (responseData.promptFeedback && responseData.promptFeedback.blockReason)) {
+             const errorMessage = responseData.error?.message || `Gemini API request failed. Reason: ${responseData.promptFeedback?.blockReason || 'Unknown'}`;
+             return res.status(geminiResponse.status).json({ error: errorMessage, details: responseData });
+        }
+
+        if (responseData.candidates && responseData.candidates[0]?.content?.parts[0]?.text) {
+            res.json({ reply: responseData.candidates[0].content.parts[0].text });
+        } else {
+            res.status(500).json({ error: 'Could not parse the expected text from Gemini API response.' });
+        }
+
+    } catch (error) {
+        console.error('Error in chatbot endpoint:', error);
+        res.status(500).json({ error: 'Failed to process chatbot query.', details: error.message });
+    }
+});
+
+
 // --- RFP Analysis Endpoints ---
 app.post('/api/rfp-analysis', async (req, res) => {
     try {
@@ -165,6 +253,7 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpDeadlines, rfpKeyRequirements, rfpStakeholders, rfpRisks,
             rfpTitle, rfpType, submittedBy,
             rfpSubmissionFormat, rfpRegistration, rfpLicenses, rfpBudget,
+            originalRfpFullText, 
             analysisPrompts 
         } = req.body;
 
@@ -186,11 +275,13 @@ app.post('/api/rfp-analysis', async (req, res) => {
             rfpRegistration: rfpRegistration || "Not specified",
             rfpLicenses: rfpLicenses || "Not specified",
             rfpBudget: rfpBudget || "Not specified",
+            originalRfpFullText: originalRfpFullText || "", 
             analysisPrompts: analysisPrompts || {} 
         };
         const docRef = await db.collection('rfpAnalyses').add(analysisData);
         console.log('RFP Analysis saved with ID:', docRef.id);
-        res.status(201).json({ id: docRef.id, message: 'RFP analysis saved successfully.', ...analysisData });
+        const savedDoc = await docRef.get();
+        res.status(201).json({ id: savedDoc.id, ...savedDoc.data() });
     } catch (error) {
         console.error('Error saving RFP analysis:', error);
         res.status(500).json({ error: 'Failed to save RFP analysis.', details: error.message });
@@ -209,8 +300,10 @@ app.put('/api/rfp-analysis/:id/status', async (req, res) => {
         const docRef = db.collection('rfpAnalyses').doc(analysisId);
         const doc = await docRef.get();
         if (!doc.exists) return res.status(404).json({ error: 'RFP analysis not found.' });
-        await docRef.update({ status: status, lastModified: Timestamp.now() });
-        res.status(200).json({ id: analysisId, message: 'RFP status updated.', newStatus: status });
+        
+        const updates = { status: status, lastModified: Timestamp.now() };
+        await docRef.update(updates);
+        res.status(200).json({ id: analysisId, message: 'RFP status updated.', newStatus: status, lastModified: updates.lastModified });
     } catch (error) {
         console.error('Error updating RFP status:', error);
         res.status(500).json({ error: 'Failed to update RFP status.', details: error.message });
@@ -225,13 +318,15 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
         if (!doc.exists) return res.status(404).json({ error: 'RFP analysis not found.' });
 
         const updates = {};
-        const allowedRFPFields = [
+        const currentData = doc.data();
+        const allowedRFPFields = [ 
             'rfpTitle', 'rfpType', 'submittedBy', 'status',
             'rfpSummary', 'generatedQuestions', 'rfpDeadlines', 'rfpSubmissionFormat',
             'rfpKeyRequirements', 'rfpStakeholders', 'rfpRisks',
             'rfpRegistration', 'rfpLicenses', 'rfpBudget'
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
+
         for (const field of allowedRFPFields) {
             if (req.body.hasOwnProperty(field)) {
                 if (field === 'status' && !validStatuses.includes(req.body[field])) {
@@ -240,13 +335,22 @@ app.put('/api/rfp-analysis/:id', async (req, res) => {
                 updates[field] = req.body[field];
             }
         }
+        
+        if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
+            updates.analysisPrompts = {
+                ...(currentData.analysisPrompts || {}), 
+                ...req.body.analysisPrompts          
+            };
+        }
+
+
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for RFP update.' });
         }
         updates.lastModified = Timestamp.now();
         await docRef.update(updates);
         const updatedDoc = await docRef.get();
-        res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated.', ...updatedDoc.data() });
+        res.status(200).json({ id: updatedDoc.id, message: 'RFP analysis updated successfully.', ...updatedDoc.data() });
     } catch (error) {
         console.error('Error updating RFP analysis details:', error);
         res.status(500).json({ error: 'Failed to update RFP analysis details.', details: error.message });
@@ -302,21 +406,21 @@ app.post('/api/foia-analysis', async (req, res) => {
         const {
             foiaFileNames, 
             foiaSummary,
-            foiaProposalComparison, // New field
-            foiaInsightsAnalysis,   // New field
-            foiaPricingIntelligence,// New field
-            foiaMarketTrends,       // New field
-            foiaTasksWorkPlan,      // New field
+            foiaProposalComparison, 
+            foiaInsightsAnalysis,   
+            foiaPricingIntelligence,
+            foiaMarketTrends,       
+            foiaTasksWorkPlan,      
+            originalFoiaFullText, 
             status,
             foiaTitle,
-            foiaType,
+            foiaType, // This will now be the AI-determined type sent from the client
             submittedBy,
             analysisPrompts        
         } = req.body;
 
-        // Basic validation for essential fields - adjust as needed
         if (!foiaFileNames || !Array.isArray(foiaFileNames) || foiaFileNames.length === 0 || !foiaSummary) {
-            return res.status(400).json({ error: 'Missing required fields for FOIA analysis: foiaFileNames (array) and foiaSummary are essential.' });
+            return res.status(400).json({ error: 'Missing required fields: foiaFileNames (array) and foiaSummary are essential.' });
         }
 
         const foiaAnalysisData = {
@@ -327,17 +431,19 @@ app.post('/api/foia-analysis', async (req, res) => {
             foiaPricingIntelligence: foiaPricingIntelligence || "Not specified",
             foiaMarketTrends: foiaMarketTrends || "Not specified",
             foiaTasksWorkPlan: foiaTasksWorkPlan || "Not specified",
+            originalFoiaFullText: originalFoiaFullText || "", 
             analysisDate: Timestamp.now(),
             status: status || 'analyzed', 
             foiaTitle: foiaTitle || "",   
-            foiaType: foiaType || "N/A", 
+            foiaType: foiaType || "AI Determination Pending", // Save the AI determined type
             submittedBy: submittedBy || "N/A",
             analysisPrompts: analysisPrompts || {} 
         };
 
         const docRef = await db.collection(FOIA_COLLECTION_NAME).add(foiaAnalysisData);
         console.log('FOIA Analysis saved with ID:', docRef.id);
-        res.status(201).json({ id: docRef.id, message: 'FOIA analysis saved successfully.', ...foiaAnalysisData });
+        const savedDoc = await docRef.get();
+        res.status(201).json({ id: savedDoc.id, ...savedDoc.data() });
     } catch (error) {
         console.error('Error saving FOIA analysis:', error);
         res.status(500).json({ error: 'Failed to save FOIA analysis.', details: error.message });
@@ -392,9 +498,10 @@ app.put('/api/foia-analysis/:id/status', async (req, res) => {
         const docRef = db.collection(FOIA_COLLECTION_NAME).doc(analysisId);
         const doc = await docRef.get();
         if (!doc.exists) return res.status(404).json({ error: 'FOIA analysis not found.' });
-
-        await docRef.update({ status: status, lastModified: Timestamp.now() });
-        res.status(200).json({ id: analysisId, message: 'FOIA analysis status updated.', newStatus: status });
+        
+        const updates = { status: status, lastModified: Timestamp.now() };
+        await docRef.update(updates);
+        res.status(200).json({ id: analysisId, message: 'FOIA analysis status updated.', newStatus: status, lastModified: updates.lastModified });
     } catch (error) {
         console.error('Error updating FOIA analysis status:', error);
         res.status(500).json({ error: 'Failed to update FOIA analysis status.', details: error.message });
@@ -409,15 +516,17 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
         if (!doc.exists) return res.status(404).json({ error: 'FOIA analysis not found.' });
 
         const updates = {};
-        // Updated list of allowed fields for FOIA analysis
+        const currentData = doc.data();
+        // `foiaType` is AI-determined and shown as read-only in edit, so client won't send it for update unless you allow overrides.
+        // If you want to allow overriding it, add 'foiaType' to allowedFoiaFields.
         const allowedFoiaFields = [
-            'foiaTitle', 'foiaType', 'submittedBy', 'status',
+            'foiaTitle', /* 'foiaType', // Only if user can override AI's determination */ 'submittedBy', 'status',
             'foiaSummary', 
             'foiaProposalComparison', 
             'foiaInsightsAnalysis',
             'foiaPricingIntelligence',
             'foiaMarketTrends',
-            'foiaTasksWorkPlan'
+            'foiaTasksWorkPlan',
         ];
         const validStatuses = ['active', 'not_pursuing', 'analyzed', 'archived'];
 
@@ -428,6 +537,13 @@ app.put('/api/foia-analysis/:id', async (req, res) => {
                 }
                 updates[field] = req.body[field];
             }
+        }
+        
+        if (req.body.hasOwnProperty('analysisPrompts') && typeof req.body.analysisPrompts === 'object') {
+            updates.analysisPrompts = {
+                ...(currentData.analysisPrompts || {}), 
+                ...req.body.analysisPrompts          
+            };
         }
 
         if (Object.keys(updates).length === 0) {

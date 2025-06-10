@@ -6,7 +6,7 @@
     <title>Cendien FOIA Analyzer</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css"> 
-    <link rel="stylesheet" href="rfp-style.css"> 
+    <link rel="stylesheet" href="css/rfp-style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
                 </div>
                 <div class="form-group">
                     <label for="auth-password-foia">Password:</label>
-                    <input type="password" id="auth-password-foia" name="auth-password-foia" required>
+                    <input type="password" id="auth-password-foia" name="auth-password-foia" required autocomplete="current-password">
                 </div>
                 <button type="submit" id="auth-submit-button-foia" class="btn btn-primary">Login</button>
                 <p id="auth-error-message-foia" class="auth-error" style="display:none; color:red; margin-top:10px;"></p>
@@ -80,7 +80,7 @@
             <section id="view-saved-foia-details-section" style="display: none;">
                 <div class="view-rfp-modal-content content-card container"> 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 id="view-foia-main-title-heading">FOIA Details</h2>
+                        <h2 id="view-foia-main-title-heading" class="view-modal-main-title">FOIA Details</h2>
                         <div class="view-modal-actions-dropdown-container">
                             <button id="view-foia-modal-action-trigger" class="view-modal-actions-dropdown-trigger action-icon" title="More actions">
                                 <i class="fas fa-ellipsis-v"></i>
@@ -93,36 +93,30 @@
                     <div id="view-foia-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
                     <div id="view-analysis-results-area-foia">
                         <div class="tabs-container">
-                            <button class="tab-link active" onclick="openFoiaViewTab(event, 'view-summary-tab-foia')">Summary</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-comparison-rating-tab-foia')">Comparison & Rating</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-insights-analysis-tab-foia')">Insights & Analysis</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-financial-intelligence-tab-foia')">Pricing/Fees</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-context-impact-tab-foia')">Market Trends</button>
-                            <button class="tab-link" onclick="openFoiaViewTab(event, 'view-actionable-items-tab-foia')">Tasks/Work Plan</button>
+                            <button class="tab-link active" data-tab-id="view-summary-tab-foia">Summary</button>
+                            <button class="tab-link" data-tab-id="view-proposalComparison-tab-foia">Comparison & Rating</button>
+                            <button class="tab-link" data-tab-id="view-insightsAnalysis-tab-foia">Insights & Analysis</button>
+                            <button class="tab-link" data-tab-id="view-pricingIntelligence-tab-foia">Pricing/Fees Intel</button>
+                            <button class="tab-link" data-tab-id="view-marketTrends-tab-foia">Market Trends</button>
+                            <button class="tab-link" data-tab-id="view-tasksWorkPlan-tab-foia">Tasks/Work Plan</button>
                         </div>
 
                         <div id="view-summary-tab-foia" class="tab-content" style="display: block;">
-                            <h3>Document Summary:</h3>
                             <div id="view-summary-result-content-foia"></div>
                         </div>
-                        <div id="view-comparison-rating-tab-foia" class="tab-content">
-                            <h3>Proposal Comparison and Rating:</h3>
+                        <div id="view-proposalComparison-tab-foia" class="tab-content">
                             <div id="view-comparison-rating-result-content-foia"></div>
                         </div>
-                        <div id="view-insights-analysis-tab-foia" class="tab-content">
-                            <h3>Insights and Analysis:</h3>
+                        <div id="view-insightsAnalysis-tab-foia" class="tab-content">
                             <div id="view-insights-analysis-result-content-foia"></div>
                         </div>
-                        <div id="view-financial-intelligence-tab-foia" class="tab-content">
-                            <h3>Pricing Fees Intelligence:</h3>
+                        <div id="view-pricingIntelligence-tab-foia" class="tab-content">
                             <div id="view-financial-intelligence-result-content-foia"></div>
                         </div>
-                        <div id="view-context-impact-tab-foia" class="tab-content">
-                            <h3>Market Trends:</h3>
+                        <div id="view-marketTrends-tab-foia" class="tab-content">
                             <div id="view-context-impact-result-content-foia"></div>
                         </div>
-                        <div id="view-actionable-items-tab-foia" class="tab-content">
-                            <h3>Tasks or Work Plan:</h3>
+                        <div id="view-tasksWorkPlan-tab-foia" class="tab-content">
                             <div id="view-actionable-items-result-content-foia"></div>
                         </div>
                     </div>
@@ -131,7 +125,7 @@
 
             <div id="new-foia-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
-                    <span class="modal-close-button" id="modal-close-button-foia">&times;</span>
+                    <span class="modal-close-button">&times;</span>
                     <h2 id="modal-title-foia" style="text-align: center; margin-bottom: 1.5rem;">Analyze New FOIA Document(s)</h2>
                     
                     <form id="foia-details-form">
@@ -140,12 +134,8 @@
                             <input type="text" id="foiaTitle" name="foiaTitle" placeholder="Enter a Title for this FOIA set">
                         </div>
                         <div class="form-group">
-                            <label for="foiaType">Document Type (e.g., Request, Response, Records):</label>
-                             <input type="text" id="foiaType" name="foiaType" placeholder="e.g., FOIA Request, Agency Response">
-                        </div>
-                        <div class="form-group">
                             <label for="submittedByFoia">Person Submitting / Analyzing:</label>
-                            <select id="submittedByFoia" name="submittedByFoia" class="section-selector">
+                            <select id="submittedByFoia" name="submittedBy" class="section-selector">
                                 <option value="Aish">Aish</option>
                                 <option value="Helen">Helen</option>
                                 <option value="Shirley">Shirley</option>
@@ -163,47 +153,32 @@
 
                     <div id="modal-analysis-status-area-foia" class="loading-container" style="display: none; margin-top: 2rem;"></div>
                     <div id="modal-analysis-results-area-foia" style="margin-top: 2.5rem; display: none;">
-                         <h3 style="text-align:center; margin-bottom: 1rem;">Analysis Results</h3>
-                        <div class="tabs-container">
-                            <button class="tab-link active" onclick="openFoiaModalTab(event, 'modal-summary-tab-foia')">Summary</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-comparison-rating-tab-foia')">Comparison & Rating</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-insights-analysis-tab-foia')">Insights & Analysis</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-financial-intelligence-tab-foia')">Pricing/Fees</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-context-impact-tab-foia')">Market Trends</button>
-                            <button class="tab-link" onclick="openFoiaModalTab(event, 'modal-actionable-items-tab-foia')">Tasks/Work Plan</button>
                         </div>
-                        <div id="modal-summary-tab-foia" class="tab-content" style="display: block;"><div id="modal-summary-result-content-foia"></div></div>
-                        <div id="modal-comparison-rating-tab-foia" class="tab-content"><div id="modal-comparison-rating-result-content-foia"></div></div>
-                        <div id="modal-insights-analysis-tab-foia" class="tab-content"><div id="modal-insights-analysis-result-content-foia"></div></div>
-                        <div id="modal-financial-intelligence-tab-foia" class="tab-content"><div id="modal-financial-intelligence-result-content-foia"></div></div>
-                        <div id="modal-context-impact-tab-foia" class="tab-content"><div id="modal-context-impact-result-content-foia"></div></div>
-                        <div id="modal-actionable-items-tab-foia" class="tab-content"><div id="modal-actionable-items-result-content-foia"></div></div>
-                    </div>
                 </div>
             </div>
 
             <div id="edit-foia-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
-                    <span class="modal-close-button" id="edit-foia-modal-close-button">&times;</span>
+                    <span class="modal-close-button">&times;</span>
                     <h2 id="edit-foia-modal-title" style="text-align: center; margin-bottom: 1.5rem;">Edit FOIA Details</h2>
                     <form id="edit-foia-details-form">
                         <input type="hidden" id="editFoiaId" name="editFoiaId">
                         
                         <div class="form-group">
                             <label for="editFoiaTitle">Document Title:</label>
-                            <input type="text" id="editFoiaTitle" name="editFoiaTitle" placeholder="Enter a Title">
+                            <input type="text" id="editFoiaTitle" name="foiaTitle" placeholder="Enter a Title">
                         </div>
                         <div class="form-group">
                             <label for="editFoiaFileNames">Original File Name(s):</label> 
                             <textarea id="editFoiaFileNames" name="editFoiaFileNames" readonly disabled rows="2"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="editFoiaType">Document Type:</label>
-                            <input type="text" id="editFoiaType" name="editFoiaType" placeholder="e.g., Agency Response">
+                            <label for="editFoiaType">Document Type (AI Determined):</label>
+                            <input type="text" id="editFoiaType" name="foiaType" readonly disabled>
                         </div>
                         <div class="form-group">
                             <label for="editSubmittedByFoia">Owner / Submitted By:</label>
-                            <select id="editSubmittedByFoia" name="editSubmittedByFoia" class="section-selector">
+                            <select id="editSubmittedByFoia" name="submittedBy" class="section-selector">
                                 <option value="Aish">Aish</option>
                                 <option value="Helen">Helen</option>
                                 <option value="Shirley">Shirley</option>
@@ -213,7 +188,7 @@
                         </div>
                         <div class="form-group">
                             <label for="editFoiaStatus">Status:</label>
-                            <select id="editFoiaStatus" name="editFoiaStatus" class="section-selector">
+                            <select id="editFoiaStatus" name="status" class="section-selector">
                                 <option value="analyzed">Analyzed</option>
                                 <option value="active">Active</option>
                                 <option value="not_pursuing">Not Pursuing</option>
@@ -221,33 +196,15 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="editFoiaSummary">Summary:</label>
-                            <textarea id="editFoiaSummary" name="editFoiaSummary" rows="5"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFoiaProposalComparison">Proposal Comparison and Rating:</label>
-                            <textarea id="editFoiaProposalComparison" name="editFoiaProposalComparison" rows="5"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFoiaInsightsAnalysis">Insights and Analysis:</label>
-                            <textarea id="editFoiaInsightsAnalysis" name="editFoiaInsightsAnalysis" rows="5"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFoiaPricingIntelligence">Pricing Fees Intelligence:</label>
-                            <textarea id="editFoiaPricingIntelligence" name="editFoiaPricingIntelligence" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFoiaMarketTrends">Market Trends:</label>
-                            <textarea id="editFoiaMarketTrends" name="editFoiaMarketTrends" rows="4"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFoiaTasksWorkPlan">Tasks or Work Plan:</label>
-                            <textarea id="editFoiaTasksWorkPlan" name="editFoiaTasksWorkPlan" rows="4"></textarea>
-                        </div>
+                        <div class="form-group"><label for="editFoiaSummary">Summary:</label><textarea id="editFoiaSummary" name="foiaSummary" rows="5"></textarea></div>
+                        <div class="form-group"><label for="editFoiaProposalComparison">Proposal Comparison and Rating:</label><textarea id="editFoiaProposalComparison" name="foiaProposalComparison" rows="5"></textarea></div>
+                        <div class="form-group"><label for="editFoiaInsightsAnalysis">Insights and Analysis:</label><textarea id="editFoiaInsightsAnalysis" name="foiaInsightsAnalysis" rows="5"></textarea></div>
+                        <div class="form-group"><label for="editFoiaPricingIntelligence">Pricing Fees Intelligence:</label><textarea id="editFoiaPricingIntelligence" name="foiaPricingIntelligence" rows="3"></textarea></div>
+                        <div class="form-group"><label for="editFoiaMarketTrends">Market Trends:</label><textarea id="editFoiaMarketTrends" name="foiaMarketTrends" rows="4"></textarea></div>
+                        <div class="form-group"><label for="editFoiaTasksWorkPlan">Tasks or Work Plan:</label><textarea id="editFoiaTasksWorkPlan" name="foiaTasksWorkPlan" rows="4"></textarea></div>
                         
                         <button type="submit" id="save-edited-foia-button" class="btn btn-primary">Save Changes</button>
-                        <button type="button" id="cancel-edit-foia-button" class="btn btn-secondary">Cancel</button>
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').style.display='none'">Cancel</button>
                     </form>
                     <div id="edit-foia-status-area" class="loading-container" style="display: none; margin-top: 1rem;"></div>
                 </div>
@@ -255,25 +212,26 @@
 
             <div id="prompt-settings-modal-foia" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
-                    <span class="modal-close-button" id="prompt-modal-close-button-foia">&times;</span>
+                    <span class="modal-close-button">&times;</span>
                     <h2 style="text-align: center; margin-bottom: 1.5rem;">Edit AI Section Prompts (FOIA)</h2>
                     
                     <div class="form-group">
                         <label for="promptSectionSelectorFoia">Select Section to Edit:</label>
-                        <select id="promptSectionSelectorFoia" name="promptSectionSelectorFoia" class="section-selector" style="width: 100%; margin-bottom: 1rem;">
+                        <select id="promptSectionSelectorFoia" name="promptSectionSelector" class="section-selector" style="width: 100%; margin-bottom: 1rem;">
                             <option value="summary">1. Summary</option>
                             <option value="proposalComparison">2. Proposal Comparison and Rating</option>
                             <option value="insightsAnalysis">3. Insights and Analysis</option>
                             <option value="pricingIntelligence">4. Pricing Fees Intelligence</option>
                             <option value="marketTrends">5. Market Trends</option>
                             <option value="tasksWorkPlan">6. Tasks or Work Plan</option>
+                            <option value="documentType">7. Document Type Determination</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="foiaIndividualPromptTextarea">Prompt for Selected Section (FOIA):</label>
                         <textarea id="foiaIndividualPromptTextarea" name="foiaIndividualPromptTextarea" rows="10" style="font-size: 0.85rem; line-height: 1.4;"></textarea>
-                        <small>Edit the Prompt for how the AI should generate this specific section of the FOIA analysis. The AI will receive the full document text.</small>
+                        <small>Edit the Prompt for how the AI should generate this specific section of the FOIA analysis.</small>
                     </div>
 
                     <button id="save-current-prompt-button-foia" class="btn btn-primary" style="margin-top: 1rem;">Save Current Section Prompt</button>
@@ -291,42 +249,28 @@
         </footer>
     </div>
     
+    <button id="open-chatbot-button" class="chatbot-fab">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div id="chatbot-modal" class="modal-overlay" style="display: none;">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <h3>Cendien AI Assistant</h3>
+                <button id="close-chatbot-button" class="modal-close-button">&times;</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages">
+                <div class="chat-message bot">Hello! How can I help you find information about your RFP and FOIA analyses today?</div>
+            </div>
+            <form id="chatbot-form" class="chatbot-input-area">
+                <input type="text" id="chatbot-input" placeholder="Ask about an analysis, its status, etc." autocomplete="off">
+                <button id="chatbot-send-button" type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+
     <script type="module" src="foia-script.js"></script> 
     <script>
-        function openTabGenericFoia(evt, tabName, containerElementId) {
-            var i, tabcontent, tablinks;
-            var container = document.getElementById(containerElementId);
-            if (!container) {
-                console.error("Tab container not found:", containerElementId);
-                return;
-            }
-
-            tabcontent = container.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = container.getElementsByClassName("tab-link");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            const targetTab = document.getElementById(tabName);
-            if (targetTab) {
-                targetTab.style.display = "block";
-            } else {
-                console.error("Target tab not found:", tabName, "within", containerElementId);
-            }
-            if (evt && evt.currentTarget) {
-                evt.currentTarget.className += " active";
-            }
-        }
-        
-        window.openFoiaModalTab = function(evt, tabName) {
-            openTabGenericFoia(evt, tabName, 'modal-analysis-results-area-foia');
-        }
-        window.openFoiaViewTab = function(evt, tabName) {
-            openTabGenericFoia(evt, tabName, 'view-analysis-results-area-foia');
-        }
-        
         const yearSpanFoiaGlobal = document.getElementById('current-year-foia');
         if (yearSpanFoiaGlobal && !yearSpanFoiaGlobal.textContent) {
             yearSpanFoiaGlobal.textContent = new Date().getFullYear();
