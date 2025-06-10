@@ -22,7 +22,7 @@ import {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const PYTHON_BACKEND_URL = "http://127.0.0.1:8000";
+    const PYTHON_BACKEND_URL = "https://pdf-processor-service-352598512627.us-central1.run.app";
 
     // --- FOIA-SPECIFIC CONFIGURATION ---
     const FOIA_DOCUMENT_TYPE_CATEGORIES = [

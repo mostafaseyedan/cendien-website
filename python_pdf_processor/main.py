@@ -1,9 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+from typing import List, Optional
 import io
 import logging
-from pydantic import BaseModel
 from pydantic import BaseModel
 from pypdf import PdfReader
 from pdf2image import convert_from_bytes
@@ -12,7 +11,6 @@ from google.cloud import vision
 # --- Configuration ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-# Heuristic to trigger OCR: if direct extraction yields fewer than this many characters per page on average.
 MIN_CHARS_PER_PAGE_HEURISTIC = 100
 
 app = FastAPI(title="Cendien Document Processing Service")
@@ -46,7 +44,6 @@ class PDFProcessResponse(BaseModel):
 
 # --- PDF Text Extraction Logic with OCR Fallback ---
 async def extract_text_with_ocr(pdf_bytes: bytes, file_name: str) -> dict:
-    """Performs OCR on each page of a PDF and returns the aggregated text."""
     logger.info(f"Performing OCR for file: {file_name}")
     ocr_text_parts = []
     pages_processed = 0
@@ -83,7 +80,6 @@ async def extract_text_with_ocr(pdf_bytes: bytes, file_name: str) -> dict:
         raise
 
 async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
-    """Extracts text, trying direct method first and falling back to OCR if needed."""
     text_content = ""
     pages_processed = 0
     error_message_detail = None
@@ -121,15 +117,19 @@ async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
 @app.post("/process-rfp-pdf/", response_model=PDFProcessResponse)
 async def process_rfp_files_endpoint(
     main_rfp: UploadFile = File(...),
-    addendum_files: List[UploadFile] = File([])
+    # Use Optional and a default of None for better handling of empty uploads
+    addendum_files: Optional[List[UploadFile]] = File(None) 
 ):
-    all_files_to_process = []
-    if main_rfp:
-        all_files_to_process.append(main_rfp) # <-- CORRECTED VARIABLE NAME
-    all_files_to_process.extend(addendum_files)
+    all_files_to_process = [main_rfp]
+    # ** THE FIX IS HERE **
+    # Now we check if addendum_files exists and is a list before extending
+    if addendum_files:
+        # This filters out any non-file items that might be sent by the form
+        valid_addendums = [f for f in addendum_files if isinstance(f, UploadFile)]
+        all_files_to_process.extend(valid_addendums)
 
     if not all_files_to_process:
-        raise HTTPException(status_code=400, detail="No PDF files provided.")
+        raise HTTPException(status_code=400, detail="No valid PDF files provided.")
 
     full_extracted_text_parts = []
     processing_details_list = []
