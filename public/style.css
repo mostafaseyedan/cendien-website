@@ -188,7 +188,18 @@ main h3 {
      font-weight: 700;
      color: #003366;
 }
-#ai-generated-content p { margin-bottom: 1.1rem; color: #373F41; }
+#ai-generated-content p {
+    margin-bottom: 0.75rem; /* Aligned with .section-content-display p from _prompt_display.css */
+    line-height: 1.6; /* Consistent with body line-height from _base.css */
+    color: #373F41;
+    font-weight: bold; /* Applying bold to all paragraphs in AI output as a CSS-only solution */
+}
+
+#ai-generated-content strong,
+#ai-generated-content b {
+    font-weight: bold; /* Keep this rule for explicit bolding if strong/b tags are ever introduced */
+}
+
 #ai-generated-content p:last-child { margin-bottom: 0; }
 
 

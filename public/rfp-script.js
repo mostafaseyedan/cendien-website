@@ -2,15 +2,14 @@
  * Cendien - RFP Analyzer Script
  *
  * This script handles all client-side logic for the RFP Analyzer page.
- * It imports shared functionality from analysis-common.js and manages
- * RFP-specific state, configurations, and event handling.
+ * It communicates with a Python backend for PDF processing and a Node.js
+ * backend for AI analysis and data management.
  *
- * @version 2.4.0
- * @date 2025-06-09
+ * @version 3.0.3
+ * @date 2025-06-10
  */
 
 import {
-    extractTextFromPdf,
     showLoadingMessage,
     hideLoadingMessage,
     addDropdownItemToMenu,
@@ -23,67 +22,49 @@ import {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    const PYTHON_BACKEND_URL = "http://127.0.0.1:8000";
+
     // --- RFP-SPECIFIC CONFIGURATION ---
     const RFP_PROMPT_CONFIG = {
         summary: {
             defaultText: "You will be provided with the content of the RFP. Follow these guidelines to create a summary: Focus on extracting and condensing key information from the RFP. Ensure the summary captures all essential aspects, including: Project objectives, Scope of work, Requirements and specifications, Evaluation criteria,  Submission guidelines, Deadlines. Maintain a balance between conciseness and comprehensiveness. The summary should be no more 2 pages in length.",
-            delimiterKey: "SUMMARY",
-            databaseKey: "rfpSummary",
-            title: "RFP Summary"
+            delimiterKey: "SUMMARY", databaseKey: "rfpSummary", title: "RFP Summary"
         },
         questions: { 
             defaultText: "Generate a list of 20 critical and insightful clarification questions to ask regarding an RFP. These questions should be designed to uncover hidden requirements, ambiguous statements, or areas where more detail is needed to create a comprehensive and competitive proposal. The goal is to ensure a thorough understanding of the client's needs and expectations.",
-            delimiterKey: "QUESTIONS",
-            databaseKey: "generatedQuestions",
-            title: "Generated Clarification Questions"
+            delimiterKey: "QUESTIONS", databaseKey: "generatedQuestions", title: "Generated Clarification Questions"
         },
         deadlines: {
             defaultText: "You are an expert in analyzing Request for Proposal (RFP) documents. Your task is to identify key deadlines and the submission format for the RFP. Follow these steps to extract the required information: 1. Carefully read the entire RFP document. 2. Identify all key deadlines, including dates and times for each deadline. 3. Identify the required submission format for the RFP (e.g., electronic submission, hard copy submission, online portal submission). 4. Output the information in a well-organized list with clear labels for each deadline and the submission format.",
-            delimiterKey: "DEADLINES", 
-            databaseKey: "rfpDeadlines",
-            title: "Key Deadlines"
+            delimiterKey: "DEADLINES", databaseKey: "rfpDeadlines", title: "Key Deadlines"
         },
         submissionFormat: { 
             defaultText: "Carefully review the RFP document to identify the specified submission format for the proposal (e.g., mail, email, online portal, usb, fax). Identify all people related to the RFP. 3. Extract all relevant contact information, including: Addresses for mail submissions. Email addresses for electronic submissions. Links to online portals or websites for online submissions. Phone numbers for contact persons. Names and titles of contact persons. 4. Present the extracted information in a clear and organized manner.",
-            delimiterKey: "SUBMISSION_FORMAT", 
-            databaseKey: "rfpSubmissionFormat",
-            title: "Submission Format"
+            delimiterKey: "SUBMISSION_FORMAT", databaseKey: "rfpSubmissionFormat", title: "Submission Format"
         },
         requirements: { 
             defaultText: "5. A list of Requirements (e.g., mandatory, highly desirable).", 
-            delimiterKey: "REQUIREMENTS",
-            databaseKey: "rfpKeyRequirements",
-            title: "Requirements"
+            delimiterKey: "REQUIREMENTS", databaseKey: "rfpKeyRequirements", title: "Requirements"
         },
         stakeholders: { 
             defaultText: "6. Mentioned Stakeholders or Key Contacts.", 
-            delimiterKey: "STAKEHOLDERS",
-            databaseKey: "rfpStakeholders",
-            title: "Mentioned Stakeholders"
+            delimiterKey: "STAKEHOLDERS", databaseKey: "rfpStakeholders", title: "Mentioned Stakeholders"
         },
         risks: { 
             defaultText: "7. Potential Risks or Red Flags identified in the RFP.", 
-            delimiterKey: "RISKS",
-            databaseKey: "rfpRisks",
-            title: "Potential Risks/Red Flags" 
+            delimiterKey: "RISKS", databaseKey: "rfpRisks", title: "Potential Risks/Red Flags" 
         },
         registration: { 
             defaultText: "8. Registration requirements or details for bidders.", 
-            delimiterKey: "REGISTRATION",
-            databaseKey: "rfpRegistration",
-            title: "Registration Details"
+            delimiterKey: "REGISTRATION", databaseKey: "rfpRegistration", title: "Registration Details"
         },
         licenses: { 
             defaultText: "9. Required Licenses or Certifications for bidders.", 
-            delimiterKey: "LICENSES",
-            databaseKey: "rfpLicenses",
-            title: "Licenses & Certifications"
+            delimiterKey: "LICENSES", databaseKey: "rfpLicenses", title: "Licenses & Certifications"
         },
         budget: { 
             defaultText: "10. Any mentioned Budget constraints or financial information.", 
-            delimiterKey: "BUDGET",
-            databaseKey: "rfpBudget",
-            title: "Budget Information"
+            delimiterKey: "BUDGET", databaseKey: "rfpBudget", title: "Budget Information"
         }
     };
     
@@ -106,18 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeRfpAppLogic() {
         console.log("RFP Analyzer: Initializing main application logic...");
 
-        // --- DOM ELEMENT SELECTION ---
+        // DOM Elements
         const newRfpModal = document.getElementById('new-rfp-modal');
         const openNewRfpModalButton = document.getElementById('open-new-rfp-modal-button');
         const rfpForm = document.getElementById('rfp-details-form');
         const generateAnalysisButton = document.getElementById('generate-analysis-button');
         const modalAnalysisStatusArea = document.getElementById('modal-analysis-status-area');
-        const modalAnalysisResultsArea = document.getElementById('modal-analysis-results-area');
         const savedAnalysesListDiv = document.getElementById('saved-analyses-list');
         const noSavedAnalysesP = document.getElementById('no-saved-analyses');
         const rfpListStatusArea = document.getElementById('rfp-list-status-area');
         const rfpListTabsContainer = document.querySelector('.rfp-list-tabs');
-
         const viewSavedRfpDetailsSection = document.getElementById('view-saved-rfp-details-section');
         const viewRfpMainTitleHeading = document.getElementById('view-rfp-main-title-heading');
         const viewRfpStatusArea = document.getElementById('view-rfp-status-area');
@@ -125,12 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeViewRfpDetailsButton = document.getElementById('close-view-rfp-details-button');
         const viewRfpModalActionTrigger = document.getElementById('view-rfp-modal-action-trigger');
         const viewRfpModalActionsMenu = document.getElementById('view-rfp-modal-actions-menu');
-
         const editRfpModal = document.getElementById('edit-rfp-modal');
         const editRfpForm = document.getElementById('edit-rfp-details-form');
         const saveEditedRfpButton = document.getElementById('save-edited-rfp-button');
         const editRfpStatusArea = document.getElementById('edit-rfp-status-area');
-
         const promptSettingsModal = document.getElementById('prompt-settings-modal');
         const openPromptSettingsModalButton = document.getElementById('open-prompt-settings-modal-button');
         const promptSectionSelector = document.getElementById('promptSectionSelector');
@@ -139,20 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const resetCurrentPromptButton = document.getElementById('reset-current-prompt-button');
         const resetAllPromptsButton = document.getElementById('reset-all-prompts-button');
         const promptSaveStatus = document.getElementById('prompt-save-status');
-
         const chatbotModal = document.getElementById('chatbot-modal');
         const openChatbotButton = document.getElementById('open-chatbot-button');
         const closeChatbotButton = document.getElementById('close-chatbot-button');
         const chatbotForm = document.getElementById('chatbot-form');
         const chatbotInput = document.getElementById('chatbot-input');
         const chatbotMessages = document.getElementById('chatbot-messages');
-        
         const typePrefix = 'rfp';
 
-        // --- STATE MANAGEMENT ---
+        // State
         let allFetchedAnalyses = [];
-        let currentSortKey = 'analysisDate';
-        let currentSortOrder = 'desc';
         let currentStatusFilter = 'all_statuses';
         let serverRfpPrompts = {};
         let currentlyViewedRfpAnalysis = null;
@@ -170,32 +143,27 @@ document.addEventListener('DOMContentLoaded', () => {
         function addEventListeners() {
             openNewRfpModalButton.addEventListener('click', () => {
                 rfpForm.reset();
-                modalAnalysisResultsArea.style.display = 'none';
                 openModal(newRfpModal);
             });
-            
             document.querySelectorAll('.modal-close-button').forEach(btn => {
                 btn.addEventListener('click', () => closeModal(btn.closest('.modal-overlay')));
             });
-
             rfpForm.addEventListener('submit', handleNewRfpAnalysis);
             editRfpForm.addEventListener('submit', handleEditRfpSave);
-            
             openPromptSettingsModalButton.addEventListener('click', () => openModal(promptSettingsModal));
             promptSectionSelector.addEventListener('change', loadSelectedPromptToTextarea);
             saveCurrentPromptButton.addEventListener('click', saveCurrentPrompt);
             resetCurrentPromptButton.addEventListener('click', () => {
                 const selectedKey = promptSectionSelector.value;
                 rfpIndividualPromptTextarea.value = RFP_PROMPT_CONFIG[selectedKey].defaultText;
+                saveCurrentPrompt();
             });
             resetAllPromptsButton.addEventListener('click', resetAllPrompts);
-            
             closeViewRfpDetailsButton.addEventListener('click', () => closeModal(viewSavedRfpDetailsSection));
             viewRfpModalActionTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 viewRfpModalActionsMenu.style.display = viewRfpModalActionsMenu.style.display === 'block' ? 'none' : 'block';
             });
-            
             rfpListTabsContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('rfp-list-tab-button')) {
                     rfpListTabsContainer.querySelectorAll('.rfp-list-tab-button').forEach(btn => btn.classList.remove('active'));
@@ -204,37 +172,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderAnalysesList();
                 }
             });
-
             viewAnalysisResultsArea.addEventListener('click', function(event) {
                 const target = event.target.closest('.tab-link');
                 if (!target) return;
-                
                 const tabId = target.dataset.tabId;
                 const tabContainer = target.closest('.tabs-container');
-
                 tabContainer.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
                 target.classList.add('active');
-                
                 viewAnalysisResultsArea.querySelectorAll('.tab-content').forEach(content => {
                     content.style.display = 'none';
                 });
                 document.getElementById(tabId).style.display = 'block';
             });
-
-            // Chatbot Listeners
             openChatbotButton.addEventListener('click', () => chatbotModal.style.display = 'block');
             closeChatbotButton.addEventListener('click', () => chatbotModal.style.display = 'none');
             chatbotForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 sendChatMessage();
             });
-
             document.addEventListener('click', () => {
                 document.querySelectorAll('.actions-dropdown-menu, .view-modal-actions-dropdown-menu').forEach(menu => menu.style.display = 'none');
             });
         }
         
-        // --- PROMPT MANAGEMENT ---
         async function fetchPrompts() {
             showLoadingMessage(promptSaveStatus, "Loading prompts...", true);
             try {
@@ -287,60 +247,73 @@ document.addEventListener('DOMContentLoaded', () => {
             await saveCurrentPrompt();
         }
 
-        // --- CORE APPLICATION LOGIC ---
-
         async function handleNewRfpAnalysis(event) {
             event.preventDefault();
-            const rfpFile = document.getElementById('rfpFileUpload').files[0];
-            if (!rfpFile) {
+            const mainRfpFile = document.getElementById('rfpFileUpload').files[0];
+            const addendumFiles = document.getElementById('rfpAddendumUpload').files;
+
+            if (!mainRfpFile) {
                 alert("Please upload the main RFP document.");
                 return;
             }
-            showLoadingMessage(modalAnalysisStatusArea, "Processing RFP...", true, generateAnalysisButton);
+
+            showLoadingMessage(modalAnalysisStatusArea, "Uploading & processing with Python backend...", true, generateAnalysisButton);
+
+            const formData = new FormData();
+            formData.append('main_rfp', mainRfpFile);
+            for (const file of addendumFiles) {
+                formData.append('addendum_files', file);
+            }
 
             try {
-                const addendumFiles = document.getElementById('rfpAddendumUpload').files;
-                let fullText = await extractTextFromPdf(rfpFile);
-                for (const file of addendumFiles) {
-                    fullText += `\n\n--- Addendum: ${file.name} ---\n` + await extractTextFromPdf(file);
+                const processResponse = await fetch(`${PYTHON_BACKEND_URL}/process-rfp-pdf/`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const processResult = await processResponse.json();
+                if (!processResponse.ok || processResult.status === "error") {
+                    throw new Error(processResult.error_message || "Failed to extract text via Python backend.");
                 }
-
-                const prompt = constructFullRfpAnalysisPrompt(fullText, serverRfpPrompts);
+                
+                const extractedText = processResult.extracted_text;
+                showLoadingMessage(modalAnalysisStatusArea, "Text extracted. Generating analysis...", true);
+                
+                const fullPrompt = constructFullRfpAnalysisPrompt(extractedText, serverRfpPrompts);
+                
                 const geminiResponse = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
+                    body: JSON.stringify({ prompt: fullPrompt }),
                 });
-
-                if (!geminiResponse.ok) {
-                    const error = await geminiResponse.json();
-                    throw new Error(error.error || "AI analysis failed.");
-                }
-                const result = await geminiResponse.json();
-                const parsedSections = parseAiResponse(result.generatedText);
+                if (!geminiResponse.ok) throw new Error("AI analysis failed.");
+                const geminiResult = await geminiResponse.json();
+                const parsedSections = parseRfpAiResponse(geminiResult.generatedText);
 
                 const saveData = {
-                    rfpTitle: document.getElementById('rfpTitle').value || rfpFile.name,
+                    rfpTitle: document.getElementById('rfpTitle').value || mainRfpFile.name,
                     rfpType: document.getElementById('rfpType').value,
                     submittedBy: document.getElementById('submittedBy').value,
-                    rfpFileName: rfpFile.name,
-                    originalRfpFullText: fullText,
+                    rfpFileName: mainRfpFile.name,
+                    originalRfpFullText: extractedText,
                     analysisPrompts: { ...serverRfpPrompts },
-                    ...parsedSections
+                    ...parsedSections,
+                    status: 'analyzed'
                 };
-
+                
                 const saveResponse = await fetch('/api/rfp-analysis', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(saveData),
                 });
-                if(!saveResponse.ok) throw new Error("Failed to save analysis.");
-                
-                showLoadingMessage(modalAnalysisStatusArea, "Analysis complete and saved!", false);
+                if (!saveResponse.ok) throw new Error("Failed to save the final analysis.");
+                const newAnalysis = await saveResponse.json();
+
+                closeModal(newRfpModal);
                 await loadSavedAnalyses();
-                setTimeout(() => closeModal(newRfpModal), 1500);
+                displayRfpDetails(newAnalysis.id);
 
             } catch (error) {
+                console.error('Analysis pipeline failed:', error);
                 showLoadingMessage(modalAnalysisStatusArea, `Error: ${error.message}`, false);
             } finally {
                 hideLoadingMessage(modalAnalysisStatusArea, 4000, generateAnalysisButton);
@@ -348,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         async function loadSavedAnalyses() {
-            showLoadingMessage(rfpListStatusArea, "Loading saved analyses...", true);
+             showLoadingMessage(rfpListStatusArea, "Loading saved analyses...", true);
             try {
                 const response = await fetch('/api/rfp-analyses');
                 if (!response.ok) throw new Error('Failed to fetch analyses.');
@@ -502,11 +475,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="reanalyze-section-button btn btn-sm btn-info" data-section-key="${sectionKey}" data-rfp-id="${analysisData.id}">Re-Analyze</button>
                     <div id="reanalyze-status-${sectionKey}-view" class="loading-container reanalyze-status-area" style="display: none;"></div>
                 </div>
-                <div class="section-content-display" id="section-content-display-${sectionKey}-view">
-                    ${sectionContent.replace(/\n/g, '<br>')}
-                </div>
-                <button class="save-section-button btn btn-sm btn-success" data-section-key="${sectionKey}" data-rfp-id="${analysisData.id}" style="display:none; margin-top: 10px;">Save Changes to ${config.title}</button>
+                <div class="section-content-display" id="section-content-display-${sectionKey}-view"></div>
+                <button class="save-section-button btn btn-sm btn-success" data-section-key="${sectionKey}" data-rfp-id="${analysisData.id}" style="display:none; margin-top: 10px;">Save Changes</button>
             `;
+            
+            const contentDisplayDiv = parentElement.querySelector('.section-content-display');
+            formatAndDisplayContent(sectionContent, contentDisplayDiv);
             
             parentElement.querySelector('.reanalyze-section-button').addEventListener('click', handleReanalyzeSection);
             parentElement.querySelector('.save-section-button').addEventListener('click', handleSaveSectionChanges);
@@ -533,10 +507,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error("AI re-analysis failed.");
                 
                 const result = await response.json();
-                const parsedResponse = parseAiResponse(result.generatedText);
+                const parsedResponse = parseRfpAiResponse(result.generatedText);
                 const newContent = parsedResponse[config.databaseKey] || "Re-analysis did not return expected format.";
                 
-                document.getElementById(`section-content-display-${sectionKey}-view`).innerHTML = newContent.replace(/\n/g, '<br>');
+                const contentDisplayDiv = document.getElementById(`section-content-display-${sectionKey}-view`);
+                formatAndDisplayContent(newContent, contentDisplayDiv);
+                
                 currentlyViewedRfpAnalysis[config.databaseKey] = newContent;
                 if (!currentlyViewedRfpAnalysis.analysisPrompts) currentlyViewedRfpAnalysis.analysisPrompts = {};
                 currentlyViewedRfpAnalysis.analysisPrompts[sectionKey] = newPrompt;
@@ -551,13 +527,51 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        function formatAndDisplayContent(content, displayElement) {
+            displayElement.innerHTML = '';
+            const lines = (content || "").split('\n');
+            let currentList = null;
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (trimmedLine) {
+                    let formattedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    const numberedListMatch = formattedLine.match(/^(\d+\.)\s+/);
+                    const bulletListMatch = formattedLine.match(/^(\*|-)\s+/);
+                    if (numberedListMatch) {
+                        if (!currentList || currentList.tagName !== 'OL') {
+                            currentList = document.createElement('ol');
+                            displayElement.appendChild(currentList);
+                        }
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = formattedLine.substring(numberedListMatch[0].length);
+                        currentList.appendChild(listItem);
+                    } else if (bulletListMatch) {
+                         if (!currentList || currentList.tagName !== 'UL') {
+                            currentList = document.createElement('ul');
+                            displayElement.appendChild(currentList);
+                        }
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = formattedLine.substring(bulletListMatch[0].length);
+                        currentList.appendChild(listItem);
+                    } else {
+                        currentList = null; 
+                        const p = document.createElement('p');
+                        p.innerHTML = formattedLine;
+                        displayElement.appendChild(p);
+                    }
+                } else {
+                    currentList = null; 
+                }
+            });
+        }
+        
         async function handleSaveSectionChanges(event) {
             const button = event.currentTarget;
             const sectionKey = button.dataset.sectionKey;
             const config = RFP_PROMPT_CONFIG[sectionKey];
             const statusArea = document.getElementById(`reanalyze-status-${sectionKey}-view`);
             
-            showLoadingMessage(statusArea, `Saving changes to ${config.title}...`, true, button);
+            showLoadingMessage(statusArea, `Saving changes...`, true, button);
 
             const payload = {
                 [config.databaseKey]: currentlyViewedRfpAnalysis[config.databaseKey],
@@ -633,7 +647,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- CHATBOT LOGIC ---
         async function sendChatMessage() {
             const query = chatbotInput.value.trim();
             if (!query) return;
@@ -682,7 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }
 
-        // --- UTILITY FUNCTIONS ---
         function constructFullRfpAnalysisPrompt(rfpText, prompts) {
             const mainInstruction = "Please analyze the following Request for Proposal (RFP) text.\nProvide the following distinct sections in your response, each clearly delimited:";
             const delimiterFormat = "\n\n###{SECTION_KEY_UPPER}_START###\n[Content for {SECTION_KEY_UPPER}]\n###{SECTION_KEY_UPPER}_END###";
@@ -700,11 +712,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return fullPrompt + suffix;
         }
 
-        function parseAiResponse(generatedText) {
+        function parseRfpAiResponse(generatedText) {
             const parsed = {};
             Object.keys(RFP_PROMPT_CONFIG).forEach(key => {
                 const config = RFP_PROMPT_CONFIG[key];
-                const regex = new RegExp(`###${config.delimiterKey}_START###([\\s\\S]*?)###${config.delimiterKey}_END###`);
+                const regex = new RegExp(`###${config.delimiterKey}_START###([\\s\\S]*?)###${config.delimiterKey}_END###`, 'i');
                 const match = generatedText.match(regex);
                 parsed[config.databaseKey] = match && match[1] ? match[1].trim() : "Not found in AI response.";
             });

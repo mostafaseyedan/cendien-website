@@ -2,46 +2,12 @@
  * Cendien - Analysis Common Script
  *
  * This module provides shared, generic functions for both the RFP and FOIA analysis tools.
- * It handles common tasks such as PDF text extraction, DOM manipulation (modals, loading messages),
- * authentication, prompt management, and dynamic API interactions.
+ * It handles common tasks such as DOM manipulation (modals, loading messages),
+ * authentication, and dynamic API interactions.
  *
  * @version 2.2.0
- * @date 2025-06-09
+ * @date 2025-06-10
  */
-
-// Import the PDF.js library. The worker is essential for parsing PDFs in the background.
-import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs';
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs';
-
-// --- Core UI & Data Functions ---
-
-/**
- * Extracts all text from a given PDF file.
- * @param {File} file - The PDF file object from a file input.
- * @returns {Promise<string>} A promise that resolves with the full text content of the PDF.
- */
-export async function extractTextFromPdf(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const pdfData = new Uint8Array(event.target.result);
-                const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
-                let fullText = '';
-                for (let i = 1; i <= pdfDoc.numPages; i++) {
-                    const page = await pdfDoc.getPage(i);
-                    const textContent = await page.getTextContent();
-                    fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-                }
-                resolve(fullText.trim());
-            } catch (err) {
-                reject(new Error(`Failed to parse PDF '${file.name}': ${err.message}`));
-            }
-        };
-        reader.onerror = (err) => reject(new Error(`FileReader error for '${file.name}': ${err.message}`));
-        reader.readAsArrayBuffer(file);
-    });
-}
 
 /**
  * Displays a loading message in a specified DOM element.
@@ -76,8 +42,6 @@ export function hideLoadingMessage(areaElement, delay = 0, enableButtonElement =
         }
     }, delay);
 }
-
-// --- Modal & Menu Functions ---
 
 /**
  * Adds a new item to a dropdown menu.
@@ -123,8 +87,6 @@ export function closeModal(modalElement) {
         document.body.style.overflow = '';
     }
 }
-
-// --- Authentication ---
 
 /**
  * Handles the complete authentication flow for a page.
@@ -187,8 +149,6 @@ export function handleAuthentication(config, onAuthSuccess) {
         });
     }
 }
-
-// --- Generic API Interaction ---
 
 /**
  * Updates the status of an analysis record via an API call.
