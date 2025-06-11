@@ -132,8 +132,8 @@ export function handleAuthentication(config, onAuthSuccess) {
         handleSuccessfulLogin();
     } else {
         config.authModal.classList.remove('auth-modal-hidden');
-        config.authModal.classList.add('active');
         config.authModal.style.display = 'flex';
+        config.authModal.classList.add('active'); 
         config.pageContentWrapper.classList.add('content-hidden');
         config.pageContentWrapper.style.display = 'none';
         
