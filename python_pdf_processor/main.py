@@ -80,6 +80,9 @@ async def extract_text_with_ocr(pdf_bytes: bytes, file_name: str) -> dict:
         raise
 
 async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
+    # --- THIS IS THE KEY LOGGING LINE TO CHECK FILE SIZE ---
+    logger.info(f"File: {file_name} - Received {len(pdf_bytes)} bytes for pypdf processing.")
+    # --- END OF KEY LOGGING LINE ---
     text_content = ""
     pages_processed = 0
     error_message_detail = None
@@ -104,7 +107,7 @@ async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
 
     except Exception as e:
         logger.error(f"Error processing PDF {file_name} with {method_used}: {e}", exc_info=True)
-        error_message_detail = str(e)
+        error_message_detail = str(e) # This is where "Stream has ended unexpectedly" comes from pypdf
 
     return {
         "text": text_content.strip(),
