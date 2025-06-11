@@ -16,16 +16,14 @@ MIN_CHARS_PER_PAGE_HEURISTIC = 100
 app = FastAPI(title="Cendien Document Processing Service")
 
 # --- CORS Configuration ---
-# Updated for broader accessibility, suitable for Cloud Run if the API is public
-# or relies on other forms of authentication rather than browser cookies from specific origins.
 origins = ["*"] 
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=False,  # Important: Must be False if allow_origins is ["*"]
-    allow_methods=["POST", "GET", "OPTIONS"], # Specific methods your API supports
-    allow_headers=["*"],     # Allow all headers, or specify expected ones
+    allow_credentials=False,
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # --- Pydantic Models for API Response ---
@@ -80,9 +78,7 @@ async def extract_text_with_ocr(pdf_bytes: bytes, file_name: str) -> dict:
         raise
 
 async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
-    # --- THIS IS THE KEY LOGGING LINE TO CHECK FILE SIZE ---
     logger.info(f"File: {file_name} - Received {len(pdf_bytes)} bytes for pypdf processing.")
-    # --- END OF KEY LOGGING LINE ---
     text_content = ""
     pages_processed = 0
     error_message_detail = None
@@ -107,7 +103,7 @@ async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
 
     except Exception as e:
         logger.error(f"Error processing PDF {file_name} with {method_used}: {e}", exc_info=True)
-        error_message_detail = str(e) # This is where "Stream has ended unexpectedly" comes from pypdf
+        error_message_detail = str(e)
 
     return {
         "text": text_content.strip(),
@@ -143,6 +139,16 @@ async def process_rfp_files_endpoint(
             logger.info(f"Attempting 'await rfp_file.read()' for {file_name}")
             contents = await rfp_file.read()
             logger.info(f"Successfully read {len(contents)} bytes for file: {file_name}")
+            
+            # --- ADDED LOGGING FOR FIRST FEW BYTES ---
+            if contents:
+                logger.info(f"First 20 bytes (raw): {contents[:20]}") 
+                try:
+                    # This is just for illustrative purposes to see if it's printable text
+                    logger.info(f"First 20 bytes (decoded as utf-8, illustrative only): {contents[:20].decode('utf-8', errors='ignore')}")
+                except Exception:
+                    logger.info("First 20 bytes could not be decoded as utf-8 (which is expected for binary files).")
+            # --- END OF ADDED LOGGING ---
             
             extraction_result = await extract_text_from_pdf_bytes(contents, file_name)
 
