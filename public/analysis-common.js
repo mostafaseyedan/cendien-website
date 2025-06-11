@@ -133,6 +133,7 @@ export function handleAuthentication(config, onAuthSuccess) {
     } else {
         config.authModal.classList.remove('auth-modal-hidden');
         config.authModal.style.display = 'flex';
+        config.authModal.classList.add('active'); 
         config.pageContentWrapper.classList.add('content-hidden');
         config.pageContentWrapper.style.display = 'none';
         

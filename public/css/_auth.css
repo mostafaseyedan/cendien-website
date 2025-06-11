@@ -31,6 +31,9 @@
     transform: translateY(-20px);
     opacity: 0;
     transition: all 0.3s ease-out;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s ease-out;
 }
 
 .auth-modal-overlay.active .auth-modal-content {

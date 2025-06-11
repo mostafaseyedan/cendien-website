@@ -1,5 +1,6 @@
 node_modules/
 package-lock.json
+python_pdf_processor/
 __pycache__/
 main.py
 Dockerfile 
