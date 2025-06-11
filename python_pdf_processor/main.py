@@ -16,16 +16,16 @@ MIN_CHARS_PER_PAGE_HEURISTIC = 100
 app = FastAPI(title="Cendien Document Processing Service")
 
 # --- CORS Configuration ---
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# Updated for broader accessibility, suitable for Cloud Run if the API is public
+# or relies on other forms of authentication rather than browser cookies from specific origins.
+origins = ["*"] 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,  # Important: Must be False if allow_origins is ["*"]
+    allow_methods=["POST", "GET", "OPTIONS"], # Specific methods your API supports
+    allow_headers=["*"],     # Allow all headers, or specify expected ones
 )
 
 # --- Pydantic Models for API Response ---
@@ -70,13 +70,13 @@ async def extract_text_with_ocr(pdf_bytes: bytes, file_name: str) -> dict:
                 logger.info(f"Successfully OCR'd page {i+1} of {file_name}")
 
             except Exception as ocr_page_err:
-                logger.error(f"OCR error on page {i+1} of {file_name}: {ocr_page_err}")
+                logger.error(f"OCR error on page {i+1} of {file_name}: {ocr_page_err}", exc_info=True)
                 ocr_text_parts.append(f"[OCR Error on page {i+1}]")
 
         return {"text": "\n\n".join(ocr_text_parts), "pages_processed": pages_processed}
 
     except Exception as e:
-        logger.error(f"Failed to convert PDF to images for OCR: {e}")
+        logger.error(f"Failed to convert PDF to images for OCR: {e}", exc_info=True)
         raise
 
 async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
@@ -103,7 +103,7 @@ async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
             pages_processed = ocr_result["pages_processed"]
 
     except Exception as e:
-        logger.error(f"Error processing PDF {file_name} with {method_used}: {e}")
+        logger.error(f"Error processing PDF {file_name} with {method_used}: {e}", exc_info=True)
         error_message_detail = str(e)
 
     return {
@@ -117,14 +117,10 @@ async def extract_text_from_pdf_bytes(pdf_bytes: bytes, file_name: str) -> dict:
 @app.post("/process-rfp-pdf/", response_model=PDFProcessResponse)
 async def process_rfp_files_endpoint(
     main_rfp: UploadFile = File(...),
-    # Use Optional and a default of None for better handling of empty uploads
     addendum_files: Optional[List[UploadFile]] = File(None) 
 ):
     all_files_to_process = [main_rfp]
-    # ** THE FIX IS HERE **
-    # Now we check if addendum_files exists and is a list before extending
     if addendum_files:
-        # This filters out any non-file items that might be sent by the form
         valid_addendums = [f for f in addendum_files if isinstance(f, UploadFile)]
         all_files_to_process.extend(valid_addendums)
 
@@ -138,9 +134,13 @@ async def process_rfp_files_endpoint(
     for rfp_file in all_files_to_process:
         file_name = rfp_file.filename
         logger.info(f"Processing file: {file_name}")
+        logger.info(f"UploadFile details - Filename: {rfp_file.filename}, Content-Type: {rfp_file.content_type}, Size (from headers if available): {rfp_file.size if hasattr(rfp_file, 'size') else 'N/A'}")
         
         try:
+            logger.info(f"Attempting 'await rfp_file.read()' for {file_name}")
             contents = await rfp_file.read()
+            logger.info(f"Successfully read {len(contents)} bytes for file: {file_name}")
+            
             extraction_result = await extract_text_from_pdf_bytes(contents, file_name)
 
             if extraction_result["error_message_detail"]:
@@ -161,11 +161,13 @@ async def process_rfp_files_endpoint(
                 ))
 
         except Exception as e:
-            logger.error(f"Failed to read file {file_name}: {e}")
+            logger.error(f"Failed to read file {file_name} or process its content: {e}", exc_info=True) 
             any_errors = True
-            processing_details_list.append(ProcessingDetail(file_name=file_name, method="file_read", status="failure", error_message=str(e)))
+            processing_details_list.append(ProcessingDetail(file_name=file_name, method="file_read_or_processing", status="failure", error_message=str(e)))
         finally:
+            logger.info(f"Attempting 'await rfp_file.close()' for {file_name}")
             await rfp_file.close()
+            logger.info(f"Successfully closed file stream for {file_name}")
 
     final_text = "\n\n".join(full_extracted_text_parts)
     overall_status = "success"
